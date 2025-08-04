@@ -106,6 +106,9 @@ export interface IStorage {
   // PayFast integration
   createPayfastTransaction(transaction: InsertPayfastTransaction): Promise<PayfastTransaction>;
   updatePayfastTransaction(id: string, updates: Partial<PayfastTransaction>): Promise<PayfastTransaction>;
+  
+  // Additional methods for API endpoints
+  getAllTransactions(): Promise<Transaction[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -756,6 +759,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(donations.id, id))
       .returning();
     return donation;
+  }
+
+  // Additional methods for API endpoints
+  async getAllTransactions(): Promise<Transaction[]> {
+    return await db.select().from(transactions).orderBy(desc(transactions.createdAt));
   }
 }
 
