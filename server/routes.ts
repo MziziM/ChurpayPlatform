@@ -1029,6 +1029,234 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Church Dashboard API Endpoints
+  app.get('/api/church/profile', async (req, res) => {
+    try {
+      // Mock church profile data
+      const churchData = {
+        id: 'church-123',
+        name: 'Grace Baptist Church',
+        denomination: 'Baptist',
+        memberCount: 450,
+        totalRevenue: '125,000',
+        monthlyRevenue: '15,500',
+        pendingPayouts: '3,250',
+        availableBalance: '12,750',
+        address: '123 Church Street',
+        city: 'Cape Town',
+        province: 'Western Cape',
+        contactEmail: 'admin@gracebaptist.co.za',
+        contactPhone: '+27 21 555 0123',
+        status: 'approved',
+        registrationDate: '2023-01-15'
+      };
+      res.json(churchData);
+    } catch (error) {
+      console.error("Error fetching church profile:", error);
+      res.status(500).json({ message: "Failed to fetch church profile" });
+    }
+  });
+
+  app.get('/api/church/stats', async (req, res) => {
+    try {
+      // Mock church statistics
+      const stats = {
+        totalMembers: 450,
+        activeMembers: 398,
+        totalRevenue: '125,000',
+        monthlyRevenue: '15,500',
+        averageDonation: '275',
+        donationCount: 124,
+        projectCount: 3,
+        activeProjects: 2,
+        pendingPayouts: '3,250',
+        availableBalance: '12,750',
+        revenueGrowth: 12.5,
+        memberGrowth: 8.3
+      };
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching church stats:", error);
+      res.status(500).json({ message: "Failed to fetch church statistics" });
+    }
+  });
+
+  app.get('/api/church/transactions/recent', async (req, res) => {
+    try {
+      // Mock recent transactions
+      const transactions = [
+        {
+          id: 'txn-001',
+          memberName: 'John Smith',
+          amount: '500.00',
+          type: 'tithe',
+          createdAt: new Date().toISOString(),
+          status: 'completed',
+          paymentMethod: 'card'
+        },
+        {
+          id: 'txn-002',
+          memberName: 'Sarah Johnson',
+          amount: '250.00',
+          type: 'donation',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          status: 'completed',
+          paymentMethod: 'wallet'
+        },
+        {
+          id: 'txn-003',
+          memberName: 'Mike Davis',
+          amount: '750.00',
+          type: 'project',
+          projectTitle: 'New Sanctuary Fund',
+          createdAt: new Date(Date.now() - 172800000).toISOString(),
+          status: 'completed',
+          paymentMethod: 'bank_transfer'
+        }
+      ];
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching recent transactions:", error);
+      res.status(500).json({ message: "Failed to fetch recent transactions" });
+    }
+  });
+
+  app.get('/api/church/members/top-donors', async (req, res) => {
+    try {
+      // Mock top donors
+      const topDonors = [
+        {
+          id: 'member-001',
+          firstName: 'John',
+          lastName: 'Smith',
+          email: 'john.smith@email.com',
+          phone: '+27 82 555 0001',
+          membershipType: 'Elder',
+          totalDonated: '2,500.00',
+          lastDonation: new Date().toISOString(),
+          joinDate: '2022-03-15',
+          status: 'active'
+        },
+        {
+          id: 'member-002',
+          firstName: 'Sarah',
+          lastName: 'Johnson',
+          email: 'sarah.johnson@email.com',
+          phone: '+27 82 555 0002',
+          membershipType: 'Deacon',
+          totalDonated: '1,875.00',
+          lastDonation: new Date(Date.now() - 86400000).toISOString(),
+          joinDate: '2022-06-20',
+          status: 'active'
+        },
+        {
+          id: 'member-003',
+          firstName: 'Mike',
+          lastName: 'Davis',
+          email: 'mike.davis@email.com',
+          phone: '+27 82 555 0003',
+          membershipType: 'Member',
+          totalDonated: '1,650.00',
+          lastDonation: new Date(Date.now() - 172800000).toISOString(),
+          joinDate: '2023-01-10',
+          status: 'active'
+        }
+      ];
+      res.json(topDonors);
+    } catch (error) {
+      console.error("Error fetching top donors:", error);
+      res.status(500).json({ message: "Failed to fetch top donors" });
+    }
+  });
+
+  app.get('/api/church/projects/active', async (req, res) => {
+    try {
+      // Mock active projects
+      const projects = [
+        {
+          id: 'project-001',
+          title: 'New Sanctuary Fund',
+          description: 'Building a new worship sanctuary to accommodate our growing congregation.',
+          targetAmount: '150,000',
+          currentAmount: '89,500',
+          progress: 60,
+          donorCount: 45,
+          status: 'active',
+          startDate: '2024-01-01',
+          endDate: '2024-12-31'
+        },
+        {
+          id: 'project-002',
+          title: 'Youth Ministry Equipment',
+          description: 'Purchasing sound equipment and instruments for our youth ministry.',
+          targetAmount: '25,000',
+          currentAmount: '18,750',
+          progress: 75,
+          donorCount: 23,
+          status: 'active',
+          startDate: '2024-06-01',
+          endDate: '2024-09-30'
+        }
+      ];
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching active projects:", error);
+      res.status(500).json({ message: "Failed to fetch active projects" });
+    }
+  });
+
+  app.get('/api/church/members/recent', async (req, res) => {
+    try {
+      // Mock recent members
+      const recentMembers = [
+        {
+          id: 'member-010',
+          firstName: 'Emma',
+          lastName: 'Wilson',
+          email: 'emma.wilson@email.com',
+          phone: '+27 82 555 0010',
+          membershipType: 'Member',
+          totalDonated: '0.00',
+          lastDonation: null,
+          joinDate: new Date().toISOString(),
+          status: 'active'
+        },
+        {
+          id: 'member-011',
+          firstName: 'David',
+          lastName: 'Brown',
+          email: 'david.brown@email.com',
+          phone: '+27 82 555 0011',
+          membershipType: 'Member',
+          totalDonated: '125.00',
+          lastDonation: new Date(Date.now() - 86400000).toISOString(),
+          joinDate: new Date(Date.now() - 172800000).toISOString(),
+          status: 'active'
+        }
+      ];
+      res.json(recentMembers);
+    } catch (error) {
+      console.error("Error fetching recent members:", error);
+      res.status(500).json({ message: "Failed to fetch recent members" });
+    }
+  });
+
+  app.get('/api/church/analytics/monthly', async (req, res) => {
+    try {
+      // Mock monthly analytics
+      const monthlyStats = {
+        labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+        revenue: [8500, 9200, 8800, 10500, 11200, 15800, 12400],
+        donations: [45, 48, 52, 58, 62, 78, 65],
+        members: [398, 405, 412, 425, 435, 440, 450]
+      };
+      res.json(monthlyStats);
+    } catch (error) {
+      console.error("Error fetching monthly analytics:", error);
+      res.status(500).json({ message: "Failed to fetch monthly analytics" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
