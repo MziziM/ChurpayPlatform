@@ -5,7 +5,6 @@ import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, inser
 import { protectCoreEndpoints, validateFeeStructure, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -18,180 +17,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
   
   console.log("🔒 Code protection system active - Core files and fee structure locked");
-
-  // Authentication check endpoint
-  app.get('/api/auth/user', async (req, res) => {
-    try {
-      // For now, return null to indicate no authenticated user
-      // This will be enhanced when session management is implemented
-      res.json(null);
-    } catch (error) {
-      console.error("Auth user check error:", error);
-      res.status(500).json({ message: "Failed to check authentication" });
-    }
-  });
-
-  // Platform statistics endpoint
-  app.get('/api/platform/stats', async (req, res) => {
-    try {
-      const churches = await storage.getAllChurches();
-      const transactions = await storage.getAllTransactions();
-      
-      // Calculate platform stats
-      const totalChurches = churches.length;
-      const totalMembers = churches.reduce((sum, church) => sum + (church.memberCount || 0), 0);
-      const totalDonations = transactions
-        .filter(t => t.type === 'donation')
-        .reduce((sum, t) => sum + t.amount, 0);
-      const monthlyDonations = transactions
-        .filter(t => {
-          const transactionDate = new Date(t.createdAt);
-          const currentMonth = new Date().getMonth();
-          const currentYear = new Date().getFullYear();
-          return transactionDate.getMonth() === currentMonth && 
-                 transactionDate.getFullYear() === currentYear &&
-                 t.type === 'donation';
-        })
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      res.json({
-        totalChurches,
-        totalMembers,
-        totalDonations,
-        monthlyDonations,
-        averageDonation: totalDonations > 0 ? totalDonations / transactions.filter(t => t.type === 'donation').length : 0
-      });
-    } catch (error) {
-      console.error("Platform stats error:", error);
-      res.status(500).json({ message: "Failed to fetch platform statistics" });
-    }
-  });
-
-  // Featured churches endpoint
-  app.get('/api/churches/featured', async (req, res) => {
-    try {
-      const churches = await storage.getAllChurches();
-      
-      // Get top churches by member count
-      const featuredChurches = churches
-        .filter(church => church.status === 'approved')
-        .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
-        .slice(0, 6)
-        .map(church => ({
-          id: church.id,
-          name: church.name,
-          denomination: church.denomination,
-          city: church.city,
-          province: church.province,
-          memberCount: church.memberCount,
-          description: church.description
-        }));
-
-      res.json(featuredChurches);
-    } catch (error) {
-      console.error("Featured churches error:", error);
-      res.status(500).json({ message: "Failed to fetch featured churches" });
-    }
-  });
-
-  // Authentication endpoints
-  app.post('/api/auth/member/signin', async (req, res) => {
-    try {
-      const { email, password } = z.object({
-        email: z.string().email(),
-        password: z.string()
-      }).parse(req.body);
-
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
-      if (!user || !user.passwordHash) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      // Check if user is a member
-      if (user.role !== 'member') {
-        return res.status(401).json({ message: "Access denied. Member account required." });
-      }
-
-      // Create session data (excluding password hash)
-      const { passwordHash, ...userData } = user;
-      
-      // Log successful login
-      await storage.logActivity({
-        userId: user.id,
-        churchId: user.churchId,
-        action: 'member_login',
-        entity: 'user',
-        entityId: user.id,
-        details: { email: user.email, loginTime: new Date().toISOString() },
-      });
-
-      res.json({
-        user: userData,
-        message: "Sign in successful"
-      });
-    } catch (error: any) {
-      console.error("Member sign-in error:", error);
-      res.status(400).json({ message: "Sign in failed", error: error.message });
-    }
-  });
-
-  app.post('/api/auth/church/signin', async (req, res) => {
-    try {
-      const { email, password } = z.object({
-        email: z.string().email(),
-        password: z.string()
-      }).parse(req.body);
-
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
-      if (!user || !user.passwordHash) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      // Check if user is church admin or staff
-      if (!['church_admin', 'church_staff'].includes(user.role || '')) {
-        return res.status(401).json({ message: "Access denied. Church account required." });
-      }
-
-      // Get church information
-      const church = user.churchId ? await storage.getChurch(user.churchId) : null;
-
-      // Create session data (excluding password hash)
-      const { passwordHash, ...userData } = user;
-      
-      // Log successful login
-      await storage.logActivity({
-        userId: user.id,
-        churchId: user.churchId,
-        action: 'church_admin_login',
-        entity: 'user',
-        entityId: user.id,
-        details: { email: user.email, role: user.role, churchName: church?.name },
-      });
-
-      res.json({
-        user: userData,
-        church: church,
-        message: "Sign in successful"
-      });
-    } catch (error: any) {
-      console.error("Church sign-in error:", error);
-      res.status(400).json({ message: "Sign in failed", error: error.message });
-    }
-  });
 
   // Public registration endpoints (NO AUTHENTICATION REQUIRED)
   app.post('/api/churches/register', async (req, res) => {
@@ -231,9 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         phone: z.string(),
         dateOfBirth: z.string(),
-        password: z.string(),
         address: z.string(),
-        addressLine2: z.string().optional(),
         city: z.string(),
         province: z.string(),
         postalCode: z.string(),
@@ -241,20 +64,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emergencyContactName: z.string(),
         emergencyContactPhone: z.string(),
         emergencyContactRelationship: z.string(),
-        emergencyContactEmail: z.string().optional(),
-        emergencyContactAddress: z.string(),
         membershipType: z.string(),
         previousChurch: z.string().optional(),
         howDidYouHear: z.string().optional(),
       }).parse(req.body);
 
-      // Hash the password before storing
-      const saltRounds = 12;
-      const passwordHash = await bcrypt.hash(validatedData.password, saltRounds);
-
       const memberData = {
         ...validatedData,
-        passwordHash,
         id: randomUUID(),
         role: 'member' as const,
         profileImageUrl: null,
@@ -305,1067 +121,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Wallet API Routes
-  
-  // Get user's wallet
-  app.get('/api/wallet', async (req, res) => {
+  // 🔒 CODE PROTECTION: Super Admin Dashboard API - Core ChurPay functionality protected
+  // Super Admin Statistics
+  app.get('/api/super-admin/stats', async (req, res) => {
     try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      let wallet = await storage.getUserWallet(userId);
-      
-      // Create wallet if it doesn't exist
-      if (!wallet) {
-        wallet = await storage.createWallet({
-          userId,
-          availableBalance: "2850.75", // Demo balance
-          pendingBalance: "125.00",
-          rewardPoints: "340.50",
-          isActive: true,
-          isPinSet: true,
-          dailyTransferLimit: "10000",
-          monthlyTransferLimit: "50000",
-          autoTopUpEnabled: false,
-        });
-      }
-      
-      res.json(wallet);
+      // Mock super admin statistics
+      const stats = {
+        totalRevenue: '2,847,500.00',
+        totalTransactions: 18420,
+        activeChurches: 247,
+        pendingPayouts: 23,
+        revenueGrowth: '+12.5%',
+        transactionGrowth: '+8.3%',
+        churchGrowth: '+15.2%',
+        payoutGrowth: '+6.7%',
+        monthlyRevenue: [
+          { month: 'Jan', revenue: 240000 },
+          { month: 'Feb', revenue: 265000 },
+          { month: 'Mar', revenue: 290000 },
+          { month: 'Apr', revenue: 315000 },
+          { month: 'May', revenue: 342000 },
+          { month: 'Jun', revenue: 385000 }
+        ],
+        transactionsByType: [
+          { type: 'Donations', count: 8200, percentage: 44.5 },
+          { type: 'Tithes', count: 6100, percentage: 33.1 },
+          { type: 'Projects', count: 2850, percentage: 15.5 },
+          { type: 'Offerings', count: 1270, percentage: 6.9 }
+        ]
+      };
+      res.json(stats);
     } catch (error) {
-      console.error("Error fetching wallet:", error);
-      res.status(500).json({ message: "Failed to fetch wallet" });
+      console.error("🔒 PROTECTED: Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
     }
   });
 
-  // Get wallet transactions
-  app.get('/api/wallet/transactions', async (req, res) => {
+  // Super Admin Payouts
+  app.get('/api/super-admin/payouts', async (req, res) => {
     try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
-      
-      const transactions = await storage.getUserWalletTransactions(userId, limit, offset);
-      res.json(transactions);
-    } catch (error) {
-      console.error("Error fetching wallet transactions:", error);
-      res.status(500).json({ message: "Failed to fetch transactions" });
-    }
-  });
-
-  // Search members for transfer
-  app.get('/api/members/search', async (req, res) => {
-    try {
-      const query = req.query.q as string;
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
-      
-      const members = await storage.searchMembers(query, userId);
-      res.json(members);
-    } catch (error) {
-      console.error("Error searching members:", error);
-      res.status(500).json({ message: "Failed to search members" });
-    }
-  });
-
-  // Process wallet transfer
-  app.post('/api/wallet/transfer', async (req, res) => {
-    try {
-      const { toUserId, amount, description } = req.body;
-      const fromUserId = 'demo-user-123'; // In real app, get from authenticated session
-      
-      if (!toUserId || !amount || amount <= 0) {
-        return res.status(400).json({ message: "Invalid transfer data" });
-      }
-      
-      const result = await storage.processWalletTransfer(fromUserId, toUserId, amount, description);
-      
-      if (result.success) {
-        res.json({ success: true, transactionId: result.transactionId });
-      } else {
-        res.status(400).json({ message: result.error });
-      }
-    } catch (error) {
-      console.error("Error processing transfer:", error);
-      res.status(500).json({ message: "Failed to process transfer" });
-    }
-  });
-
-  // Create PayFast payment for wallet top-up
-  app.post('/api/wallet/topup', async (req, res) => {
-    try {
-      const { amount, paymentMethod } = req.body;
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      
-      if (!amount || amount <= 0) {
-        return res.status(400).json({ message: "Invalid amount" });
-      }
-      
-      // Get user's wallet
-      const wallet = await storage.getUserWallet(userId);
-      if (!wallet) {
-        return res.status(404).json({ message: "Wallet not found" });
-      }
-      
-      // Calculate fees (3.9% + R3)
-      const processingFee = (amount * 0.039) + 3;
-      const totalAmount = amount + processingFee;
-      
-      // Create PayFast payment (in real app, integrate with PayFast API)
-      const paymentId = `PF_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const payfastTransaction = await storage.createPayfastTransaction({
-        walletTransactionId: null, // Will be updated after wallet transaction is created
-        paymentId,
-        merchantId: process.env.PAYFAST_MERCHANT_ID!,
-        merchantKey: process.env.PAYFAST_MERCHANT_KEY!,
-        amount: totalAmount.toString(),
-        itemName: 'ChurPay Wallet Top-up',
-        itemDescription: `Top-up R${amount} to ChurPay wallet`,
-        paymentStatus: 'pending',
-      });
-      
-      // Create pending wallet transaction
-      const walletTransaction = await storage.createWalletTransaction({
-        walletId: wallet.id,
-        type: 'deposit',
-        amount,
-        currency: 'ZAR',
-        description: `PayFast top-up - R${amount}`,
-        paymentMethod: 'card',
-        paymentReference: paymentId,
-        processingFee: processingFee.toString(),
-        status: 'pending',
-        balanceBefore: wallet.availableBalance,
-        balanceAfter: wallet.availableBalance, // Will be updated when payment completes
-      });
-      
-      // Update PayFast transaction with wallet transaction ID
-      await storage.updatePayfastTransaction(payfastTransaction.id, {
-        walletTransactionId: walletTransaction.id,
-      });
-      
-      // In real app, redirect to PayFast payment page
-      res.json({
-        success: true,
-        paymentId,
-        transactionId: walletTransaction.id,
-        amount,
-        processingFee,
-        totalAmount,
-        // paymentUrl: `https://www.payfast.co.za/eng/process?payment_id=${paymentId}` // Real PayFast URL
-        paymentUrl: `/wallet?payment=success&amount=${amount}` // Demo redirect
-      });
-    } catch (error) {
-      console.error("Error creating top-up:", error);
-      res.status(500).json({ message: "Failed to create top-up" });
-    }
-  });
-
-  // Payment methods API
-  app.get('/api/payment-methods', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const paymentMethods = await storage.getUserPaymentMethods(userId);
-      res.json(paymentMethods);
-    } catch (error) {
-      console.error("Error fetching payment methods:", error);
-      res.status(500).json({ message: "Failed to fetch payment methods" });
-    }
-  });
-
-  app.post('/api/payment-methods', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { type, maskedNumber, cardType, expiryMonth, expiryYear, nickname, payfastToken } = req.body;
-
-      const paymentMethod = await storage.createPaymentMethod({
-        userId,
-        type,
-        provider: 'payfast',
-        maskedNumber,
-        cardType,
-        expiryMonth,
-        expiryYear,
-        nickname,
-        payfastToken,
-        isDefault: false,
-        isActive: true,
-      });
-
-      res.json(paymentMethod);
-    } catch (error) {
-      console.error("Error creating payment method:", error);
-      res.status(500).json({ message: "Failed to create payment method" });
-    }
-  });
-
-  // Donation endpoints
-  app.post('/api/donations/give', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { churchId, amount, note, paymentMethod, paymentMethodId } = req.body;
-
-      const donation = await storage.createDonation({
-        userId,
-        churchId,
-        reference: `DON_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        amount: amount.toString(),
-        description: note,
-        type: 'donation',
-        paymentMethod: paymentMethod || 'wallet',
-        paymentMethodId: paymentMethodId || null,
-        status: 'completed',
-      });
-
-      res.json(donation);
-    } catch (error) {
-      console.error("Error processing donation:", error);
-      res.status(500).json({ message: "Failed to process donation" });
-    }
-  });
-
-  app.post('/api/donations/tithe', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { churchId, amount, paymentMethod, paymentMethodId } = req.body;
-
-      const donation = await storage.createDonation({
-        userId,
-        churchId,
-        reference: `TITHE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        amount: amount.toString(),
-        description: 'Monthly tithe payment',
-        type: 'tithe',
-        paymentMethod: paymentMethod || 'wallet',
-        paymentMethodId: paymentMethodId || null,
-        status: 'completed',
-      });
-
-      res.json(donation);
-    } catch (error) {
-      console.error("Error processing tithe:", error);
-      res.status(500).json({ message: "Failed to process tithe" });
-    }
-  });
-
-  // Project sponsorship endpoint
-  app.post('/api/projects/sponsor', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { projectId, amount, paymentMethod, paymentMethodId } = req.body;
-
-      // Get project details to get churchId
-      const project = await storage.getProject(projectId);
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      const donation = await storage.createDonation({
-        userId,
-        churchId: project.churchId,
-        projectId,
-        amount: amount.toString(),
-        description: `Project sponsorship: ${project.title}`,
-        type: 'project',
-        paymentMethod: paymentMethod || 'wallet',
-        paymentMethodId: paymentMethodId || null,
-        status: 'completed',
-      });
-
-      res.json(donation);
-    } catch (error) {
-      console.error("Error processing project sponsorship:", error);
-      res.status(500).json({ message: "Failed to process project sponsorship" });
-    }
-  });
-
-  // PayFast webhook (for real integration)
-  app.post('/api/wallet/payfast-notify', async (req, res) => {
-    try {
-      const { payment_status, pf_payment_id, amount_gross, amount_fee, amount_net } = req.body;
-      
-      // In real app, verify PayFast signature and validate payment
-      
-      if (payment_status === 'COMPLETE') {
-        // Find the PayFast transaction
-        const payfastTransaction = await storage.updatePayfastTransaction(pf_payment_id, {
-          paymentStatus: 'COMPLETE',
-          pfPaymentId: pf_payment_id,
-          amountGross: amount_gross.toString(),
-          amountFee: amount_fee.toString(),
-          amountNet: amount_net.toString(),
-          paymentDate: new Date(),
-        });
-        
-        if (payfastTransaction.walletTransactionId) {
-          // Update wallet transaction status
-          await storage.updateWalletTransactionStatus(payfastTransaction.walletTransactionId.toString(), 'completed');
-          
-          // Update wallet balance
-          const walletTransaction = await storage.getWalletTransaction(payfastTransaction.walletTransactionId);
-          if (walletTransaction) {
-            const wallet = await storage.getWallet(walletTransaction.walletId);
-            if (wallet) {
-              await storage.updateWalletBalance(
-                wallet.id,
-                parseFloat(wallet.availableBalance) + parseFloat(walletTransaction.amount.toString())
-              );
-            }
+      // Mock payout requests
+      const payouts = [
+        {
+          id: 'payout-001',
+          churchName: 'Grace Baptist Church',
+          requestedAmount: '15,250.00',
+          availableAmount: '14,691.25',
+          fees: '558.75',
+          status: 'pending',
+          requestDate: '2024-08-01T10:30:00Z',
+          details: 'Monthly payout request for July donations',
+          bankDetails: {
+            accountName: 'Grace Baptist Church',
+            accountNumber: '****7834',
+            bank: 'Standard Bank'
+          }
+        },
+        {
+          id: 'payout-002',
+          churchName: 'New Life Methodist',
+          requestedAmount: '8,900.00',
+          availableAmount: '8,562.90',
+          fees: '337.10',
+          status: 'approved',
+          requestDate: '2024-07-28T14:15:00Z',
+          processedDate: '2024-07-29T09:00:00Z',
+          details: 'Weekly payout for building fund',
+          bankDetails: {
+            accountName: 'New Life Methodist Church',
+            accountNumber: '****2156',
+            bank: 'FNB'
           }
         }
-      }
-      
-      res.status(200).send('OK');
+      ];
+      res.json(payouts);
     } catch (error) {
-      console.error("Error processing PayFast notification:", error);
-      res.status(500).send('ERROR');
+      console.error("🔒 PROTECTED: Error fetching payouts:", error);
+      res.status(500).json({ message: "Failed to fetch payout data" });
     }
   });
 
-  // Member registration endpoint
-  app.post('/api/members/register', async (req, res) => {
+  // Process payout (approve/reject)
+  app.post('/api/super-admin/payouts/:id/process', async (req, res) => {
     try {
-      const memberData = req.body;
+      const { id } = req.params;
+      const { action, notes } = req.body;
       
-      // Create new user with member role
-      const userData = {
-        id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        email: memberData.email,
-        firstName: memberData.firstName,
-        lastName: memberData.lastName,
-        phone: memberData.phone,
-        dateOfBirth: memberData.dateOfBirth,
-        address: memberData.address,
-        city: memberData.city,
-        province: memberData.province,
-        postalCode: memberData.postalCode,
-        country: 'South Africa',
-        emergencyContactName: memberData.emergencyContactName,
-        emergencyContactPhone: memberData.emergencyContactPhone,
-        emergencyContactRelationship: memberData.emergencyContactRelationship,
-        membershipType: memberData.membershipType,
-        previousChurch: memberData.previousChurch,
-        howDidYouHear: memberData.howDidYouHear,
-        role: 'member',
-        churchId: memberData.churchId,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // Mock payout processing
+      const result = {
+        id,
+        action,
+        processedAt: new Date().toISOString(),
+        notes: notes || '',
+        status: action === 'approve' ? 'approved' : 'rejected'
       };
       
-      // In production, this would create actual database records
-      // For now, store the registration and return success
-      console.log('New member registration:', userData);
-      
-      res.status(201).json({
-        message: 'Member registration successful',
-        user: {
-          id: userData.id,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          email: userData.email,
-          role: userData.role,
-          churchId: userData.churchId,
-        }
-      });
-    } catch (error: any) {
-      console.error("Error registering member:", error);
-      res.status(500).json({ message: "Failed to register member", error: error.message });
+      res.json(result);
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error processing payout:", error);
+      res.status(500).json({ message: "Failed to process payout request" });
     }
   });
 
-  // Churches API
-  app.get('/api/churches', async (req, res) => {
+  // Super Admin Churches
+  app.get('/api/super-admin/churches', async (req, res) => {
     try {
-      // Mock churches data for now
+      // Mock churches data
       const churches = [
         {
-          id: '1',
+          id: 'church-001',
           name: 'Grace Baptist Church',
-          description: 'A welcoming community focused on faith, hope, and love.',
-          location: 'Cape Town, South Africa',
+          location: 'Cape Town, Western Cape',
           memberCount: 450,
-          totalDonations: '125000.00',
-          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center',
-          logoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center'
+          totalRevenue: '125,400.00',
+          status: 'active',
+          joinDate: '2024-01-15T08:00:00Z',
+          contactPerson: 'Pastor John Smith',
+          email: 'admin@gracebaptist.org.za',
+          phone: '+27 21 555 0123'
         },
         {
-          id: '2',
-          name: 'New Life Methodist Church',
-          description: 'Building stronger communities through worship and service.',
-          location: 'Johannesburg, South Africa',
+          id: 'church-002',
+          name: 'New Life Methodist',
+          location: 'Johannesburg, Gauteng',
           memberCount: 320,
-          totalDonations: '98500.00',
-          image: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=200&h=200&fit=crop&crop=center',
-          logoUrl: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=200&h=200&fit=crop&crop=center'
-        },
-        {
-          id: '3',
-          name: 'Faith Assembly Church',
-          description: 'Empowering believers to live purposeful lives.',
-          location: 'Durban, South Africa',
-          memberCount: 275,
-          totalDonations: '87250.00',
-          image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c86a?w=200&h=200&fit=crop&crop=center',
-          logoUrl: 'https://images.unsplash.com/photo-1520637836862-4d197d17c86a?w=200&h=200&fit=crop&crop=center'
+          totalRevenue: '89,750.00',
+          status: 'active',
+          joinDate: '2024-02-10T10:30:00Z',
+          contactPerson: 'Pastor Sarah Johnson',
+          email: 'contact@newlifemethodist.co.za',
+          phone: '+27 11 555 0456'
         }
       ];
       res.json(churches);
     } catch (error) {
-      console.error("Error fetching churches:", error);
-      res.status(500).json({ message: "Failed to fetch churches" });
+      console.error("🔒 PROTECTED: Error fetching churches:", error);
+      res.status(500).json({ message: "Failed to fetch churches data" });
     }
   });
 
-  // Projects API
-  app.get('/api/projects', async (req, res) => {
+  // Super Admin Members
+  app.get('/api/super-admin/members', async (req, res) => {
     try {
-      // Mock projects data for now
-      const projects = [
-        {
-          id: '1',
-          churchId: '1',
-          churchName: 'Grace Baptist Church',
-          title: 'New Sanctuary Building',
-          description: 'Help us build a new sanctuary to accommodate our growing congregation.',
-          targetAmount: '500000.00',
-          currentAmount: '285000.00',
-          deadline: '2025-12-01',
-          category: 'Building',
-          image: null,
-          status: 'active'
-        },
-        {
-          id: '2',
-          churchId: '2',
-          churchName: 'New Life Methodist Church',
-          title: 'Community Outreach Program',
-          description: 'Support our mission to help local families in need.',
-          targetAmount: '75000.00',
-          currentAmount: '42500.00',
-          deadline: '2025-06-30',
-          category: 'Outreach',
-          image: null,
-          status: 'active'
-        },
-        {
-          id: '3',
-          churchId: '3',
-          churchName: 'Faith Assembly Church',
-          title: 'Youth Ministry Equipment',
-          description: 'Purchase new equipment for our growing youth ministry.',
-          targetAmount: '25000.00',
-          currentAmount: '18750.00',
-          deadline: '2025-08-15',
-          category: 'Ministry',
-          image: null,
-          status: 'active'
-        }
-      ];
-      res.json(projects);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      res.status(500).json({ message: "Failed to fetch projects" });
-    }
-  });
-
-  // Donations API
-  app.get('/api/donations/history', async (req, res) => {
-    try {
-      // Mock donation history for now
-      const donations = [
-        {
-          id: '1',
-          amount: '500.00',
-          type: 'donation',
-          churchName: 'Grace Baptist Church',
-          date: '2025-01-04T10:30:00Z',
-          status: 'completed'
-        },
-        {
-          id: '2',
-          amount: '1000.00',
-          type: 'tithe',
-          churchName: 'Grace Baptist Church',
-          date: '2025-01-01T09:00:00Z',
-          status: 'completed'
-        },
-        {
-          id: '3',
-          amount: '250.00',
-          type: 'project',
-          churchName: 'New Life Methodist Church',
-          projectTitle: 'Community Outreach Program',
-          date: '2024-12-28T14:15:00Z',
-          status: 'completed'
-        }
-      ];
-      res.json(donations);
-    } catch (error) {
-      console.error("Error fetching donation history:", error);
-      res.status(500).json({ message: "Failed to fetch donation history" });
-    }
-  });
-
-  // Give donation
-  app.post('/api/donations/give', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { churchId, amount, note } = req.body;
-
-      if (!churchId || !amount || amount <= 0) {
-        return res.status(400).json({ message: "Invalid donation data" });
-      }
-
-      // Check wallet balance
-      const wallet = await storage.getUserWallet(userId);
-      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-
-      // Create wallet transaction
-      const transaction = await storage.createWalletTransaction({
-        walletId: wallet.id,
-        type: 'donation',
-        amount: (-amount).toString(),
-        description: `Donation to church - ${note || 'General donation'}`,
-        status: 'completed',
-        currency: 'ZAR',
-        reference: `DON${Date.now()}`,
-        balanceBefore: wallet.availableBalance,
-        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
-      });
-
-      // Update wallet balance
-      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
-
-      res.json({ 
-        success: true, 
-        transactionId: transaction.id,
-        message: "Donation processed successfully" 
-      });
-    } catch (error) {
-      console.error("Error processing donation:", error);
-      res.status(500).json({ message: "Failed to process donation" });
-    }
-  });
-
-  // Pay tithe
-  app.post('/api/donations/tithe', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { churchId, amount } = req.body;
-
-      if (!churchId || !amount || amount <= 0) {
-        return res.status(400).json({ message: "Invalid tithe data" });
-      }
-
-      // Check wallet balance
-      const wallet = await storage.getUserWallet(userId);
-      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-
-      // Create wallet transaction
-      const transaction = await storage.createWalletTransaction({
-        walletId: wallet.id,
-        type: 'tithe',
-        amount: (-amount).toString(),
-        description: `Tithe payment`,
-        status: 'completed',
-        currency: 'ZAR',
-        reference: `TIT${Date.now()}`,
-        balanceBefore: wallet.availableBalance,
-        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
-      });
-
-      // Update wallet balance
-      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
-
-      res.json({ 
-        success: true, 
-        transactionId: transaction.id,
-        message: "Tithe processed successfully" 
-      });
-    } catch (error) {
-      console.error("Error processing tithe:", error);
-      res.status(500).json({ message: "Failed to process tithe" });
-    }
-  });
-
-  // Sponsor project
-  app.post('/api/projects/sponsor', async (req, res) => {
-    try {
-      const userId = 'demo-user-123'; // In real app, get from authenticated session
-      const { projectId, amount } = req.body;
-
-      if (!projectId || !amount || amount <= 0) {
-        return res.status(400).json({ message: "Invalid sponsorship data" });
-      }
-
-      // Check wallet balance
-      const wallet = await storage.getUserWallet(userId);
-      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-
-      // Create wallet transaction
-      const transaction = await storage.createWalletTransaction({
-        walletId: wallet.id,
-        type: 'project',
-        amount: (-amount).toString(),
-        description: `Project sponsorship`,
-        status: 'completed',
-        currency: 'ZAR',
-        reference: `PRJ${Date.now()}`,
-        balanceBefore: wallet.availableBalance,
-        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
-      });
-
-      // Update wallet balance
-      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
-
-      res.json({ 
-        success: true, 
-        transactionId: transaction.id,
-        message: "Project sponsorship processed successfully" 
-      });
-    } catch (error) {
-      console.error("Error processing sponsorship:", error);
-      res.status(500).json({ message: "Failed to process sponsorship" });
-    }
-  });
-
-  // User stats endpoint with detailed breakdown  
-  app.get('/api/user/stats', async (req, res) => {
-    try {
-      // For now, use mock user ID - in real app this would come from authentication
-      const mockUserId = 'mock-user-id';
-      
-      // Get user's transactions
-      const allTransactions = await storage.getTransactions();
-      const userTransactions = allTransactions.filter(t => 
-        (t.userId === mockUserId || !t.userId) && t.status === 'completed'
-      );
-      
-      if (userTransactions.length === 0) {
-        // Return default stats for new users
-        const stats = {
-          memberSince: 'January 2025',
-          totalGiven: '0.00',
-          thisYearGiven: '0.00',
-          goalProgress: 0,
-          annualGoal: '25000.00',
-          transactionCount: 0,
-          averageGift: '0.00'
-        };
-        return res.json(stats);
-      }
-      
-      const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      const thisYearTransactions = userTransactions.filter(t => 
-        new Date(t.createdAt || new Date()).getFullYear() === new Date().getFullYear()
-      );
-      const thisYearGiven = thisYearTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      
-      // Calculate member since date (using first transaction or default)
-      const firstTransaction = userTransactions.sort((a, b) => 
-        new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
-      )[0];
-      const memberSince = firstTransaction?.createdAt ? 
-        new Date(firstTransaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) :
-        'January 2025';
-      
-      // Goal progress calculation (example: R25,000 annual goal)
-      const annualGoal = 25000;
-      const goalProgress = Math.min((thisYearGiven / annualGoal) * 100, 100);
-      
-      const stats = {
-        memberSince,
-        totalGiven: totalGiven.toFixed(2),
-        thisYearGiven: thisYearGiven.toFixed(2),
-        goalProgress: Math.round(goalProgress),
-        annualGoal: annualGoal.toFixed(2),
-        transactionCount: userTransactions.length,
-        averageGift: userTransactions.length > 0 ? (totalGiven / userTransactions.length).toFixed(2) : '0.00'
-      };
-      
-      res.json(stats);
-    } catch (error: any) {
-      console.error("Error fetching user stats:", error);
-      res.status(500).json({ message: "Failed to fetch user stats", error: error.message });
-    }
-  });
-
-  // Recent activity endpoint
-  app.get('/api/user/recent-activity', async (req, res) => {
-    try {
-      // For now, use mock user ID - in real app this would come from authentication
-      const mockUserId = 'mock-user-id';
-      
-      const transactions = await storage.getTransactions();
-      const userRecentTransactions = transactions
-        .filter(t => (t.userId === mockUserId || !t.userId) && t.status === 'completed')
-        .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-        .slice(0, 8) // Get 8 most recent
-        .map(transaction => {
-          const timeAgo = getTimeAgo(new Date(transaction.createdAt || new Date()));
-          return {
-            id: transaction.id,
-            type: transaction.donationType || 'donation',
-            amount: `R ${parseFloat(transaction.amount).toLocaleString()}`,
-            description: getActivityDescription(transaction),
-            timeAgo,
-            status: transaction.status,
-            icon: getActivityIcon(transaction.donationType || 'donation')
-          };
-        });
-      
-      res.json(userRecentTransactions);
-    } catch (error: any) {
-      console.error("Error fetching recent activity:", error);
-      res.status(500).json({ message: "Failed to fetch recent activity", error: error.message });
-    }
-  });
-
-  // Church Dashboard API Endpoints
-  app.get('/api/church/profile', async (req, res) => {
-    try {
-      // Mock church profile data
-      const churchData = {
-        id: 'church-123',
-        name: 'Grace Baptist Church',
-        denomination: 'Baptist',
-        memberCount: 450,
-        totalRevenue: '125,000',
-        monthlyRevenue: '15,500',
-        pendingPayouts: '3,250',
-        availableBalance: '12,750',
-        address: '123 Church Street',
-        city: 'Cape Town',
-        province: 'Western Cape',
-        postalCode: '8001',
-        contactEmail: 'admin@gracebaptist.co.za',
-        contactPhone: '+27 21 555 0123',
-        alternatePhone: '+27 82 555 0123',
-        website: 'https://www.gracebaptist.co.za',
-        registrationNumber: 'NPO-2019-123456',
-        taxNumber: '9876543210',
-        bankName: 'Standard Bank',
-        accountNumber: '1234567890',
-        branchCode: '051001',
-        accountType: 'Current Account',
-        foundedYear: '1985',
-        description: 'A vibrant community church serving Cape Town for over 35 years.',
-        status: 'approved',
-        registrationDate: '2024-01-15T10:00:00Z',
-        profileImageUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=400&h=400&fit=crop&crop=center'
-      };
-      res.json(churchData);
-    } catch (error) {
-      console.error("Error fetching church profile:", error);
-      res.status(500).json({ message: "Failed to fetch church profile" });
-    }
-  });
-
-  app.get('/api/church/stats', async (req, res) => {
-    try {
-      // Mock church statistics
-      const stats = {
-        totalMembers: 450,
-        activeMembers: 398,
-        totalRevenue: '125,000',
-        monthlyRevenue: '15,500',
-        averageDonation: '275',
-        donationCount: 124,
-        projectCount: 3,
-        activeProjects: 2,
-        pendingPayouts: '3,250',
-        availableBalance: '12,750',
-        revenueGrowth: 12.5,
-        memberGrowth: 8.3
-      };
-      res.json(stats);
-    } catch (error) {
-      console.error("Error fetching church stats:", error);
-      res.status(500).json({ message: "Failed to fetch church statistics" });
-    }
-  });
-
-  app.get('/api/church/transactions/recent', async (req, res) => {
-    try {
-      // Mock recent transactions
-      const transactions = [
-        {
-          id: 'txn-001',
-          memberName: 'John Smith',
-          amount: '500.00',
-          type: 'tithe',
-          createdAt: new Date().toISOString(),
-          status: 'completed',
-          paymentMethod: 'card'
-        },
-        {
-          id: 'txn-002',
-          memberName: 'Sarah Johnson',
-          amount: '250.00',
-          type: 'donation',
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          status: 'completed',
-          paymentMethod: 'wallet'
-        },
-        {
-          id: 'txn-003',
-          memberName: 'Mike Davis',
-          amount: '750.00',
-          type: 'project',
-          projectTitle: 'New Sanctuary Fund',
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          status: 'completed',
-          paymentMethod: 'bank_transfer'
-        }
-      ];
-      res.json(transactions);
-    } catch (error) {
-      console.error("Error fetching recent transactions:", error);
-      res.status(500).json({ message: "Failed to fetch recent transactions" });
-    }
-  });
-
-  app.get('/api/church/members/top-donors', async (req, res) => {
-    try {
-      // Mock top donors
-      const topDonors = [
+      // Mock members data
+      const members = [
         {
           id: 'member-001',
           firstName: 'John',
           lastName: 'Smith',
           email: 'john.smith@email.com',
-          phone: '+27 82 555 0001',
-          membershipType: 'Elder',
+          churchName: 'Grace Baptist Church',
           totalDonated: '2,500.00',
-          lastDonation: new Date().toISOString(),
-          joinDate: '2022-03-15',
-          status: 'active'
+          status: 'active',
+          joinDate: '2024-03-15T10:00:00Z',
+          profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=center'
         },
         {
           id: 'member-002',
           firstName: 'Sarah',
           lastName: 'Johnson',
           email: 'sarah.johnson@email.com',
-          phone: '+27 82 555 0002',
-          membershipType: 'Deacon',
-          totalDonated: '1,875.00',
-          lastDonation: new Date(Date.now() - 86400000).toISOString(),
-          joinDate: '2022-06-20',
-          status: 'active'
-        },
-        {
-          id: 'member-003',
-          firstName: 'Mike',
-          lastName: 'Davis',
-          email: 'mike.davis@email.com',
-          phone: '+27 82 555 0003',
-          membershipType: 'Member',
-          totalDonated: '1,650.00',
-          lastDonation: new Date(Date.now() - 172800000).toISOString(),
-          joinDate: '2023-01-10',
-          status: 'active'
-        }
-      ];
-      res.json(topDonors);
-    } catch (error) {
-      console.error("Error fetching top donors:", error);
-      res.status(500).json({ message: "Failed to fetch top donors" });
-    }
-  });
-
-  app.get('/api/church/projects/active', async (req, res) => {
-    try {
-      // Mock active projects
-      const projects = [
-        {
-          id: 'project-001',
-          title: 'New Sanctuary Fund',
-          description: 'Building a new worship sanctuary to accommodate our growing congregation.',
-          targetAmount: '150,000',
-          currentAmount: '89,500',
-          progress: 60,
-          donorCount: 45,
+          churchName: 'New Life Methodist',
+          totalDonated: '1,850.00',
           status: 'active',
-          startDate: '2024-01-01',
-          endDate: '2024-12-31'
-        },
-        {
-          id: 'project-002',
-          title: 'Youth Ministry Equipment',
-          description: 'Purchasing sound equipment and instruments for our youth ministry.',
-          targetAmount: '25,000',
-          currentAmount: '18,750',
-          progress: 75,
-          donorCount: 23,
-          status: 'active',
-          startDate: '2024-06-01',
-          endDate: '2024-09-30'
+          joinDate: '2024-04-20T14:30:00Z'
         }
       ];
-      res.json(projects);
+      res.json(members);
     } catch (error) {
-      console.error("Error fetching active projects:", error);
-      res.status(500).json({ message: "Failed to fetch active projects" });
-    }
-  });
-
-  app.get('/api/church/members/recent', async (req, res) => {
-    try {
-      // Mock recent members
-      const recentMembers = [
-        {
-          id: 'member-010',
-          firstName: 'Emma',
-          lastName: 'Wilson',
-          email: 'emma.wilson@email.com',
-          phone: '+27 82 555 0010',
-          membershipType: 'Member',
-          totalDonated: '0.00',
-          lastDonation: null,
-          joinDate: new Date().toISOString(),
-          status: 'active'
-        },
-        {
-          id: 'member-011',
-          firstName: 'David',
-          lastName: 'Brown',
-          email: 'david.brown@email.com',
-          phone: '+27 82 555 0011',
-          membershipType: 'Member',
-          totalDonated: '125.00',
-          lastDonation: new Date(Date.now() - 86400000).toISOString(),
-          joinDate: new Date(Date.now() - 172800000).toISOString(),
-          status: 'active'
-        }
-      ];
-      res.json(recentMembers);
-    } catch (error) {
-      console.error("Error fetching recent members:", error);
-      res.status(500).json({ message: "Failed to fetch recent members" });
-    }
-  });
-
-  app.get('/api/church/analytics/monthly', async (req, res) => {
-    try {
-      // Mock monthly analytics
-      const monthlyStats = {
-        labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
-        revenue: [8500, 9200, 8800, 10500, 11200, 15800, 12400],
-        donations: [45, 48, 52, 58, 62, 78, 65],
-        members: [398, 405, 412, 425, 435, 440, 450]
-      };
-      res.json(monthlyStats);
-    } catch (error) {
-      console.error("Error fetching monthly analytics:", error);
-      res.status(500).json({ message: "Failed to fetch monthly analytics" });
-    }
-  });
-
-  // 🔒 CODE PROTECTION: Church Profile Update - Core functionality protected
-  // Update church profile endpoint
-  app.put('/api/church/profile', async (req, res) => {
-    try {
-      const updateData = req.body;
-      
-      // 🔒 PROTECTED: Core church profile validation and processing
-      // Validate required fields
-      if (!updateData.name || !updateData.contactEmail || !updateData.contactPhone) {
-        return res.status(400).json({ 
-          message: "Missing required fields: name, contactEmail, contactPhone" 
-        });
-      }
-
-      // 🔒 PROTECTED: Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(updateData.contactEmail)) {
-        return res.status(400).json({ message: "Invalid email format" });
-      }
-
-      // 🔒 PROTECTED: Phone validation (South African format)
-      const phoneRegex = /^(\+27|0)[1-9][0-9]{8}$/;
-      if (!phoneRegex.test(updateData.contactPhone.replace(/\s/g, ''))) {
-        return res.status(400).json({ message: "Invalid South African phone number format" });
-      }
-
-      // In a real application, this would update the database with proper authentication
-      // For now, we'll return success with the updated data
-      const updatedProfile = {
-        ...updateData,
-        id: 'church-123', // Would come from auth context
-        status: 'approved', // Maintain verification status
-        registrationDate: '2024-01-15T10:00:00Z', // Preserve original registration
-        updatedAt: new Date().toISOString()
-      };
-
-      console.log('🔒 PROTECTED: Church profile update:', updateData.name);
-      
-      res.json({
-        message: "Church profile updated successfully",
-        profile: updatedProfile
-      });
-    } catch (error) {
-      console.error("🔒 PROTECTED: Error updating church profile:", error);
-      res.status(500).json({ message: "Failed to update church profile" });
+      console.error("🔒 PROTECTED: Error fetching members:", error);
+      res.status(500).json({ message: "Failed to fetch members data" });
     }
   });
 
   const httpServer = createServer(app);
   return httpServer;
-}
-
-// Helper functions for activity formatting
-function getTimeAgo(date: Date): string {
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  return date.toLocaleDateString();
-}
-
-function getActivityDescription(transaction: any): string {
-  const donationType = transaction.donationType || transaction.type;
-  switch (donationType) {
-    case 'general':
-    case 'donation':
-      return `Donation to Church`;
-    case 'tithe':
-      return `Tithe offering to Church`;
-    case 'offering':
-      return `Offering to Church`;
-    case 'project':
-      return `Project sponsorship`;
-    case 'topup':
-      return 'Wallet top-up';
-    default:
-      return transaction.description || 'Church transaction';
-  }
-}
-
-function getActivityIcon(type: string): string {
-  switch (type) {
-    case 'general':
-    case 'donation':
-      return 'heart';
-    case 'tithe':
-      return 'church';
-    case 'offering':
-      return 'church';
-    case 'project':
-      return 'target';
-    case 'topup':
-      return 'wallet';
-    default:
-      return 'activity';
-  }
 }
