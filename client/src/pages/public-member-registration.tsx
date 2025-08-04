@@ -28,28 +28,31 @@ import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 const memberRegistrationSchema = z.object({
   churchId: z.string().min(1, "Please select a church"),
   // Personal Information
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(1, "Phone number is required"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   
   // Address Information
-  address: z.string().min(1, "Street address is required"),
-  city: z.string().min(1, "City is required"),
+  address: z.string().min(5, "Complete street address is required"),
+  addressLine2: z.string().optional(),
+  city: z.string().min(2, "City is required"),
   province: z.string().min(1, "Province is required"),
-  postalCode: z.string().min(1, "Postal code is required"),
+  postalCode: z.string().min(4, "Valid postal code is required"),
   country: z.string().default("South Africa"),
   
   // Emergency Contact
-  emergencyContactName: z.string().min(1, "Emergency contact name is required"),
-  emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
+  emergencyContactName: z.string().min(2, "Emergency contact full name is required"),
+  emergencyContactPhone: z.string().min(10, "Emergency contact phone must be at least 10 digits"),
   emergencyContactRelationship: z.string().min(1, "Relationship is required"),
+  emergencyContactEmail: z.string().email("Valid emergency contact email is required").optional().or(z.literal("")),
+  emergencyContactAddress: z.string().min(5, "Emergency contact address is required"),
   
   // Church Information
   membershipType: z.string().min(1, "Please select membership type"),
   previousChurch: z.string().optional(),
-  howDidYouHear: z.string().optional(),
+  howDidYouHear: z.string().min(1, "Please tell us how you heard about us"),
 });
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
@@ -92,10 +95,10 @@ const sampleChurches = [
 ];
 
 const membershipSteps = [
-  { id: 1, title: "Personal Information", icon: User },
-  { id: 2, title: "Address Information", icon: MapPin },
-  { id: 3, title: "Emergency Contact", icon: Shield },
-  { id: 4, title: "Church Selection", icon: Church },
+  { id: 1, title: "Church Selection", icon: Church },
+  { id: 2, title: "Personal Information", icon: User },
+  { id: 3, title: "Address Information", icon: MapPin },
+  { id: 4, title: "Emergency Contact", icon: Shield },
 ];
 
 // South African provinces for consistency
@@ -113,6 +116,17 @@ const membershipTypes = [
 
 const relationships = [
   "Parent", "Sibling", "Spouse", "Child", "Friend", "Guardian", "Other Family Member"
+];
+
+const howDidYouHearOptions = [
+  "Friend or Family Member",
+  "Social Media",
+  "Church Website", 
+  "Church Event",
+  "Pastor Invitation",
+  "Community Outreach",
+  "Google Search",
+  "Other"
 ];
 
 export default function PublicMemberRegistration() {
@@ -133,18 +147,30 @@ export default function PublicMemberRegistration() {
       phone: "",
       dateOfBirth: "",
       address: "",
+      addressLine2: "",
       city: "",
       province: "",
       postalCode: "",
       emergencyContactName: "",
       emergencyContactPhone: "",
       emergencyContactRelationship: "",
+      emergencyContactEmail: "",
+      emergencyContactAddress: "",
       membershipType: "",
       previousChurch: "",
       howDidYouHear: "",
       churchId: "",
     },
   });
+
+  // Handle address selection from Google Maps
+  const handleAddressSelect = (addressComponents: any) => {
+    form.setValue("address", addressComponents.address);
+    form.setValue("city", addressComponents.city);
+    form.setValue("province", addressComponents.province);
+    form.setValue("postalCode", addressComponents.postalCode);
+    form.setValue("country", addressComponents.country);
+  };
 
   const filteredChurches = sampleChurches.filter(church =>
     church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -374,8 +400,8 @@ export default function PublicMemberRegistration() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   
-                  {/* Step 1: Personal Information */}
-                  {currentStep === 1 && (
+                  {/* Step 2: Personal Information */}
+                  {currentStep === 2 && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
@@ -450,6 +476,274 @@ export default function PublicMemberRegistration() {
                           </FormItem>
                         )}
                       />
+                    </div>
+                  )}
+
+                  {/* Step 3: Address Information */}
+                  {currentStep === 3 && (
+                    <div className="space-y-6">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Your Address</h3>
+                        <p className="text-sm text-gray-600">Please provide your current residential address.</p>
+                      </div>
+
+                      <AddressAutocomplete
+                        onAddressSelect={handleAddressSelect}
+                        initialAddress={{
+                          address: form.watch("address"),
+                          city: form.watch("city"),
+                          province: form.watch("province"),
+                          postalCode: form.watch("postalCode"),
+                          country: form.watch("country")
+                        }}
+                        placeholder="Start typing your address..."
+                        label="Residential Address"
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="addressLine2"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Address Line 2 (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Apartment, suite, unit, building, floor, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Manual Address Fields (hidden when using Google Maps) */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="city"
+                          render={({ field }) => (
+                            <FormItem className="hidden">
+                              <FormLabel>City *</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="province"
+                          render={({ field }) => (
+                            <FormItem className="hidden">
+                              <FormLabel>Province *</FormLabel>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select province" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {provinces.map((province) => (
+                                      <SelectItem key={province} value={province}>
+                                        {province}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="postalCode"
+                          render={({ field }) => (
+                            <FormItem className="hidden">
+                              <FormLabel>Postal Code *</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem className="hidden">
+                              <FormLabel>Country *</FormLabel>
+                              <FormControl>
+                                <Input {...field} readOnly />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Emergency Contact */}
+                  {currentStep === 4 && (
+                    <div className="space-y-6">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact</h3>
+                        <p className="text-sm text-gray-600">Please provide details for someone we can contact in case of emergency.</p>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Emergency contact's full name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="emergencyContactPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone Number *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="+27 xx xxx xxxx" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="emergencyContactRelationship"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Relationship *</FormLabel>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select relationship" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {relationships.map((relationship) => (
+                                      <SelectItem key={relationship} value={relationship.toLowerCase()}>
+                                        {relationship}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address (Optional)</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="emergency@contact.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactAddress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Address *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Emergency contact's address" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="membershipType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Membership Type *</FormLabel>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select membership type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {membershipTypes.map((type) => (
+                                      <SelectItem key={type.value} value={type.value}>
+                                        {type.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="previousChurch"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Previous Church (Optional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="If transferring, name of your previous church" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="howDidYouHear"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>How did you hear about us? *</FormLabel>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select an option" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {howDidYouHearOptions.map((option) => (
+                                      <SelectItem key={option} value={option.toLowerCase().replace(/\s+/g, '_')}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   )}
 

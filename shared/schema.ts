@@ -102,6 +102,7 @@ export const users = pgTable("users", {
   
   // Address Information
   address: text("address"),
+  addressLine2: text("address_line_2"),
   city: varchar("city", { length: 100 }),
   province: varchar("province", { length: 100 }),
   postalCode: varchar("postal_code", { length: 10 }),
@@ -111,6 +112,8 @@ export const users = pgTable("users", {
   emergencyContactName: varchar("emergency_contact_name", { length: 255 }),
   emergencyContactPhone: varchar("emergency_contact_phone", { length: 20 }),
   emergencyContactRelationship: varchar("emergency_contact_relationship", { length: 100 }),
+  emergencyContactEmail: varchar("emergency_contact_email", { length: 255 }),
+  emergencyContactAddress: text("emergency_contact_address"),
   
   // Church-related Information
   membershipType: varchar("membership_type", { length: 50 }),
