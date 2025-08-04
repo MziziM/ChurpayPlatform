@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RegistrationModal } from "@/components/RegistrationModal";
 import DashboardModal from "@/components/DashboardModal";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Church, 
   Users, 
@@ -32,11 +35,45 @@ import {
 } from "lucide-react";
 
 export default function Landing() {
+  const [, setLocation] = useLocation();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
   const [superAdminModalOpen, setSuperAdminModalOpen] = useState(false);
+
+  // Fetch dynamic data from API
+  const { data: platformStats } = useQuery({
+    queryKey: ["/api/platform/stats"],
+    enabled: true,
+  });
+
+  const { data: featuredChurches } = useQuery({
+    queryKey: ["/api/churches/featured"],
+    enabled: true,
+  });
+
+  // Redirect authenticated users to their dashboards
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      switch ((user as any)?.role) {
+        case 'superadmin':
+          setLocation('/super-admin');
+          break;
+        case 'church_admin':
+        case 'church_staff':
+          setLocation('/church-dashboard');
+          break;
+        case 'member':
+          setLocation('/member-dashboard');
+          break;
+        default:
+          // Stay on landing page for unknown roles
+          break;
+      }
+    }
+  }, [isLoading, isAuthenticated, user, setLocation]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -90,19 +127,38 @@ export default function Landing() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => window.location.href = '/sign-in'}
-                className="text-gray-600 hover:text-churpay-purple font-medium"
-              >
-                Sign In
-              </Button>
-              <Button 
-                onClick={() => window.location.href = '/church-registration'}
-                className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-              >
-                Get Started
-              </Button>
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">Welcome, {(user as any)?.firstName || 'User'}</span>
+                  <Button 
+                    onClick={() => {
+                      // Clear auth data and redirect to sign-in
+                      localStorage.removeItem('authToken');
+                      setLocation('/sign-in');
+                    }}
+                    variant="ghost"
+                    className="text-gray-600 hover:text-churpay-purple font-medium"
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setLocation('/sign-in')}
+                    className="text-gray-600 hover:text-churpay-purple font-medium"
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    onClick={() => setLocation('/church-registration')}
+                    className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -159,7 +215,9 @@ export default function Landing() {
             <div className="space-y-8 animate-fade-in">
               <div className="inline-flex items-center space-x-2 bg-white/50 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-200/50">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Trusted by 500+ Churches</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Trusted by {(platformStats as any)?.totalChurches || 500}+ Churches
+                </span>
               </div>
               
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
@@ -177,7 +235,7 @@ export default function Landing() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg"
-                    onClick={() => setRegistrationModalOpen(true)}
+                    onClick={() => setLocation('/church-registration')}
                     className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                   >
                     <span>Get Started</span>
@@ -219,7 +277,9 @@ export default function Landing() {
                         <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                           <Church className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-semibold">Grace Community Church</span>
+                        <span className="font-semibold">
+                          {(featuredChurches as any)?.[0]?.name || "Grace Community Church"}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="text-white/80 text-sm">Live</span>
@@ -234,7 +294,9 @@ export default function Landing() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-green-600 text-sm font-medium">This Month</p>
-                            <p className="text-2xl font-bold text-green-700">R45,680</p>
+                            <p className="text-2xl font-bold text-green-700">
+                              R{((platformStats as any)?.monthlyDonations || 45680).toLocaleString()}
+                            </p>
                           </div>
                           <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
                             <TrendingUp className="h-4 w-4 text-white" />
@@ -245,7 +307,9 @@ export default function Landing() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-blue-600 text-sm font-medium">Total Members</p>
-                            <p className="text-2xl font-bold text-blue-700">342</p>
+                            <p className="text-2xl font-bold text-blue-700">
+                              {((featuredChurches as any)?.[0]?.memberCount || 342).toLocaleString()}
+                            </p>
                           </div>
                           <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
                             <Users className="h-4 w-4 text-white" />
@@ -360,7 +424,7 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/church-registration'}
+                  onClick={() => setLocation('/church-registration')}
                 >
                   <span>Register Your Church</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -397,7 +461,7 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/member-registration'}
+                  onClick={() => setLocation('/member-registration')}
                 >
                   <span>Join as Member</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

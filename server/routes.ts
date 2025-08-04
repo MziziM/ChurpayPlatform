@@ -19,6 +19,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   console.log("🔒 Code protection system active - Core files and fee structure locked");
 
+  // Authentication check endpoint
+  app.get('/api/auth/user', async (req, res) => {
+    try {
+      // For now, return null to indicate no authenticated user
+      // This will be enhanced when session management is implemented
+      res.json(null);
+    } catch (error) {
+      console.error("Auth user check error:", error);
+      res.status(500).json({ message: "Failed to check authentication" });
+    }
+  });
+
+  // Platform statistics endpoint
+  app.get('/api/platform/stats', async (req, res) => {
+    try {
+      const churches = await storage.getAllChurches();
+      const transactions = await storage.getAllTransactions();
+      
+      // Calculate platform stats
+      const totalChurches = churches.length;
+      const totalMembers = churches.reduce((sum, church) => sum + (church.memberCount || 0), 0);
+      const totalDonations = transactions
+        .filter(t => t.type === 'donation')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const monthlyDonations = transactions
+        .filter(t => {
+          const transactionDate = new Date(t.createdAt);
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          return transactionDate.getMonth() === currentMonth && 
+                 transactionDate.getFullYear() === currentYear &&
+                 t.type === 'donation';
+        })
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      res.json({
+        totalChurches,
+        totalMembers,
+        totalDonations,
+        monthlyDonations,
+        averageDonation: totalDonations > 0 ? totalDonations / transactions.filter(t => t.type === 'donation').length : 0
+      });
+    } catch (error) {
+      console.error("Platform stats error:", error);
+      res.status(500).json({ message: "Failed to fetch platform statistics" });
+    }
+  });
+
+  // Featured churches endpoint
+  app.get('/api/churches/featured', async (req, res) => {
+    try {
+      const churches = await storage.getAllChurches();
+      
+      // Get top churches by member count
+      const featuredChurches = churches
+        .filter(church => church.status === 'approved')
+        .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
+        .slice(0, 6)
+        .map(church => ({
+          id: church.id,
+          name: church.name,
+          denomination: church.denomination,
+          city: church.city,
+          province: church.province,
+          memberCount: church.memberCount,
+          description: church.description
+        }));
+
+      res.json(featuredChurches);
+    } catch (error) {
+      console.error("Featured churches error:", error);
+      res.status(500).json({ message: "Failed to fetch featured churches" });
+    }
+  });
+
   // Authentication endpoints
   app.post('/api/auth/member/signin', async (req, res) => {
     try {
