@@ -138,7 +138,7 @@ export default function MemberRegistration() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {churches?.map((church: any) => (
+                            {(churches as any[])?.map((church: any) => (
                               <SelectItem key={church.id} value={church.id}>
                                 {church.name} - {church.city}
                               </SelectItem>

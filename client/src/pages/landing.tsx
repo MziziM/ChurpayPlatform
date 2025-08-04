@@ -153,7 +153,7 @@ export default function Landing() {
                     Sign In
                   </Button>
                   <Button 
-                    onClick={() => setLocation('/church-registration')}
+                    onClick={() => setRegistrationModalOpen(true)}
                     className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                   >
                     Get Started
