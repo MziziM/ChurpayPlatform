@@ -1,0 +1,30 @@
+# ChurPay Code Protection Configuration
+# This file defines the protection rules for the ChurPay platform
+
+[LOCKED_FILES]
+shared/schema.ts
+server/db.ts
+server/replitAuth.ts
+server/storage.ts
+server/index.ts
+server/routes.ts
+server/codeProtection.ts
+client/src/App.tsx
+client/src/main.tsx
+client/src/hooks/useAuth.ts
+client/src/lib/authUtils.ts
+drizzle.config.ts
+package.json
+vite.config.ts
+tailwind.config.ts
+CODE_LOCK.md
+.codeprotection
+
+[PROTECTED_VALUES]
+PLATFORM_FEE_PERCENTAGE=3.9
+PLATFORM_FEE_FIXED=3.00
+CURRENCY=ZAR
+
+[MODIFICATION_LOG]
+2025-01-04: Implemented pricing model update (3.9% + R3)
+2025-01-04: Added comprehensive code protection system
