@@ -130,6 +130,9 @@ export default function MemberDashboard() {
 
   const totalGiven = Array.isArray(donationHistory) ? (donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0) : 9900;
   const totalExpense = 8240;
+  
+  const walletBalance = (walletData as WalletData)?.availableBalance ? parseFloat((walletData as WalletData).availableBalance) : 8240;
+  const rewardPoints = (walletData as WalletData)?.rewardPoints ? parseFloat((walletData as WalletData).rewardPoints) : 1250;
 
   return (
     <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
@@ -180,14 +183,36 @@ export default function MemberDashboard() {
                   <Gift className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <h3 className="text-white font-semibold mb-2">Upgrade to Pro</h3>
-              <p className="text-gray-400 text-sm">Check your usage on this dashboard</p>
+              <h3 className="text-white font-semibold mb-2">ChurPay Pro</h3>
+              <p className="text-gray-400 text-sm">Enhanced giving features & rewards</p>
+              <Button 
+                size="sm" 
+                className="mt-3 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl"
+              >
+                Upgrade Now
+              </Button>
             </div>
             
             <div className="space-y-2">
-              <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
-                <Moon className="h-5 w-5" />
-                <span>Darkmode</span>
+              <div 
+                className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all"
+                onClick={() => {
+                  setDonationType('tithe');
+                  setShowDonationModal(true);
+                }}
+              >
+                <Church className="h-5 w-5" />
+                <span>Quick Tithe</span>
+              </div>
+              <div 
+                className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all"
+                onClick={() => {
+                  setDonationType('topup');
+                  setShowDonationModal(true);
+                }}
+              >
+                <Wallet className="h-5 w-5" />
+                <span>Top Up Wallet</span>
               </div>
               <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
                 <Settings className="h-5 w-5" />
@@ -285,7 +310,7 @@ export default function MemberDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm opacity-90 mb-2">Total Finance</p>
-                        <p className="text-3xl font-bold">9,900k</p>
+                        <p className="text-3xl font-bold">R {(totalGiven / 1000).toFixed(1)}k</p>
                       </div>
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
@@ -304,8 +329,8 @@ export default function MemberDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm opacity-90 mb-2">Total Expense</p>
-                        <p className="text-3xl font-bold">8,240k</p>
+                        <p className="text-sm opacity-90 mb-2">Wallet Balance</p>
+                        <p className="text-3xl font-bold">R {(walletBalance / 1000).toFixed(1)}k</p>
                       </div>
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
@@ -385,53 +410,105 @@ export default function MemberDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">DD</span>
-                        </div>
-                        <div>
-                          <p className="text-white font-semibold">Darby Day</p>
-                          <p className="text-gray-400 text-sm">Meet the target</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="text-white font-bold text-lg">$145,000</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-gray-400 text-sm">Financial Officer</span>
+                    {Array.isArray(projects) && projects.length > 0 ? projects.slice(0, 2).map((project: Project) => (
+                      <div key={project.id} className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-xs">{project.title.substring(0, 2).toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <p className="text-white font-semibold">{project.title}</p>
+                            <p className="text-gray-400 text-sm">{project.status}</p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">HD</span>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <p className="text-white font-bold text-lg">R {parseFloat(project.currentAmount).toLocaleString()}</p>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-400 text-sm">{project.category}</span>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-400 hover:text-white"
+                            onClick={() => {
+                              setDonationType('project');
+                              setShowDonationModal(true);
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <div>
-                          <p className="text-white font-semibold">Holt Diven</p>
-                          <p className="text-gray-400 text-sm">On Going</p>
-                        </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="text-white font-bold text-lg">$269,000</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span className="text-gray-400 text-sm">Project Manager</span>
+                    )) : (
+                      <>
+                        <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">CF</span>
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold">Church Fund</p>
+                              <p className="text-gray-400 text-sm">Active Campaign</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-right">
+                              <p className="text-white font-bold text-lg">R 145,000</p>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-gray-400 text-sm">Building Fund</span>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-gray-400 hover:text-white"
+                              onClick={() => {
+                                setDonationType('project');
+                                setShowDonationModal(true);
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                        
+                        <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">YP</span>
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold">Youth Program</p>
+                              <p className="text-gray-400 text-sm">Ongoing</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-right">
+                              <p className="text-white font-bold text-lg">R 89,000</p>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <span className="text-gray-400 text-sm">Ministry</span>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-gray-400 hover:text-white"
+                              onClick={() => {
+                                setDonationType('project');
+                                setShowDonationModal(true);
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -516,19 +593,112 @@ export default function MemberDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Send Money Card */}
+              {/* Wallet Actions Card */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                       <div>
-                        <h3 className="text-white font-semibold">Send Money</h3>
-                        <p className="text-gray-400 text-sm">Your Card</p>
+                        <h3 className="text-white font-semibold">Wallet Balance</h3>
+                        <p className="text-gray-400 text-sm">Available Funds</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-white font-bold text-2xl">$145,000</p>
+                      <p className="text-white font-bold text-2xl">R {walletBalance.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      className="bg-purple-600/80 hover:bg-purple-600 text-white rounded-xl h-12"
+                      onClick={() => {
+                        setDonationType('topup');
+                        setShowDonationModal(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Top Up
+                    </Button>
+                    <Button 
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl h-12"
+                      onClick={() => {
+                        setDonationType('donation');
+                        setShowDonationModal(true);
+                      }}
+                    >
+                      <Heart className="h-4 w-4 mr-2" />
+                      Donate
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Transactions */}
+              <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-white">Recent Activity</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
+                    View all
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Array.isArray(transactions) && transactions.length > 0 ? transactions.slice(0, 3).map((transaction: WalletTransaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-xl">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            transaction.type === 'donation' ? 'bg-purple-500' :
+                            transaction.type === 'tithe' ? 'bg-green-500' :
+                            transaction.type === 'topup' ? 'bg-blue-500' : 'bg-gray-500'
+                          }`}>
+                            {transaction.type === 'donation' ? <Heart className="h-4 w-4 text-white" /> :
+                             transaction.type === 'tithe' ? <Church className="h-4 w-4 text-white" /> :
+                             transaction.type === 'topup' ? <ArrowUp className="h-4 w-4 text-white" /> :
+                             <ArrowDown className="h-4 w-4 text-white" />}
+                          </div>
+                          <div>
+                            <p className="text-white text-sm font-medium">{transaction.description}</p>
+                            <p className="text-gray-400 text-xs">{formatDate(transaction.createdAt)}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-bold text-sm ${
+                            transaction.type === 'topup' ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {transaction.type === 'topup' ? '+' : '-'}R {parseFloat(transaction.amount).toLocaleString()}
+                          </p>
+                          <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
+                            {transaction.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="text-center py-6">
+                        <Activity className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+                        <p className="text-gray-400 text-sm">No recent transactions</p>
+                        <p className="text-gray-500 text-xs">Start giving to see your activity here</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Reward Points */}
+              <Card className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border-yellow-600/30 rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <Star className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">Reward Points</h3>
+                        <p className="text-yellow-300 text-sm">Keep giving to earn more!</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-yellow-300 font-bold text-2xl">{rewardPoints}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -545,7 +715,7 @@ export default function MemberDashboard() {
         type={donationType}
         churches={Array.isArray(churches) ? churches : []}
         projects={Array.isArray(projects) ? projects : []}
-        walletBalance={walletData && typeof walletData === 'object' && 'availableBalance' in walletData ? String((walletData as WalletData).availableBalance) : '0'}
+        walletBalance={String(walletBalance)}
       />
     </div>
   );
