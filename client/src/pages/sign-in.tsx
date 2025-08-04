@@ -121,12 +121,12 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Professional Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden">
+      {/* ChurPay Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/5 to-yellow-400/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-churpay-purple/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-churpay-yellow/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-churpay-purple/5 to-churpay-yellow/5 rounded-full blur-3xl"></div>
       </div>
 
       {/* Professional Header */}
@@ -134,13 +134,13 @@ export default function SignIn() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-yellow-500 rounded-2xl flex items-center justify-center shadow-2xl ring-2 ring-white/20">
+              <div className="w-12 h-12 bg-churpay-gradient rounded-2xl flex items-center justify-center shadow-2xl ring-2 ring-white/20">
                 <span className="text-white font-bold text-xl">C</span>
               </div>
               <div>
                 <span className="text-3xl font-bold text-white">Chur</span>
-                <span className="text-3xl font-bold text-yellow-400">Pay</span>
-                <p className="text-sm text-gray-300 font-medium">Financial Platform</p>
+                <span className="text-3xl font-bold" style={{color: 'hsl(51, 100%, 50%)'}}>Pay</span>
+                <p className="text-sm text-gray-300 font-medium">Church Financial Platform</p>
               </div>
             </div>
             <Button 
@@ -161,7 +161,7 @@ export default function SignIn() {
           {/* Professional Welcome Section */}
           <div className="text-center mb-10">
             <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-yellow-500 rounded-3xl shadow-2xl ring-4 ring-white/20 mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-churpay-gradient rounded-3xl shadow-2xl ring-4 ring-white/20 mb-6">
                 <Users className="h-10 w-10 text-white" />
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function SignIn() {
                   </TabsTrigger>
                   <TabsTrigger 
                     value="church" 
-                    className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white text-gray-300 rounded-xl py-3 transition-all duration-200 data-[state=active]:shadow-lg"
+                    className="flex items-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-gray-300 rounded-xl py-3 transition-all duration-200 data-[state=active]:shadow-lg"
                   >
                     <Church className="h-5 w-5" />
                     <span className="font-semibold">Church Admin</span>
@@ -199,25 +199,25 @@ export default function SignIn() {
 
                 {/* Member Sign In */}
                 <TabsContent value="member">
-                  <div className="mb-6 p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-400/30 backdrop-blur-sm">
+                  <div className="mb-6 p-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl border border-churpay-purple/30 backdrop-blur-sm">
                     <div className="flex items-center space-x-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-blue-400/30">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-churpay-purple rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-churpay-purple/30">
                         <Users className="h-7 w-7 text-white" />
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-lg">Member Portal</h3>
-                        <p className="text-blue-200 font-medium">Access your giving dashboard and financial insights</p>
+                        <p className="text-blue-200 font-medium">Access your giving dashboard and church financial tools</p>
                         <div className="flex items-center mt-2 space-x-3 text-sm">
                           <div className="flex items-center space-x-1 text-blue-300">
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Donations</span>
                           </div>
                           <div className="flex items-center space-x-1 text-blue-300">
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Wallet</span>
                           </div>
                           <div className="flex items-center space-x-1 text-blue-300">
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Analytics</span>
                           </div>
                         </div>
@@ -238,7 +238,7 @@ export default function SignIn() {
                                 {...field}
                                 type="email"
                                 placeholder="member@example.com"
-                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-blue-400 transition-all duration-200"
+                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-churpay-purple transition-all duration-200"
                               />
                             </FormControl>
                             <FormMessage />
@@ -258,7 +258,7 @@ export default function SignIn() {
                                   {...field}
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your secure password"
-                                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-blue-400 transition-all duration-200 pr-12"
+                                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-churpay-purple transition-all duration-200 pr-12"
                                 />
                                 <Button
                                   type="button"
@@ -289,7 +289,7 @@ export default function SignIn() {
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 border-white/30"
+                                className="data-[state=checked]:bg-churpay-purple data-[state=checked]:border-churpay-purple border-white/30"
                               />
                             </FormControl>
                             <div className="space-y-1 leading-none">
@@ -304,7 +304,7 @@ export default function SignIn() {
                       <Button
                         type="submit"
                         disabled={memberSignInMutation.isPending}
-                        className="w-full h-14 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold text-lg rounded-xl shadow-xl ring-2 ring-blue-400/30 transition-all duration-200 transform hover:scale-[1.02]"
+                        className="w-full h-14 bg-gradient-to-r from-blue-500 to-churpay-purple hover:from-blue-600 hover:to-churpay-purple-dark text-white font-semibold text-lg rounded-xl shadow-xl ring-2 ring-churpay-purple/30 transition-all duration-200 transform hover:scale-[1.02]"
                       >
                         {memberSignInMutation.isPending ? (
                           <div className="flex items-center space-x-3">
@@ -324,25 +324,25 @@ export default function SignIn() {
 
                 {/* Church Sign In */}
                 <TabsContent value="church">
-                  <div className="mb-6 p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-400/30 backdrop-blur-sm">
+                  <div className="mb-6 p-6 bg-gradient-to-br from-churpay-purple/20 to-churpay-yellow/10 rounded-2xl border border-churpay-purple/30 backdrop-blur-sm">
                     <div className="flex items-center space-x-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-purple-400/30">
+                      <div className="w-14 h-14 bg-churpay-gradient rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-churpay-purple/30">
                         <Church className="h-7 w-7 text-white" />
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-lg">Church Administration</h3>
-                        <p className="text-purple-200 font-medium">Manage your congregation and financial operations</p>
+                        <p className="text-purple-200 font-medium">Manage your congregation and ChurPay operations</p>
                         <div className="flex items-center mt-2 space-x-3 text-sm">
                           <div className="flex items-center space-x-1 text-purple-300">
-                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Members</span>
                           </div>
                           <div className="flex items-center space-x-1 text-purple-300">
-                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Campaigns</span>
                           </div>
                           <div className="flex items-center space-x-1 text-purple-300">
-                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-churpay-yellow rounded-full"></div>
                             <span>Reports</span>
                           </div>
                         </div>
@@ -363,7 +363,7 @@ export default function SignIn() {
                                 {...field}
                                 type="email"
                                 placeholder="admin@yourchurch.org"
-                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-purple-400 transition-all duration-200"
+                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-churpay-purple transition-all duration-200"
                               />
                             </FormControl>
                             <FormMessage />
@@ -383,7 +383,7 @@ export default function SignIn() {
                                   {...field}
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your admin password"
-                                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-purple-400 transition-all duration-200 pr-12"
+                                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 rounded-xl backdrop-blur-sm focus:bg-white/20 focus:border-churpay-purple transition-all duration-200 pr-12"
                                 />
                                 <Button
                                   type="button"
@@ -414,7 +414,7 @@ export default function SignIn() {
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500 border-white/30"
+                                className="data-[state=checked]:bg-churpay-purple data-[state=checked]:border-churpay-purple border-white/30"
                               />
                             </FormControl>
                             <div className="space-y-1 leading-none">
@@ -429,7 +429,7 @@ export default function SignIn() {
                       <Button
                         type="submit"
                         disabled={churchSignInMutation.isPending}
-                        className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-lg rounded-xl shadow-xl ring-2 ring-purple-400/30 transition-all duration-200 transform hover:scale-[1.02]"
+                        className="w-full h-14 bg-churpay-gradient hover:opacity-90 text-white font-semibold text-lg rounded-xl shadow-xl ring-2 ring-churpay-purple/30 transition-all duration-200 transform hover:scale-[1.02]"
                       >
                         {churchSignInMutation.isPending ? (
                           <div className="flex items-center space-x-3">
