@@ -7,8 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { PublicRoute } from "@/components/PublicRoute";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
-import ChurchRegistration from "@/pages/church-registration";
-import MemberRegistration from "@/pages/member-registration";
+import PublicChurchRegistration from "@/pages/public-church-registration";
+import PublicMemberRegistration from "@/pages/public-member-registration";
 import SuperAdmin from "@/pages/super-admin";
 import ChurchDashboard from "@/pages/church-dashboard";
 import MemberDashboard from "@/pages/member-dashboard";
@@ -19,12 +19,12 @@ function PublicRoutes() {
     <Switch>
       <Route path="/church-registration" component={() => (
         <PublicRoute>
-          <ChurchRegistration />
+          <PublicChurchRegistration />
         </PublicRoute>
       )} />
       <Route path="/member-registration" component={() => (
         <PublicRoute>
-          <MemberRegistration />
+          <PublicMemberRegistration />
         </PublicRoute>
       )} />
       <Route component={AuthenticatedApp} />
