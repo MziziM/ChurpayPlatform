@@ -88,16 +88,16 @@ export function EnhancedDonationModal({
       };
       
       toast({
-        title: `${typeMap[type]} Successful`,
-        description: `Your ${typeMap[type].toLowerCase()} has been processed successfully.`,
+        title: "Success",
+        description: `${typeMap[type]} completed`,
       });
       onClose();
       resetForm();
     },
     onError: (error: any) => {
       toast({
-        title: `${type.charAt(0).toUpperCase() + type.slice(1)} Failed`,
-        description: error.message || `Failed to process ${type}`,
+        title: "Error",
+        description: error.message || "Something went wrong",
         variant: "destructive",
       });
     },
@@ -116,8 +116,8 @@ export function EnhancedDonationModal({
     if (type === 'donation' || type === 'tithe') {
       if (!selectedChurch || !amount || parseFloat(amount) <= 0) {
         toast({
-          title: "Missing Information",
-          description: "Please select a church and enter a valid amount.",
+          title: "Required Fields",
+          description: "Please select a church and enter amount.",
           variant: "destructive",
         });
         return;
@@ -133,8 +133,8 @@ export function EnhancedDonationModal({
     } else if (type === 'project') {
       if (!selectedProject || !amount || parseFloat(amount) <= 0) {
         toast({
-          title: "Missing Information",
-          description: "Please select a project and enter a valid amount.",
+          title: "Required Fields", 
+          description: "Please select a project and enter amount.",
           variant: "destructive",
         });
         return;
@@ -149,8 +149,8 @@ export function EnhancedDonationModal({
     } else if (type === 'topup') {
       if (!amount || parseFloat(amount) <= 0 || (paymentMethodType === 'card' && !selectedPaymentMethod)) {
         toast({
-          title: "Missing Information",
-          description: "Please enter a valid amount and select a payment method.",
+          title: "Required Fields",
+          description: "Please enter amount and select payment method.",
           variant: "destructive",
         });
         return;
@@ -196,7 +196,7 @@ export function EnhancedDonationModal({
               <Label htmlFor="church-select">Select Church</Label>
               <Select value={selectedChurch} onValueChange={setSelectedChurch}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a church" />
+                  <SelectValue placeholder="Select church" />
                 </SelectTrigger>
                 <SelectContent>
                   {churches.map((church) => (
@@ -215,7 +215,7 @@ export function EnhancedDonationModal({
               <Label htmlFor="project-select">Select Project</Label>
               <Select value={selectedProject} onValueChange={setSelectedProject}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a project to sponsor" />
+                  <SelectValue placeholder="Select project" />
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((project) => (
@@ -239,7 +239,7 @@ export function EnhancedDonationModal({
             <Input
               id="amount"
               type="number"
-              placeholder="0.00"
+              placeholder="100"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -263,10 +263,18 @@ export function EnhancedDonationModal({
           <PaymentMethodSelector
             paymentMethods={paymentMethods}
             selectedMethod={selectedPaymentMethod}
-            selectedType={paymentMethodType}
+            onMethodSelect={(methodId, type) => {
+              setSelectedPaymentMethod(methodId);
+              setPaymentMethodType(type);
+            }}
             walletBalance={walletBalance}
-            onMethodChange={setSelectedPaymentMethod}
-            onTypeChange={setPaymentMethodType}
+            showAddCard={true}
+            onAddCard={() => {
+              toast({
+                title: "Add New Card",
+                description: "This feature is coming soon",
+              });
+            }}
           />
 
           {/* Amount Summary */}
@@ -303,7 +311,7 @@ export function EnhancedDonationModal({
               ) : (
                 <Calculator className="h-4 w-4 mr-2" />
               )}
-              {mutation.isPending ? 'Processing...' : `Complete ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+              {mutation.isPending ? 'Processing...' : `${type === 'donation' ? 'Give' : type === 'tithe' ? 'Tithe' : type === 'project' ? 'Sponsor' : 'Top Up'}`}
             </Button>
             <Button variant="outline" onClick={onClose}>
               Cancel
