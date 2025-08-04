@@ -12,7 +12,7 @@ import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { 
   Heart, Calculator, RefreshCw, Target, Plus, Wallet,
   ArrowRight, ArrowLeft, Check, Building2, CreditCard,
-  Shield, ChevronRight, Sparkles
+  Shield, ChevronRight, Sparkles, X, Info, DollarSign
 } from "lucide-react";
 
 interface Church {
@@ -60,6 +60,9 @@ export function ProfessionalDonationModal({
   const [paymentMethodType, setPaymentMethodType] = useState<'wallet' | 'card'>('wallet');
   const [step, setStep] = useState<'amount' | 'details' | 'payment' | 'confirm'>('amount');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showTitheCalculator, setShowTitheCalculator] = useState(false);
+  const [monthlyIncome, setMonthlyIncome] = useState<string>("");
+  const [tithePercentage, setTithePercentage] = useState<string>("10");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -146,6 +149,19 @@ export function ProfessionalDonationModal({
     setNote('');
     setSelectedProject('');
     setIsProcessing(false);
+    setShowTitheCalculator(false);
+    setMonthlyIncome('');
+    setTithePercentage('10');
+  };
+
+  const calculateTithe = () => {
+    if (monthlyIncome && tithePercentage) {
+      const income = parseFloat(monthlyIncome);
+      const percentage = parseFloat(tithePercentage);
+      const calculatedTithe = (income * percentage) / 100;
+      setAmount(calculatedTithe.toFixed(2));
+      setShowTitheCalculator(false);
+    }
   };
 
   const handleClose = () => {
@@ -272,9 +288,22 @@ export function ProfessionalDonationModal({
               
               {/* Custom Amount Input */}
               <div className="space-y-3">
-                <Label htmlFor="amount" className="text-lg font-semibold text-gray-900">
-                  Or enter custom amount
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="amount" className="text-lg font-semibold text-gray-900">
+                    Or enter custom amount
+                  </Label>
+                  {type === 'tithe' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowTitheCalculator(true)}
+                      className="h-10 px-4 rounded-xl border-2 border-purple-200 hover:border-purple-300 text-purple-600 hover:bg-purple-50"
+                    >
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Calculate Tithe
+                    </Button>
+                  )}
+                </div>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-600">R</span>
                   <Input
@@ -492,6 +521,141 @@ export function ProfessionalDonationModal({
             </div>
           </div>
         </div>
+
+        {/* Tithe Calculator Modal Overlay */}
+        {showTitheCalculator && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 rounded-3xl">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                    <Calculator className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Tithe Calculator</h3>
+                    <p className="text-sm text-gray-600">Calculate your biblical tithe</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTitheCalculator(false)}
+                  className="rounded-xl hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Monthly Income Input */}
+                <div className="space-y-3">
+                  <Label htmlFor="monthlyIncome" className="text-lg font-semibold text-gray-900">
+                    Monthly Income
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-600">R</span>
+                    <Input
+                      id="monthlyIncome"
+                      type="number"
+                      placeholder="Enter your monthly income"
+                      value={monthlyIncome}
+                      onChange={(e) => setMonthlyIncome(e.target.value)}
+                      className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-purple-500 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                {/* Tithe Percentage */}
+                <div className="space-y-3">
+                  <Label htmlFor="tithePercentage" className="text-lg font-semibold text-gray-900">
+                    Tithe Percentage
+                  </Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {['10', '15', '20'].map((percentage) => (
+                      <Button
+                        key={percentage}
+                        variant={tithePercentage === percentage ? "default" : "outline"}
+                        onClick={() => setTithePercentage(percentage)}
+                        className={`h-12 font-semibold transition-all duration-200 ${
+                          tithePercentage === percentage 
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white' 
+                            : 'hover:bg-purple-50 hover:border-purple-300'
+                        }`}
+                      >
+                        {percentage}%
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="tithePercentage"
+                      type="number"
+                      placeholder="Custom %"
+                      value={tithePercentage}
+                      onChange={(e) => setTithePercentage(e.target.value)}
+                      className="h-12 text-center border-2 border-gray-200 focus:border-purple-500 rounded-xl"
+                      min="1"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-600">%</span>
+                  </div>
+                </div>
+
+                {/* Calculation Preview */}
+                {monthlyIncome && tithePercentage && (
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-gray-700 font-medium">Your calculated tithe:</span>
+                      <Info className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div className="text-center">
+                      <span className="text-3xl font-bold text-purple-600">
+                        R {((parseFloat(monthlyIncome) * parseFloat(tithePercentage)) / 100).toLocaleString()}
+                      </span>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {tithePercentage}% of R {parseFloat(monthlyIncome).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Biblical Reference */}
+                <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-yellow-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Heart className="h-4 w-4 text-yellow-700" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-yellow-800 mb-1">Biblical Reference</p>
+                      <p className="text-xs text-yellow-700 leading-relaxed">
+                        "Bring the whole tithe into the storehouse, that there may be food in my house." - Malachi 3:10
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowTitheCalculator(false)}
+                    className="flex-1 h-12 rounded-xl border-2"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={calculateTithe}
+                    disabled={!monthlyIncome || !tithePercentage}
+                    className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-semibold rounded-xl disabled:opacity-50"
+                  >
+                    <DollarSign className="h-5 w-5 mr-2" />
+                    Use Amount
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
