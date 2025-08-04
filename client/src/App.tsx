@@ -37,15 +37,15 @@ function Router() {
           <Route path="/" component={Home} />
           
           {/* Role-based routing */}
-          {user?.role === 'superadmin' && (
+          {(user as any)?.role === 'superadmin' && (
             <Route path="/admin" component={SuperAdmin} />
           )}
           
-          {(user?.role === 'church_admin' || user?.role === 'church_staff') && (
+          {((user as any)?.role === 'church_admin' || (user as any)?.role === 'church_staff') && (
             <Route path="/church" component={ChurchDashboard} />
           )}
           
-          {user?.role === 'member' && (
+          {(user as any)?.role === 'member' && (
             <Route path="/member" component={MemberDashboard} />
           )}
           

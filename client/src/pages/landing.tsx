@@ -26,9 +26,12 @@ import {
   Linkedin,
   MessageCircle
 } from "lucide-react";
+import { AuthModal } from "@/components/AuthModal";
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'signin' | 'choice'>('choice');
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -167,7 +170,10 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => {
+                    setAuthMode('choice');
+                    setAuthModalOpen(true);
+                  }}
                   className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                 >
                   <span>Get Started</span>
@@ -348,7 +354,10 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthModalOpen(true);
+                  }}
                 >
                   <span>Register Your Church</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -385,7 +394,10 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthModalOpen(true);
+                  }}
                 >
                   <span>Join as Member</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -709,14 +721,20 @@ export default function Landing() {
                 <div className="space-y-3">
                   <Button 
                     className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-200"
-                    onClick={() => setLocation("/church-registration")}
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setAuthModalOpen(true);
+                    }}
                   >
                     Register Your Church
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => setLocation("/member-registration")}
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setAuthModalOpen(true);
+                    }}
                   >
                     Join as Member
                   </Button>
@@ -761,7 +779,10 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg"
-                onClick={() => setLocation("/church-registration")}
+                onClick={() => {
+                  setAuthMode('signup');
+                  setAuthModalOpen(true);
+                }}
                 className="bg-white text-churpay-purple hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
               >
                 <span>Register Your Church</span>
@@ -771,7 +792,10 @@ export default function Landing() {
                 size="lg"
                 variant="outline"
                 className="bg-white/20 text-white border-2 border-white/30 hover:bg-white/30 transition-all duration-300"
-                onClick={() => setLocation("/member-registration")}
+                onClick={() => {
+                  setAuthMode('signup');
+                  setAuthModalOpen(true);
+                }}
               >
                 <Bell className="mr-2 h-4 w-4" />
                 <span>Join as Member</span>
@@ -895,6 +919,13 @@ export default function Landing() {
           <MessageCircle className="h-6 w-6" />
         </Button>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </div>
   );
 }
