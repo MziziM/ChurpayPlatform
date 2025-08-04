@@ -139,7 +139,6 @@ export default function Landing() {
           </div>
         )}
       </nav>
-
       {/* Hero Section */}
       <section className="pt-24 pb-20 bg-gradient-to-br from-purple-50 via-white to-purple-50 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
@@ -277,7 +276,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* User Type Selection */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -319,7 +317,7 @@ export default function Landing() {
                 </Button>
                 
                 <div className="mt-4 text-center">
-                  <span className="text-sm text-gray-500">Free 30-day trial • No setup fees</span>
+                  <span className="text-sm text-gray-500"> No setup fees</span>
                 </div>
               </CardContent>
             </Card>
@@ -363,7 +361,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Platform Features */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -424,7 +421,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Admin Dashboard Preview */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -532,7 +528,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Security & Compliance */}
       <section id="security" className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -620,7 +615,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -706,7 +700,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Call to Action */}
       <section className="py-20 bg-churpay-gradient relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-purple-800/20"></div>
@@ -756,7 +749,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
       {/* Footer */}
       <footer id="support" className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -844,7 +836,6 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-
       {/* Floating Action Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button 
