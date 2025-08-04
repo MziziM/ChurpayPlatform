@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RegistrationModal } from "@/components/RegistrationModal";
+import { GetStartedModal } from "@/components/GetStartedModal";
 import DashboardModal from "@/components/DashboardModal";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import { useAuth } from "@/hooks/useAuth";
@@ -235,7 +235,7 @@ export default function Landing() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg"
-                    onClick={() => setLocation('/church-registration')}
+                    onClick={() => setRegistrationModalOpen(true)}
                     className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                   >
                     <span>Get Started</span>
@@ -1020,7 +1020,7 @@ export default function Landing() {
         </div>
       </div>
 
-      <RegistrationModal 
+      <GetStartedModal 
         isOpen={registrationModalOpen} 
         onClose={() => setRegistrationModalOpen(false)} 
       />
