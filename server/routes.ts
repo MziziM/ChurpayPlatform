@@ -125,30 +125,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin Statistics
   app.get('/api/super-admin/stats', async (req, res) => {
     try {
-      // Mock super admin statistics
+      // Mock super admin statistics - keep simple values only
       const stats = {
         totalRevenue: '2,847,500.00',
         totalTransactions: 18420,
         activeChurches: 247,
-        pendingPayouts: 23,
-        revenueGrowth: '+12.5%',
-        transactionGrowth: '+8.3%',
-        churchGrowth: '+15.2%',
-        payoutGrowth: '+6.7%',
-        monthlyRevenue: [
-          { month: 'Jan', revenue: 240000 },
-          { month: 'Feb', revenue: 265000 },
-          { month: 'Mar', revenue: 290000 },
-          { month: 'Apr', revenue: 315000 },
-          { month: 'May', revenue: 342000 },
-          { month: 'Jun', revenue: 385000 }
-        ],
-        transactionsByType: [
-          { type: 'Donations', count: 8200, percentage: 44.5 },
-          { type: 'Tithes', count: 6100, percentage: 33.1 },
-          { type: 'Projects', count: 2850, percentage: 15.5 },
-          { type: 'Offerings', count: 1270, percentage: 6.9 }
-        ]
+        totalChurches: 247,
+        totalMembers: 11800,
+        pendingPayouts: '23,450.00',
+        completedPayouts: '125,680.00',
+        platformFees: '89,325.00',
+        monthlyRevenue: '385,000.00',
+        revenueGrowth: 12.5,
+        transactionGrowth: 8.3,
+        churchGrowth: 15.2, 
+        payoutGrowth: 6.7
       };
       res.json(stats);
     } catch (error) {
@@ -291,6 +282,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("🔒 PROTECTED: Error fetching members:", error);
       res.status(500).json({ message: "Failed to fetch members data" });
+    }
+  });
+
+  // Super Admin Analytics Data
+  app.get('/api/super-admin/analytics', async (req, res) => {
+    try {
+      // Mock analytics data - ensure no objects are accidentally rendered
+      const analytics = {
+        revenueChart: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          revenue: [240000, 265000, 290000, 315000, 342000, 385000],
+          fees: [9360, 10340, 11310, 12285, 13338, 15015]
+        },
+        churchGrowth: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          churches: [180, 195, 210, 225, 240, 247],
+          members: [8500, 9200, 9800, 10500, 11200, 11800]
+        }
+      };
+      res.json(analytics);
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics data" });
+    }
+  });
+
+  // Super Admin Activity Feed
+  app.get('/api/super-admin/activity', async (req, res) => {
+    try {
+      // Mock activity feed - ensure all values are strings/numbers, not objects
+      const activities = [
+        {
+          id: 'activity-001',
+          description: 'New church registration approved',
+          timestamp: '2024-08-04 14:30',
+          amount: '2,500.00',
+          status: 'completed'
+        },
+        {
+          id: 'activity-002', 
+          description: 'Payout processed for Grace Baptist',
+          timestamp: '2024-08-04 13:15',
+          amount: '15,250.00',
+          status: 'approved'
+        },
+        {
+          id: 'activity-003',
+          description: 'Member registration completed',
+          timestamp: '2024-08-04 12:45',
+          amount: null,
+          status: 'active'
+        },
+        {
+          id: 'activity-004',
+          description: 'Project donation received',
+          timestamp: '2024-08-04 11:20',
+          amount: '1,850.00',
+          status: 'completed'
+        }
+      ];
+      res.json(activities);
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error fetching activity:", error);
+      res.status(500).json({ message: "Failed to fetch activity data" });
     }
   });
 

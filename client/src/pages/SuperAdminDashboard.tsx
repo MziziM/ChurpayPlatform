@@ -382,22 +382,22 @@ export default function SuperAdminDashboard() {
             <CardContent className="p-0">
               <div className="space-y-1">
                 {(platformActivity || []).slice(0, 6).map((activity, index) => (
-                  <div key={activity.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                  <div key={activity.id || index} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                         <Activity className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{activity.description}</p>
-                        <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                        <p className="text-sm font-medium text-gray-900">{String(activity.description || '')}</p>
+                        <p className="text-xs text-gray-500">{String(activity.timestamp || '')}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       {activity.amount && (
-                        <p className="text-sm font-semibold text-gray-900">R{activity.amount}</p>
+                        <p className="text-sm font-semibold text-gray-900">R{String(activity.amount)}</p>
                       )}
                       <Badge variant="outline" className="text-xs">
-                        {activity.status}
+                        {String(activity.status || '')}
                       </Badge>
                     </div>
                   </div>
