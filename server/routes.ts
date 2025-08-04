@@ -1257,6 +1257,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🔒 CODE PROTECTION: Church Profile Update - Core functionality protected
+  // Update church profile endpoint
+  app.put('/api/church/profile', async (req, res) => {
+    try {
+      const updateData = req.body;
+      
+      // 🔒 PROTECTED: Core church profile validation and processing
+      // Validate required fields
+      if (!updateData.name || !updateData.contactEmail || !updateData.contactPhone) {
+        return res.status(400).json({ 
+          message: "Missing required fields: name, contactEmail, contactPhone" 
+        });
+      }
+
+      // 🔒 PROTECTED: Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updateData.contactEmail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // 🔒 PROTECTED: Phone validation (South African format)
+      const phoneRegex = /^(\+27|0)[1-9][0-9]{8}$/;
+      if (!phoneRegex.test(updateData.contactPhone.replace(/\s/g, ''))) {
+        return res.status(400).json({ message: "Invalid South African phone number format" });
+      }
+
+      // In a real application, this would update the database with proper authentication
+      // For now, we'll return success with the updated data
+      const updatedProfile = {
+        ...updateData,
+        id: 'church-123', // Would come from auth context
+        status: 'approved', // Maintain verification status
+        registrationDate: '2024-01-15T10:00:00Z', // Preserve original registration
+        updatedAt: new Date().toISOString()
+      };
+
+      console.log('🔒 PROTECTED: Church profile update:', updateData.name);
+      
+      res.json({
+        message: "Church profile updated successfully",
+        profile: updatedProfile
+      });
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error updating church profile:", error);
+      res.status(500).json({ message: "Failed to update church profile" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
