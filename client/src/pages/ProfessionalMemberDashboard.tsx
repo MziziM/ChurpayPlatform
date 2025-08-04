@@ -11,6 +11,7 @@ import {
   ArrowUpRight, ArrowDownRight, Clock, Plus
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
+import { ProjectsModal } from '@/components/ProjectsModal';
 import { ProfessionalWalletModal } from '@/components/ProfessionalWalletModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { ChurchModal } from '@/components/ChurchModal';
@@ -47,6 +48,7 @@ export default function ProfessionalMemberDashboard() {
   const [showChurchModal, setShowChurchModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showActivitiesModal, setShowActivitiesModal] = useState(false);
+  const [showProjectsModal, setShowProjectsModal] = useState(false);
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -101,10 +103,7 @@ export default function ProfessionalMemberDashboard() {
               <Button 
                 variant="ghost" 
                 className="text-gray-600 hover:text-purple-600"
-                onClick={() => {
-                  setDonationType('project');
-                  setShowDonationModal(true);
-                }}
+                onClick={() => setShowProjectsModal(true)}
               >
                 Projects
               </Button>
@@ -584,6 +583,16 @@ export default function ProfessionalMemberDashboard() {
       <ActivitiesModal
         isOpen={showActivitiesModal}
         onClose={() => setShowActivitiesModal(false)}
+      />
+
+      <ProjectsModal
+        isOpen={showProjectsModal}
+        onClose={() => setShowProjectsModal(false)}
+        onSponsorProject={(projectId) => {
+          setShowProjectsModal(false);
+          setDonationType('project');
+          setShowDonationModal(true);
+        }}
       />
     </div>
   );
