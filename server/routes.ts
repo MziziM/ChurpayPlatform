@@ -439,6 +439,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Member registration endpoint
+  app.post('/api/members/register', async (req, res) => {
+    try {
+      const memberData = req.body;
+      
+      // Create new user with member role
+      const userData = {
+        id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        email: memberData.email,
+        firstName: memberData.firstName,
+        lastName: memberData.lastName,
+        phone: memberData.phone,
+        dateOfBirth: memberData.dateOfBirth,
+        address: memberData.address,
+        city: memberData.city,
+        province: memberData.province,
+        postalCode: memberData.postalCode,
+        country: 'South Africa',
+        emergencyContactName: memberData.emergencyContactName,
+        emergencyContactPhone: memberData.emergencyContactPhone,
+        emergencyContactRelationship: memberData.emergencyContactRelationship,
+        membershipType: memberData.membershipType,
+        previousChurch: memberData.previousChurch,
+        howDidYouHear: memberData.howDidYouHear,
+        role: 'member',
+        churchId: memberData.churchId,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      // In production, this would create actual database records
+      // For now, store the registration and return success
+      console.log('New member registration:', userData);
+      
+      res.status(201).json({
+        message: 'Member registration successful',
+        user: {
+          id: userData.id,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          role: userData.role,
+          churchId: userData.churchId,
+        }
+      });
+    } catch (error: any) {
+      console.error("Error registering member:", error);
+      res.status(500).json({ message: "Failed to register member", error: error.message });
+    }
+  });
+
   // Churches API
   app.get('/api/churches', async (req, res) => {
     try {
@@ -701,11 +753,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User stats endpoint with detailed breakdown
+  // User stats endpoint with detailed breakdown  
   app.get('/api/user/stats', async (req, res) => {
     try {
-      const transactions = await storage.getTransactions();
-      const userTransactions = transactions.filter(t => t.status === 'completed');
+      // For now, use mock user ID - in real app this would come from authentication
+      const mockUserId = 'mock-user-id';
+      
+      // Get user's transactions
+      const allTransactions = await storage.getTransactions();
+      const userTransactions = allTransactions.filter(t => 
+        (t.userId === mockUserId || !t.userId) && t.status === 'completed'
+      );
+      
+      if (userTransactions.length === 0) {
+        // Return default stats for new users
+        const stats = {
+          memberSince: 'January 2025',
+          totalGiven: '0.00',
+          thisYearGiven: '0.00',
+          goalProgress: 0,
+          annualGoal: '25000.00',
+          transactionCount: 0,
+          averageGift: '0.00'
+        };
+        return res.json(stats);
+      }
       
       const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
       const thisYearTransactions = userTransactions.filter(t => 
@@ -719,7 +791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       )[0];
       const memberSince = firstTransaction?.createdAt ? 
         new Date(firstTransaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) :
-        'January 2022';
+        'January 2025';
       
       // Goal progress calculation (example: R25,000 annual goal)
       const annualGoal = 25000;
@@ -745,25 +817,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recent activity endpoint
   app.get('/api/user/recent-activity', async (req, res) => {
     try {
+      // For now, use mock user ID - in real app this would come from authentication
+      const mockUserId = 'mock-user-id';
+      
       const transactions = await storage.getTransactions();
-      const recentTransactions = transactions
-        .filter(t => t.status === 'completed')
+      const userRecentTransactions = transactions
+        .filter(t => (t.userId === mockUserId || !t.userId) && t.status === 'completed')
         .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
         .slice(0, 8) // Get 8 most recent
         .map(transaction => {
           const timeAgo = getTimeAgo(new Date(transaction.createdAt || new Date()));
           return {
             id: transaction.id,
-            type: transaction.type,
+            type: transaction.donationType || 'donation',
             amount: `R ${parseFloat(transaction.amount).toLocaleString()}`,
             description: getActivityDescription(transaction),
             timeAgo,
             status: transaction.status,
-            icon: getActivityIcon(transaction.type)
+            icon: getActivityIcon(transaction.donationType || 'donation')
           };
         });
       
-      res.json(recentTransactions);
+      res.json(userRecentTransactions);
     } catch (error: any) {
       console.error("Error fetching recent activity:", error);
       res.status(500).json({ message: "Failed to fetch recent activity", error: error.message });
@@ -787,25 +862,32 @@ function getTimeAgo(date: Date): string {
 }
 
 function getActivityDescription(transaction: any): string {
-  switch (transaction.type) {
+  const donationType = transaction.donationType || transaction.type;
+  switch (donationType) {
+    case 'general':
     case 'donation':
-      return `Donation to ${transaction.churchName || 'Church'}`;
+      return `Donation to Church`;
     case 'tithe':
-      return `Tithe offering to ${transaction.churchName || 'Church'}`;
+      return `Tithe offering to Church`;
+    case 'offering':
+      return `Offering to Church`;
     case 'project':
-      return `Project sponsorship: ${transaction.projectTitle || 'Church Project'}`;
+      return `Project sponsorship`;
     case 'topup':
       return 'Wallet top-up';
     default:
-      return 'Transaction';
+      return transaction.description || 'Church transaction';
   }
 }
 
 function getActivityIcon(type: string): string {
   switch (type) {
+    case 'general':
     case 'donation':
       return 'heart';
     case 'tithe':
+      return 'church';
+    case 'offering':
       return 'church';
     case 'project':
       return 'target';
