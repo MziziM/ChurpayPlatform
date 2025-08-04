@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount,
         currency: 'ZAR',
         description: `PayFast top-up - R${amount}`,
-        paymentMethod: paymentMethod as any,
+        paymentMethod: 'card',
         paymentReference: paymentId,
         processingFee: processingFee.toString(),
         status: 'pending',
@@ -325,6 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const donation = await storage.createDonation({
         userId,
         churchId,
+        reference: `DON_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         amount: amount.toString(),
         description: note,
         type: 'donation',
@@ -348,6 +349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const donation = await storage.createDonation({
         userId,
         churchId,
+        reference: `TITHE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         amount: amount.toString(),
         description: 'Monthly tithe payment',
         type: 'tithe',
