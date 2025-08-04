@@ -198,6 +198,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'choice' }: AuthModal
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white">
+        <DialogHeader className="sr-only">
+          <DialogTitle>
+            {mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Get Started'}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === 'signin' ? 'Sign in to your ChurPay account' : mode === 'signup' ? 'Create your ChurPay account' : 'Choose how to get started with ChurPay'}
+          </DialogDescription>
+        </DialogHeader>
         {getContent()}
       </DialogContent>
     </Dialog>

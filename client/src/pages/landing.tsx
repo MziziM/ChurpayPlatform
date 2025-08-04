@@ -87,13 +87,19 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => {
+                  setAuthMode('signin');
+                  setAuthModalOpen(true);
+                }}
                 className="text-gray-600 hover:text-churpay-purple"
               >
                 Sign In
               </Button>
               <Button 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => {
+                  setAuthMode('choice');
+                  setAuthModalOpen(true);
+                }}
                 className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
               >
                 Get Started
