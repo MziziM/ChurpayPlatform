@@ -108,11 +108,11 @@ export default function SignIn() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center shadow-lg">
-                <Heart className="h-5 w-5 text-white" />
+                <span className="text-white font-bold text-lg">C</span>
               </div>
               <div>
                 <span className="text-2xl font-bold text-gray-900">Chur</span>
-                <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Pay</span>
+                <span className="text-2xl font-bold text-churpay-yellow">Pay</span>
               </div>
             </div>
             <Button 
