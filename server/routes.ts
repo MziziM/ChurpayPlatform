@@ -75,6 +75,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get approved churches for member registration
+  app.get('/api/churches/approved', async (req, res) => {
+    try {
+      const churches = await storage.getApprovedChurches();
+      res.json(churches);
+    } catch (error) {
+      console.error("Error fetching approved churches:", error);
+      res.status(500).json({ message: "Failed to fetch churches" });
+    }
+  });
+
   app.get('/api/churches/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
