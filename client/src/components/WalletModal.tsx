@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { 
   Wallet, 
   ArrowUp, 
@@ -42,8 +43,8 @@ export function WalletModal({
   onSend
 }: WalletModalProps) {
   const [showBalance, setShowBalance] = useState(true);
-  const [sendAmount, setSendAmount] = useState("");
-  const [sendRecipient, setSendRecipient] = useState("");
+  const [sendAmount] = useState("");
+  const [sendRecipient] = useState("");
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-ZA', {
@@ -150,13 +151,13 @@ export function WalletModal({
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           transaction.type === 'donation' ? 'bg-purple-100 text-purple-600' :
-                          transaction.type === 'tithe' ? 'bg-green-100 text-green-600' :
-                          transaction.type === 'topup' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                          transaction.type === 'deposit' ? 'bg-blue-100 text-blue-600' :
+                          transaction.type === 'withdrawal' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'
                         }`}>
                           {transaction.type === 'donation' ? <Heart className="h-5 w-5" /> :
-                           transaction.type === 'tithe' ? <Church className="h-5 w-5" /> :
-                           transaction.type === 'topup' ? <ArrowUp className="h-5 w-5" /> :
-                           <ArrowDown className="h-5 w-5" />}
+                           transaction.type === 'deposit' ? <ArrowUp className="h-5 w-5" /> :
+                           transaction.type === 'withdrawal' ? <ArrowDown className="h-5 w-5" /> :
+                           <Wallet className="h-5 w-5" />}
                         </div>
                         <div>
                           <p className="font-medium text-sm">{transaction.description}</p>
