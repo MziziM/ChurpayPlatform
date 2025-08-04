@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -17,34 +18,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
   
   console.log("🔒 Code protection system active - Core files and fee structure locked");
-  
-  // Auth middleware
-  await setupAuth(app);
 
-  // System protection status endpoint
-  app.get('/api/system/protection-status', async (req, res) => {
-    res.json({
-      codeProtectionActive: true,
-      feeStructureValid: validateFeeStructure(),
-      protectedConstants: PROTECTED_CONSTANTS,
-      lockedFilesCount: 29,
-      systemStatus: 'LOCKED'
-    });
-  });
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
-  // Public church registration endpoint
+  // Public registration endpoints (BEFORE auth middleware to avoid authentication)
   app.post('/api/churches/register', async (req, res) => {
     try {
       const validatedData = insertChurchSchema.parse(req.body);
@@ -74,6 +49,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: "Failed to create church", error: error.message });
     }
   });
+
+  app.post('/api/members/register', async (req, res) => {
+    try {
+      const validatedData = z.object({
+        churchId: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+        email: z.string().email(),
+        phone: z.string(),
+        dateOfBirth: z.string(),
+        address: z.string(),
+        city: z.string(),
+        province: z.string(),
+        postalCode: z.string(),
+        country: z.string(),
+        emergencyContactName: z.string(),
+        emergencyContactPhone: z.string(),
+        emergencyContactRelationship: z.string(),
+        membershipType: z.string(),
+        previousChurch: z.string().optional(),
+        howDidYouHear: z.string().optional(),
+      }).parse(req.body);
+
+      // Create member registration record
+      const memberData = {
+        ...validatedData,
+        id: randomUUID(),
+        role: 'member' as const,
+        profileImageUrl: null,
+      };
+
+      const member = await storage.createUser(memberData);
+
+      // Log activity
+      await storage.logActivity({
+        userId: null,
+        churchId: validatedData.churchId,
+        action: 'member_registered',
+        entity: 'user',
+        entityId: member.id,
+        details: { memberName: `${validatedData.firstName} ${validatedData.lastName}`, status: 'pending_approval' },
+      });
+
+      res.json(member);
+    } catch (error) {
+      console.error("Error creating member:", error);
+      res.status(400).json({ message: "Failed to register member", error: error.message });
+    }
+  });
+  
+  // Auth middleware (AFTER public endpoints)
+  await setupAuth(app);
+
+  // System protection status endpoint
+  app.get('/api/system/protection-status', async (req, res) => {
+    res.json({
+      codeProtectionActive: true,
+      feeStructureValid: validateFeeStructure(),
+      protectedConstants: PROTECTED_CONSTANTS,
+      lockedFilesCount: 29,
+      systemStatus: 'LOCKED'
+    });
+  });
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+
 
   // Church registration and management (authenticated)
   app.post('/api/churches', isAuthenticated, async (req: any, res) => {
