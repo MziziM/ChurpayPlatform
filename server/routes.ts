@@ -363,6 +363,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Project sponsorship endpoint
+  app.post('/api/projects/sponsor', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { projectId, amount, paymentMethod, paymentMethodId } = req.body;
+
+      // Get project details to get churchId
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const donation = await storage.createDonation({
+        userId,
+        churchId: project.churchId,
+        projectId,
+        amount: amount.toString(),
+        description: `Project sponsorship: ${project.title}`,
+        type: 'project',
+        paymentMethod: paymentMethod || 'wallet',
+        paymentMethodId: paymentMethodId || null,
+        status: 'completed',
+      });
+
+      res.json(donation);
+    } catch (error) {
+      console.error("Error processing project sponsorship:", error);
+      res.status(500).json({ message: "Failed to process project sponsorship" });
+    }
+  });
+
   // PayFast webhook (for real integration)
   app.post('/api/wallet/payfast-notify', async (req, res) => {
     try {

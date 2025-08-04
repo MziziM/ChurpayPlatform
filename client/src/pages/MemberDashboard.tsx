@@ -82,15 +82,7 @@ interface DonationHistory {
 export default function MemberDashboard() {
   const [showBalance, setShowBalance] = useState(true);
   const [showDonationModal, setShowDonationModal] = useState(false);
-  const [donationType, setDonationType] = useState<'donation' | 'tithe'>('donation');
-  const [showSponsorModal, setShowSponsorModal] = useState(false);
-  const [showTopUpModal, setShowTopUpModal] = useState(false);
-  
-  // Form states for remaining modals
-  const [sponsorAmount, setSponsorAmount] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
-  const [topUpAmount, setTopUpAmount] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+  const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -127,53 +119,7 @@ export default function MemberDashboard() {
 
 
 
-  // Project sponsorship mutation
-  const sponsorMutation = useMutation({
-    mutationFn: async (data: { projectId: string; amount: number }) => {
-      return await apiRequest('/api/projects/sponsor', 'POST', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet/transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
-      toast({
-        title: "Sponsorship Successful",
-        description: "Your project sponsorship has been processed successfully.",
-      });
-      setShowSponsorModal(false);
-      setSponsorAmount('');
-      setSelectedProject('');
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Sponsorship Failed",
-        description: error.message || "Failed to process sponsorship",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Top-up mutation
-  const topUpMutation = useMutation({
-    mutationFn: async (data: { amount: number; paymentMethod: string }) => {
-      return await apiRequest('/api/wallet/topup', 'POST', data);
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Top-up Initiated",
-        description: `Redirecting to payment page for R${data.amount}`,
-      });
-      window.location.href = data.paymentUrl;
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Top-up Failed",
-        description: error.message || "Failed to initiate top-up",
-        variant: "destructive",
-      });
-    },
-  });
 
   const formatCurrency = (amount: string | number) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -213,35 +159,7 @@ export default function MemberDashboard() {
 
 
 
-  const handleSponsor = () => {
-    if (!sponsorAmount || !selectedProject || parseFloat(sponsorAmount) <= 0) {
-      toast({
-        title: "Invalid Sponsorship",
-        description: "Please select a project and enter a valid amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-    sponsorMutation.mutate({
-      projectId: selectedProject,
-      amount: parseFloat(sponsorAmount),
-    });
-  };
 
-  const handleTopUp = () => {
-    if (!topUpAmount || parseFloat(topUpAmount) <= 0 || !selectedPaymentMethod) {
-      toast({
-        title: "Invalid Top-up",
-        description: "Please enter a valid amount and select a payment method.",
-        variant: "destructive",
-      });
-      return;
-    }
-    topUpMutation.mutate({
-      amount: parseFloat(topUpAmount),
-      paymentMethod: selectedPaymentMethod,
-    });
-  };
 
   // Show loading state
   if (walletLoading || churchesLoading || projectsLoading) {
@@ -418,7 +336,10 @@ export default function MemberDashboard() {
             </Button>
 
             <Button 
-              onClick={() => setShowSponsorModal(true)}
+              onClick={() => {
+                setDonationType('project');
+                setShowDonationModal(true);
+              }}
               className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
             >
               <Target className="h-6 w-6" />
@@ -426,7 +347,10 @@ export default function MemberDashboard() {
             </Button>
 
             <Button 
-              onClick={() => setShowTopUpModal(true)}
+              onClick={() => {
+                setDonationType('topup');
+                setShowDonationModal(true);
+              }}
               className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
             >
               <Plus className="h-6 w-6" />
@@ -562,8 +486,8 @@ export default function MemberDashboard() {
 
                       <Button 
                         onClick={() => {
-                          setSelectedProject(project.id);
-                          setShowSponsorModal(true);
+                          setDonationType('project');
+                          setShowDonationModal(true);
                         }}
                         className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white"
                       >
@@ -620,145 +544,17 @@ export default function MemberDashboard() {
           </TabsContent>
         </Tabs>
 
-        {/* Enhanced Donation Modal */}
+        {/* Enhanced Donation Modal (unified for all types) */}
         <EnhancedDonationModal
           isOpen={showDonationModal}
           onClose={() => setShowDonationModal(false)}
           type={donationType}
-          churches={churches}
+          churches={churches as Church[]}
+          projects={projects as Project[]}
           walletBalance={walletData ? parseFloat(walletData.availableBalance) : 0}
         />
 
-        {/* Sponsor Modal */}
-        <Dialog open={showSponsorModal} onOpenChange={setShowSponsorModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Target className="h-5 w-5 mr-2 text-orange-600" />
-                Sponsor Project
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Select Project</Label>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(projects as Project[]).map((project: Project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.title} - {project.churchName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="sponsor-amount">Sponsorship Amount (ZAR)</Label>
-                <Input
-                  id="sponsor-amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={sponsorAmount}
-                  onChange={(e) => setSponsorAmount(e.target.value)}
-                />
-              </div>
 
-              <div className="flex space-x-3">
-                <Button
-                  onClick={handleSponsor}
-                  disabled={!sponsorAmount || !selectedProject || sponsorMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                >
-                  {sponsorMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Target className="h-4 w-4 mr-2" />
-                  )}
-                  {sponsorMutation.isPending ? 'Processing...' : 'Sponsor Now'}
-                </Button>
-                <Button variant="outline" onClick={() => setShowSponsorModal(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Top Up Modal */}
-        <Dialog open={showTopUpModal} onOpenChange={setShowTopUpModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Plus className="h-5 w-5 mr-2 text-green-600" />
-                Top Up Wallet
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="topup-amount">Amount (ZAR)</Label>
-                <Input
-                  id="topup-amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={topUpAmount}
-                  onChange={(e) => setTopUpAmount(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label>Payment Method</Label>
-                <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="card">Credit/Debit Card</SelectItem>
-                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                    <SelectItem value="eft">EFT</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {topUpAmount && (
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Amount:</span>
-                    <span>{formatCurrency(topUpAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Processing Fee (3.9% + R3):</span>
-                    <span>{formatCurrency((parseFloat(topUpAmount || '0') * 0.039) + 3)}</span>
-                  </div>
-                  <div className="flex justify-between font-medium border-t pt-2">
-                    <span>Total:</span>
-                    <span>{formatCurrency(parseFloat(topUpAmount || '0') + (parseFloat(topUpAmount || '0') * 0.039) + 3)}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex space-x-3">
-                <Button
-                  onClick={handleTopUp}
-                  disabled={!topUpAmount || !selectedPaymentMethod || topUpMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white"
-                >
-                  {topUpMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  {topUpMutation.isPending ? 'Processing...' : 'Top Up Now'}
-                </Button>
-                <Button variant="outline" onClick={() => setShowTopUpModal(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </main>
     </div>
   );
