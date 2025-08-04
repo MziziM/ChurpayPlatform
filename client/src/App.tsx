@@ -21,7 +21,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/church-registration" component={PublicChurchRegistration} />
-      <Route path="/member-registration" component={MemberRegistration} />
+      <Route path="/member-registration" component={PublicMemberRegistration} />
       <Route path="/public-church-registration" component={PublicChurchRegistration} />
       <Route path="/public-member-registration" component={PublicMemberRegistration} />
       <Route path="/register" component={PublicMemberRegistration} />
