@@ -547,49 +547,7 @@ export default function MemberDashboard() {
                 </CardContent>
               </Card>
 
-              {/* About Section */}
-              <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-white">About</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Connect with church leadership and fellow members in our ChurPay community
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" alt="Jonie Juger" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">Pastor John Smith</p>
-                        <p className="text-gray-400 text-sm">Senior Pastor</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" alt="Sarah Hosten" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">Sarah Williams</p>
-                        <p className="text-gray-400 text-sm">Worship Leader</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="Deckard Anne" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">David Johnson</p>
-                        <p className="text-gray-400 text-sm">Financial Treasurer</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
 
               {/* Wallet Actions Card */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
@@ -634,12 +592,6 @@ export default function MemberDashboard() {
 
               {/* Recent Transactions */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
-                    View all
-                  </Button>
-                </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {Array.isArray(transactions) && transactions.length > 0 ? transactions.slice(0, 3).map((transaction: WalletTransaction) => (
