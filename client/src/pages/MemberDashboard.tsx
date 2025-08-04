@@ -83,6 +83,7 @@ export default function MemberDashboard() {
   const [showBalance, setShowBalance] = useState(true);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
