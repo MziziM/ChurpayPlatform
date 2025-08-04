@@ -161,6 +161,7 @@ export const churches = pgTable("churches", {
   memberCount: integer("member_count").notNull(),
   servicesTimes: text("services_times").notNull(),
   leadPastor: varchar("lead_pastor", { length: 255 }).notNull(),
+  logoUrl: varchar("logo_url", { length: 500 }), // Church logo image URL
   
   // Administrative Contact
   adminFirstName: varchar("admin_first_name", { length: 100 }).notNull(),
