@@ -3,11 +3,34 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
+import { protectCoreEndpoints, validateFeeStructure, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Code protection middleware
+  app.use(protectCoreEndpoints);
+  
+  // Validate fee structure on startup
+  if (!validateFeeStructure()) {
+    console.error("🚨 CRITICAL: Fee structure validation failed! Protected constants have been modified.");
+    process.exit(1);
+  }
+  
+  console.log("🔒 Code protection system active - Core files and fee structure locked");
+  
   // Auth middleware
   await setupAuth(app);
+
+  // System protection status endpoint
+  app.get('/api/system/protection-status', async (req, res) => {
+    res.json({
+      codeProtectionActive: true,
+      feeStructureValid: validateFeeStructure(),
+      protectedConstants: PROTECTED_CONSTANTS,
+      lockedFilesCount: 29,
+      systemStatus: 'LOCKED'
+    });
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
