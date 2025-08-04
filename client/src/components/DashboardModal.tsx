@@ -37,7 +37,7 @@ interface DashboardModalProps {
 }
 
 export default function DashboardModal({ isOpen, onClose, userType }: DashboardModalProps) {
-  const [currentView, setCurrentView] = useState('widgets');
+  const [activeTab, setActiveTab] = useState('widgets');
   const [donationAmount, setDonationAmount] = useState('');
   const [donationType, setDonationType] = useState('');
 
@@ -154,7 +154,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
       {/* Enhanced Quick Actions with Professional Design */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('donate')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('donate')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -167,7 +167,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('projects')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('projects')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -180,7 +180,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('history')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -193,7 +193,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('analytics')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('analytics')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -216,7 +216,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
               <Activity className="h-5 w-5 mr-2 text-purple-600" />
               Recent Activity
             </h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('history')}>
               <ArrowUpRight className="h-4 w-4" />
             </Button>
           </div>
@@ -340,7 +340,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('projects')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('projects')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -353,7 +353,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('history')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -366,7 +366,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('analytics')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setActiveTab('analytics')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -456,78 +456,54 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
     return userType === 'member' ? renderMemberOverview() : renderChurchOverview();
   };
 
-  const renderContent = () => {
-    switch (currentView) {
-      case 'overview':
-        return renderOverview();
-      case 'donate':
-        return userType === 'member' ? renderDonationForm() : renderOverview();
-      case 'projects':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Active Projects</h3>
-            {(userType === 'member' ? memberData.projects : churchData.activeProjects)?.map((project: any) => (
-              <Card key={project.id}>
-                <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2">{project.name}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>R{project.currentAmount.toLocaleString()} / R{project.targetAmount.toLocaleString()}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-churpay-gradient h-2 rounded-full" 
-                        style={{ width: `${(project.currentAmount / project.targetAmount) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        );
-      case 'history':
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{userType === 'member' ? 'Donation History' : 'Transaction History'}</h3>
-            {(userType === 'member' ? memberData.recentDonations : churchData.recentTransactions).map((item: any) => (
-              <Card key={item.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {userType === 'member' ? `R${item.amount.toLocaleString()}` : `${item.member} - R${item.amount.toLocaleString()}`}
-                      </p>
-                      <p className="text-sm text-gray-600">{item.type} • {new Date(item.date).toLocaleDateString()}</p>
-                    </div>
-                    {userType === 'member' && (
-                      <Badge className="bg-green-100 text-green-800">{item.status}</Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        );
-      case 'analytics':
-        return userType === 'member' ? (
-          <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
-        ) : (
-          <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
-        );
-      case 'widgets':
-        return (
-          <DashboardWidgets 
-            userType={userType} 
-            dashboardData={userType === 'member' ? memberData : churchData} 
-          />
-        );
-      default:
-        return renderOverview();
-    }
-  };
+  const renderProjects = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Active Projects</h3>
+      {(userType === 'member' ? memberData.projects : churchData.activeProjects)?.map((project: any) => (
+        <Card key={project.id}>
+          <CardContent className="p-4">
+            <h4 className="font-semibold mb-2">{project.name}</h4>
+            <p className="text-sm text-gray-600 mb-3">{project.description}</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span>R{project.currentAmount.toLocaleString()} / R{project.targetAmount.toLocaleString()}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-churpay-gradient h-2 rounded-full" 
+                  style={{ width: `${(project.currentAmount / project.targetAmount) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const renderHistory = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">{userType === 'member' ? 'Donation History' : 'Transaction History'}</h3>
+      {(userType === 'member' ? memberData.recentDonations : churchData.recentTransactions).map((item: any) => (
+        <Card key={item.id}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">
+                  {userType === 'member' ? `R${item.amount.toLocaleString()}` : `${item.member} - R${item.amount.toLocaleString()}`}
+                </p>
+                <p className="text-sm text-gray-600">{item.type} • {new Date(item.date).toLocaleDateString()}</p>
+              </div>
+              {userType === 'member' && (
+                <Badge className="bg-green-100 text-green-800">{item.status}</Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -537,65 +513,93 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             <DialogTitle className="text-xl font-semibold">
               {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
             </DialogTitle>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={currentView === 'widgets' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('widgets')}
-                className={currentView === 'widgets' ? 'bg-churpay-gradient text-white' : ''}
-              >
-                <Layout className="h-4 w-4 mr-1" />
-                Widgets
-              </Button>
-              <Button
-                variant={currentView === 'overview' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('overview')}
-                className={currentView === 'overview' ? 'bg-churpay-gradient text-white' : ''}
-              >
-                Overview
-              </Button>
-              {userType === 'member' && (
-                <Button
-                  variant={currentView === 'donate' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setCurrentView('donate')}
-                  className={currentView === 'donate' ? 'bg-churpay-gradient text-white' : ''}
-                >
-                  Donate
-                </Button>
-              )}
-              <Button
-                variant={currentView === 'projects' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('projects')}
-                className={currentView === 'projects' ? 'bg-churpay-gradient text-white' : ''}
-              >
-                Projects
-              </Button>
-              <Button
-                variant={currentView === 'history' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('history')}
-                className={currentView === 'history' ? 'bg-churpay-gradient text-white' : ''}
-              >
-                History
-              </Button>
-              <Button
-                variant={currentView === 'analytics' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('analytics')}
-                className={currentView === 'analytics' ? 'bg-churpay-gradient text-white' : ''}
-              >
-                <BarChart3 className="h-4 w-4 mr-1" />
-                Analytics
-              </Button>
-            </div>
           </div>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto p-6 pt-4">
-          {renderContent()}
+        <div className="flex-1 overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <div className="px-6">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger 
+                  value="widgets"
+                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                >
+                  <Layout className="h-4 w-4 mr-2" />
+                  Widgets
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="overview"
+                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Overview
+                </TabsTrigger>
+                {userType === 'member' ? (
+                  <TabsTrigger 
+                    value="donate"
+                    className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                  >
+                    <Heart className="h-4 w-4 mr-2" />
+                    Donate
+                  </TabsTrigger>
+                ) : (
+                  <TabsTrigger 
+                    value="projects"
+                    className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    Projects
+                  </TabsTrigger>
+                )}
+                <TabsTrigger 
+                  value="history"
+                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics"
+                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 pt-4">
+              <TabsContent value="widgets" className="mt-0">
+                <DashboardWidgets 
+                  userType={userType} 
+                  dashboardData={userType === 'member' ? memberData : churchData} 
+                />
+              </TabsContent>
+              <TabsContent value="overview" className="mt-0">
+                {renderOverview()}
+              </TabsContent>
+              {userType === 'member' && (
+                <TabsContent value="donate" className="mt-0">
+                  {renderDonationForm()}
+                </TabsContent>
+              )}
+              {userType === 'church' && (
+                <TabsContent value="projects" className="mt-0">
+                  {renderProjects()}
+                </TabsContent>
+              )}
+              <TabsContent value="history" className="mt-0">
+                {renderHistory()}
+              </TabsContent>
+              <TabsContent value="analytics" className="mt-0">
+                {userType === 'member' ? (
+                  <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
+                ) : (
+                  <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
+                )}
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>
