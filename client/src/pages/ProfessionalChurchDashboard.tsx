@@ -16,6 +16,7 @@ import {
 import { ChurchPayoutModal } from '@/components/ChurchPayoutModal';
 import { ChurchMemberModal } from '@/components/ChurchMemberModal';
 import { ChurchProjectModal } from '@/components/ChurchProjectModal';
+import { ChurchProfileModal } from '@/components/ChurchProfileModal';
 
 interface ChurchData {
   id: string;
@@ -76,6 +77,7 @@ export default function ProfessionalChurchDashboard() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Data queries
@@ -186,7 +188,10 @@ export default function ProfessionalChurchDashboard() {
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
             
-            <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
+            <div 
+              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors"
+              onClick={() => setShowProfileModal(true)}
+            >
               <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
                 <Church className="h-4 w-4 text-purple-600" />
               </div>
@@ -347,6 +352,7 @@ export default function ProfessionalChurchDashboard() {
                     variant="ghost" 
                     size="sm"
                     className="text-white hover:bg-white/20 rounded-lg"
+                    onClick={() => setShowProfileModal(true)}
                   >
                     <Settings className="h-4 w-4" />
                   </Button>
@@ -460,6 +466,11 @@ export default function ProfessionalChurchDashboard() {
       <ChurchProjectModal
         isOpen={showProjectModal}
         onClose={() => setShowProjectModal(false)}
+      />
+
+      <ChurchProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
       />
     </div>
   );
