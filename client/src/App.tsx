@@ -7,6 +7,7 @@ import Landing from "@/pages/landing";
 import PublicChurchRegistration from "@/pages/public-church-registration";
 import PublicMemberRegistration from "@/pages/public-member-registration";
 import MemberDashboard from "@/pages/member-dashboard";
+import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/church-registration" component={PublicChurchRegistration} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
       <Route path="/member-dashboard" component={MemberDashboard} />
+      <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
     </Switch>
   );

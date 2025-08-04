@@ -86,7 +86,7 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => window.location.href = '/church-registration'}
+                onClick={() => window.location.href = '/sign-in'}
                 className="text-gray-600 hover:text-churpay-purple"
               >
                 Sign In
