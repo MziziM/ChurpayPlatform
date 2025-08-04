@@ -181,21 +181,7 @@ export default function MemberDashboard() {
 
           {/* Bottom Section */}
           <div className="mt-auto pt-12 space-y-4">
-            <div className="bg-gray-800/50 rounded-2xl p-4">
-              <div className="flex items-center mb-3">
-                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                  <Gift className="h-5 w-5 text-white" />
-                </div>
-              </div>
-              <h3 className="text-white font-semibold mb-2">ChurPay Pro</h3>
-              <p className="text-gray-400 text-sm">Enhanced giving features & rewards</p>
-              <Button 
-                size="sm" 
-                className="mt-3 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl"
-              >
-                Upgrade Now
-              </Button>
-            </div>
+            
             
             <div className="space-y-2">
               <div 
