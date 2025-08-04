@@ -1,17 +1,13 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-
-import { Switch } from "@/components/ui/switch";
-import FinancialTrendsChart from "./FinancialTrendsChart";
-import MemberGivingAnalytics from "./MemberGivingAnalytics";
 import { 
   Heart, 
-  DollarSign, 
+  X, 
   Users, 
   Target, 
   TrendingUp, 
@@ -124,12 +120,12 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
       topGiverAmount: 15420,
       averageGiving: 1256
     },
-    projects: {
-      active: 6,
-      completed: 12,
-      totalRaised: 1245000,
-      successRate: 87
-    },
+    activeProjects: [
+      { id: 1, name: 'New Sanctuary', target: 350000, raised: 185000, donors: 87, category: 'Infrastructure', deadline: '2025-06-30', manager: 'Pastor Johnson' },
+      { id: 2, name: 'Kenya Outreach', target: 75000, raised: 45000, donors: 34, category: 'Missions', deadline: '2025-03-15', manager: 'Rev. Smith' },
+      { id: 3, name: 'Youth Camp 2025', target: 25000, raised: 18500, donors: 29, category: 'Youth', deadline: '2025-02-28', manager: 'Sarah Wilson' },
+      { id: 4, name: 'Community Kitchen', target: 45000, raised: 12000, donors: 18, category: 'Community', deadline: '2025-04-30', manager: 'Deacon Brown' }
+    ],
     recentTransactions: [
       { id: 1, member: 'John Smith', amount: 750, type: 'Tithe', date: '2025-01-03', method: 'Auto-Deduct', status: 'Completed' },
       { id: 2, member: 'Sarah Johnson', amount: 500, type: 'Building Fund', date: '2025-01-03', method: 'Card', status: 'Completed' },
@@ -137,17 +133,6 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
       { id: 4, member: 'Emily Davis', amount: 250, type: 'Youth Ministry', date: '2025-01-02', method: 'Card', status: 'Completed' },
       { id: 5, member: 'David Wilson', amount: 1200, type: 'Special Offering', date: '2025-01-01', method: 'EFT', status: 'Completed' },
       { id: 6, member: 'Lisa Anderson', amount: 400, type: 'Tithe', date: '2025-01-01', method: 'Auto-Deduct', status: 'Completed' }
-    ],
-    activeProjects: [
-      { id: 1, name: 'New Sanctuary', target: 350000, raised: 185000, donors: 87, category: 'Infrastructure', deadline: '2025-06-30', manager: 'Pastor Johnson' },
-      { id: 2, name: 'Kenya Outreach', target: 75000, raised: 45000, donors: 34, category: 'Missions', deadline: '2025-03-15', manager: 'Rev. Smith' },
-      { id: 3, name: 'Youth Camp 2025', target: 25000, raised: 18500, donors: 29, category: 'Youth', deadline: '2025-02-28', manager: 'Sarah Wilson' },
-      { id: 4, name: 'Community Kitchen', target: 45000, raised: 12000, donors: 18, category: 'Community', deadline: '2025-04-30', manager: 'Deacon Brown' }
-    ],
-    payouts: [
-      { id: 1, amount: 35420, date: '2025-01-01', status: 'Completed', method: 'Bank Transfer', reference: 'PO-2025-001' },
-      { id: 2, amount: 28750, date: '2024-12-15', status: 'Completed', method: 'Bank Transfer', reference: 'PO-2024-024' },
-      { id: 3, amount: 42150, date: '2024-12-01', status: 'Completed', method: 'Bank Transfer', reference: 'PO-2024-023' }
     ]
   };
 
@@ -156,6 +141,73 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   const renderMemberOverview = () => (
     <div className="space-y-6">
+      {/* Professional Achievements Section with ChurPay Branding */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <CheckCircle className="h-5 w-5 mr-2 text-purple-600" />
+          Achievements & Milestones
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          {memberData.achievements.map((achievement) => (
+            <div key={achievement.id} className={`p-4 rounded-lg border-2 ${achievement.earned ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex items-center space-x-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${achievement.earned ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  {achievement.icon === 'Heart' && <Heart className={`h-4 w-4 ${achievement.earned ? 'text-green-600' : 'text-gray-400'}`} />}
+                  {achievement.icon === 'Users' && <Users className={`h-4 w-4 ${achievement.earned ? 'text-green-600' : 'text-gray-400'}`} />}
+                  {achievement.icon === 'Target' && <Target className={`h-4 w-4 ${achievement.earned ? 'text-green-600' : 'text-gray-400'}`} />}
+                </div>
+                <div>
+                  <p className={`font-medium text-sm ${achievement.earned ? 'text-green-800' : 'text-gray-500'}`}>{achievement.title}</p>
+                  <p className={`text-xs ${achievement.earned ? 'text-green-600' : 'text-gray-400'}`}>{achievement.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Wallet Management Section with ChurPay Branding */}
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <Wallet className="h-5 w-5 mr-2 text-yellow-600" />
+          Digital Wallet & Budget
+        </h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Monthly Budget</span>
+              <span className="text-sm font-medium">R {memberData.wallet.monthlyBudget.toLocaleString()}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-churpay-gradient h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(memberData.wallet.budgetUsed / memberData.wallet.monthlyBudget) * 100}%` }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">Used: R {memberData.wallet.budgetUsed.toLocaleString()}</span>
+              <span className="text-xs text-gray-500">
+                {Math.round((memberData.wallet.budgetUsed / memberData.wallet.monthlyBudget) * 100)}%
+              </span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Available Balance</span>
+              <span className="text-lg font-bold text-green-600">R {memberData.wallet.balance.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Reward Points</span>
+              <span className="text-sm font-medium text-yellow-600">{memberData.wallet.rewardPoints.toLocaleString()} pts</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Saved Cards</span>
+              <span className="text-sm font-medium">{memberData.wallet.savedCards} cards</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Professional Welcome Section with ChurPay Branding */}
       <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
@@ -220,7 +272,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
         </div>
       </div>
 
-      {/* Enhanced Quick Actions with Professional Design */}
+      {/* Quick Actions with ChurPay Branding */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-sm border">
           <CardContent className="p-4">
@@ -345,10 +397,8 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
               </div>
               <div>
                 <h2 className="text-2xl font-bold">{churchData.church.name}</h2>
-                <p className="text-purple-100 flex items-center">
-                  <Users className="h-4 w-4 mr-2" />
-                  Admin: {churchData.church.admin}
-                </p>
+                <p className="text-purple-100">Est. {churchData.church.established} • {churchData.church.admin}</p>
+                <p className="text-purple-200 text-sm">{churchData.church.address}</p>
               </div>
             </div>
             <div className="text-right">
@@ -360,36 +410,136 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-2 mb-2">
-                <DollarSign className="h-4 w-4 text-purple-100" />
+                <Heart className="h-4 w-4 text-purple-100" />
                 <p className="text-purple-100 text-sm">Total Received</p>
               </div>
-              <p className="text-xl font-bold">R {churchData.financials.totalReceived.toLocaleString()}</p>
-              <p className="text-purple-200 text-xs">Net: R {churchData.financials.netReceived.toLocaleString()}</p>
+              <p className="text-2xl font-bold">R {churchData.financials.totalReceived.toLocaleString()}</p>
+              <p className="text-purple-200 text-xs">R {churchData.financials.netReceived.toLocaleString()} net</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-2 mb-2">
                 <Users className="h-4 w-4 text-purple-100" />
-                <p className="text-purple-100 text-sm">Members</p>
+                <p className="text-purple-100 text-sm">Active Members</p>
               </div>
-              <p className="text-xl font-bold">{churchData.members.activeGivers}</p>
-              <p className="text-purple-200 text-xs">of {churchData.members.total} members</p>
+              <p className="text-2xl font-bold">{churchData.members.active}</p>
+              <p className="text-purple-200 text-xs">{churchData.members.activeGivers} givers</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-2 mb-2">
                 <Target className="h-4 w-4 text-purple-100" />
-                <p className="text-purple-100 text-sm">Projects</p>
+                <p className="text-purple-100 text-sm">Active Projects</p>
               </div>
-              <p className="text-xl font-bold">{churchData.projects.active}</p>
-              <p className="text-purple-200 text-xs">{churchData.projects.successRate}% success rate</p>
+              <p className="text-2xl font-bold">{churchData.activeProjects.length}</p>
+              <p className="text-purple-200 text-xs">fundraising</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-purple-100" />
+                <Wallet className="h-4 w-4 text-purple-100" />
                 <p className="text-purple-100 text-sm">Revenue Share</p>
               </div>
-              <p className="text-xl font-bold">R {churchData.financials.revenueShare.toLocaleString()}</p>
+              <p className="text-2xl font-bold">R {churchData.financials.revenueShare.toLocaleString()}</p>
               <p className="text-purple-200 text-xs">10% annual share</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Performance Dashboard */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
+          Financial Performance
+        </h3>
+        <div className="grid grid-cols-3 gap-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Annual Target Progress</span>
+              <span className="text-sm font-medium">R {churchData.financials.targetThisYear.toLocaleString()}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-churpay-gradient h-3 rounded-full transition-all duration-300" 
+                style={{ width: `${(churchData.financials.yearToDate / churchData.financials.targetThisYear) * 100}%` }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">YTD: R {churchData.financials.yearToDate.toLocaleString()}</span>
+              <span className="text-xs text-gray-500">
+                {Math.round((churchData.financials.yearToDate / churchData.financials.targetThisYear) * 100)}%
+              </span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Average Donation</span>
+              <span className="text-lg font-bold text-green-600">R {churchData.financials.averageDonation.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Processing Fees</span>
+              <span className="text-sm font-medium text-red-600">R {churchData.financials.processingFees.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Top Giver</span>
+              <span className="text-sm font-medium">R {churchData.members.topGiverAmount.toLocaleString()}</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">This Month</span>
+              <span className="text-lg font-bold text-purple-600">R {churchData.financials.thisMonth.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Last Month</span>
+              <span className="text-sm font-medium">R {churchData.financials.lastMonth.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Growth Rate</span>
+              <span className="text-sm font-medium text-green-600">+{churchData.financials.monthlyGrowth}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Member Engagement Analytics */}
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <Users className="h-5 w-5 mr-2 text-yellow-600" />
+          Member Engagement
+        </h3>
+        <div className="grid grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Users className="h-8 w-8 text-purple-600" />
+            </div>
+            <p className="text-2xl font-bold text-purple-600">{churchData.members.total}</p>
+            <p className="text-sm text-gray-600">Total Members</p>
+            <p className="text-xs text-green-600">+{churchData.members.newThisMonth} this month</p>
+          </div>
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Heart className="h-8 w-8 text-green-600" />
+            </div>
+            <p className="text-2xl font-bold text-green-600">{churchData.members.activeGivers}</p>
+            <p className="text-sm text-gray-600">Active Givers</p>
+            <p className="text-xs text-gray-500">
+              {Math.round((churchData.members.activeGivers / churchData.members.total) * 100)}% of members
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Calendar className="h-8 w-8 text-yellow-600" />
+            </div>
+            <p className="text-2xl font-bold text-yellow-600">{churchData.members.recurringGivers}</p>
+            <p className="text-sm text-gray-600">Recurring Givers</p>
+            <p className="text-xs text-gray-500">Auto-deduct enabled</p>
+          </div>
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <TrendingUp className="h-8 w-8 text-blue-600" />
+            </div>
+            <p className="text-2xl font-bold text-blue-600">R {churchData.members.averageGiving.toLocaleString()}</p>
+            <p className="text-sm text-gray-600">Avg per Giver</p>
+            <p className="text-xs text-gray-500">Monthly average</p>
           </div>
         </div>
       </div>
@@ -400,7 +550,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Donations</p>
-                <p className="text-lg font-bold text-gray-900">Manage</p>
+                <p className="text-lg font-bold text-gray-900">R {churchData.financials.thisMonth.toLocaleString()}</p>
               </div>
               <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <Heart className="h-5 w-5 text-white" />
@@ -524,125 +674,39 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
     return userType === 'member' ? renderMemberOverview() : renderChurchOverview();
   };
 
-  const renderProjects = () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Active Projects</h3>
-      {(userType === 'member' ? memberData.projects : churchData.activeProjects)?.map((project: any) => (
-        <Card key={project.id}>
-          <CardContent className="p-4">
-            <h4 className="font-semibold mb-2">{project.name}</h4>
-            <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span>R{project.currentAmount.toLocaleString()} / R{project.targetAmount.toLocaleString()}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-churpay-gradient h-2 rounded-full" 
-                  style={{ width: `${(project.currentAmount / project.targetAmount) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderHistory = () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">{userType === 'member' ? 'Donation History' : 'Transaction History'}</h3>
-      {(userType === 'member' ? memberData.recentDonations : churchData.recentTransactions).map((item: any) => (
-        <Card key={item.id}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">
-                  {userType === 'member' ? `R${item.amount.toLocaleString()}` : `${item.member} - R${item.amount.toLocaleString()}`}
-                </p>
-                <p className="text-sm text-gray-600">{item.type} • {new Date(item.date).toLocaleDateString()}</p>
-              </div>
-              {userType === 'member' && (
-                <Badge className="bg-green-100 text-green-800">{item.status}</Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0">
-        <DialogHeader className="p-6 pb-4 border-b bg-churpay-gradient text-white">
-          <DialogTitle className="text-2xl font-semibold text-center">
-            {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
+    <Dialog open={isOpen} onOpenChange={(_open) => !_open && onClose()}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-churpay-gradient rounded-lg flex items-center justify-center">
+                {userType === 'member' ? (
+                  <Users className="h-4 w-4 text-white" />
+                ) : (
+                  <Church className="h-4 w-4 text-white" />
+                )}
+              </div>
+              <span className="text-xl font-bold">
+                {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
+              </span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {/* Overview Section */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Activity className="h-5 w-5 mr-2 text-purple-600" />
-              Overview
-            </h2>
-            {renderOverview()}
-          </div>
 
-          {/* Analytics Section */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
-              Analytics
-            </h2>
-            {userType === 'member' ? (
-              <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
-            ) : (
-              <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
-            )}
-          </div>
+        <div className="mt-6">
+          {renderOverview()}
+        </div>
 
-          {/* History Section */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <History className="h-5 w-5 mr-2 text-purple-600" />
-              {userType === 'member' ? 'Donation History' : 'Transaction History'}
-            </h2>
-            {renderHistory()}
-          </div>
+        <div className="mt-8">
+          <DashboardWidgets userType={userType} />
+        </div>
 
-          {/* Projects/Donate Section */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              {userType === 'member' ? (
-                <>
-                  <Heart className="h-5 w-5 mr-2 text-purple-600" />
-                  Make a Donation
-                </>
-              ) : (
-                <>
-                  <Target className="h-5 w-5 mr-2 text-purple-600" />
-                  Active Projects
-                </>
-              )}
-            </h2>
-            {userType === 'member' ? renderDonationForm() : renderProjects()}
-          </div>
-
-          {/* Widgets Section */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Layout className="h-5 w-5 mr-2 text-purple-600" />
-              Dashboard Widgets
-            </h2>
-            <DashboardWidgets 
-              userType={userType} 
-              dashboardData={userType === 'member' ? memberData : churchData} 
-            />
-          </div>
+        <div className="mt-8">
+          {renderDonationForm()}
         </div>
       </DialogContent>
     </Dialog>
