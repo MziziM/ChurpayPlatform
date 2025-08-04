@@ -233,9 +233,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payfastTransaction = await storage.createPayfastTransaction({
         walletTransactionId: null, // Will be updated after wallet transaction is created
         paymentId,
-        merchantId: 'DEMO_MERCHANT',
-        merchantKey: 'DEMO_KEY',
-        amount: totalAmount,
+        merchantId: process.env.PAYFAST_MERCHANT_ID!,
+        merchantKey: process.env.PAYFAST_MERCHANT_KEY!,
+        amount: totalAmount.toString(),
         itemName: 'ChurPay Wallet Top-up',
         itemDescription: `Top-up R${amount} to ChurPay wallet`,
         paymentStatus: 'pending',
@@ -275,6 +275,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating top-up:", error);
       res.status(500).json({ message: "Failed to create top-up" });
+    }
+  });
+
+  // Payment methods API
+  app.get('/api/payment-methods', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const paymentMethods = await storage.getUserPaymentMethods(userId);
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ message: "Failed to fetch payment methods" });
+    }
+  });
+
+  app.post('/api/payment-methods', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { type, maskedNumber, cardType, expiryMonth, expiryYear, nickname, payfastToken } = req.body;
+
+      const paymentMethod = await storage.createPaymentMethod({
+        userId,
+        type,
+        provider: 'payfast',
+        maskedNumber,
+        cardType,
+        expiryMonth,
+        expiryYear,
+        nickname,
+        payfastToken,
+        isDefault: false,
+        isActive: true,
+      });
+
+      res.json(paymentMethod);
+    } catch (error) {
+      console.error("Error creating payment method:", error);
+      res.status(500).json({ message: "Failed to create payment method" });
+    }
+  });
+
+  // Donation endpoints
+  app.post('/api/donations/give', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { churchId, amount, note, paymentMethod, paymentMethodId } = req.body;
+
+      const donation = await storage.createDonation({
+        userId,
+        churchId,
+        amount: amount.toString(),
+        description: note,
+        type: 'donation',
+        paymentMethod: paymentMethod || 'wallet',
+        paymentMethodId: paymentMethodId || null,
+        status: 'completed',
+      });
+
+      res.json(donation);
+    } catch (error) {
+      console.error("Error processing donation:", error);
+      res.status(500).json({ message: "Failed to process donation" });
+    }
+  });
+
+  app.post('/api/donations/tithe', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { churchId, amount, paymentMethod, paymentMethodId } = req.body;
+
+      const donation = await storage.createDonation({
+        userId,
+        churchId,
+        amount: amount.toString(),
+        description: 'Monthly tithe payment',
+        type: 'tithe',
+        paymentMethod: paymentMethod || 'wallet',
+        paymentMethodId: paymentMethodId || null,
+        status: 'completed',
+      });
+
+      res.json(donation);
+    } catch (error) {
+      console.error("Error processing tithe:", error);
+      res.status(500).json({ message: "Failed to process tithe" });
     }
   });
 

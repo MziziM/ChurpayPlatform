@@ -18,6 +18,7 @@ import {
   RefreshCw, Bell, Settings, TrendingUp, Calendar, Users, DollarSign,
   PiggyBank, Star, Award, Activity, CreditCard, Building
 } from 'lucide-react';
+import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
 
 interface WalletData {
   id: string;
@@ -80,16 +81,12 @@ interface DonationHistory {
 
 export default function MemberDashboard() {
   const [showBalance, setShowBalance] = useState(true);
-  const [showGiveModal, setShowGiveModal] = useState(false);
-  const [showTitheModal, setShowTitheModal] = useState(false);
+  const [showDonationModal, setShowDonationModal] = useState(false);
+  const [donationType, setDonationType] = useState<'donation' | 'tithe'>('donation');
   const [showSponsorModal, setShowSponsorModal] = useState(false);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   
-  // Form states
-  const [giveAmount, setGiveAmount] = useState('');
-  const [giveChurch, setGiveChurch] = useState('');
-  const [giveNote, setGiveNote] = useState('');
-  const [titheAmount, setTitheAmount] = useState('');
+  // Form states for remaining modals
   const [sponsorAmount, setSponsorAmount] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
   const [topUpAmount, setTopUpAmount] = useState('');
@@ -128,57 +125,7 @@ export default function MemberDashboard() {
     retry: false,
   });
 
-  // Give donation mutation
-  const giveMutation = useMutation({
-    mutationFn: async (data: { churchId: string; amount: number; note?: string }) => {
-      return await apiRequest('/api/donations/give', 'POST', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet/transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
-      toast({
-        title: "Donation Successful",
-        description: "Your donation has been processed successfully.",
-      });
-      setShowGiveModal(false);
-      setGiveAmount('');
-      setGiveChurch('');
-      setGiveNote('');
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Donation Failed",
-        description: error.message || "Failed to process donation",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Tithe mutation
-  const titheMutation = useMutation({
-    mutationFn: async (data: { churchId: string; amount: number }) => {
-      return await apiRequest('/api/donations/tithe', 'POST', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet/transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
-      toast({
-        title: "Tithe Successful",
-        description: "Your tithe has been processed successfully.",
-      });
-      setShowTitheModal(false);
-      setTitheAmount('');
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Tithe Failed",
-        description: error.message || "Failed to process tithe",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Project sponsorship mutation
   const sponsorMutation = useMutation({
@@ -264,37 +211,7 @@ export default function MemberDashboard() {
     }
   };
 
-  const handleGive = () => {
-    if (!giveAmount || !giveChurch || parseFloat(giveAmount) <= 0) {
-      toast({
-        title: "Invalid Donation",
-        description: "Please select a church and enter a valid amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-    giveMutation.mutate({
-      churchId: giveChurch,
-      amount: parseFloat(giveAmount),
-      note: giveNote,
-    });
-  };
 
-  const handleTithe = () => {
-    if (!titheAmount || parseFloat(titheAmount) <= 0) {
-      toast({
-        title: "Invalid Tithe",
-        description: "Please enter a valid tithe amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-    const churchList = churches as Church[];
-    titheMutation.mutate({
-      churchId: churchList[0]?.id || '',
-      amount: parseFloat(titheAmount),
-    });
-  };
 
   const handleSponsor = () => {
     if (!sponsorAmount || !selectedProject || parseFloat(sponsorAmount) <= 0) {
@@ -479,7 +396,10 @@ export default function MemberDashboard() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button 
-              onClick={() => setShowGiveModal(true)}
+              onClick={() => {
+                setDonationType('donation');
+                setShowDonationModal(true);
+              }}
               className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
             >
               <Heart className="h-6 w-6" />
@@ -487,7 +407,10 @@ export default function MemberDashboard() {
             </Button>
 
             <Button 
-              onClick={() => setShowTitheModal(true)}
+              onClick={() => {
+                setDonationType('tithe');
+                setShowDonationModal(true);
+              }}
               className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
             >
               <Church className="h-6 w-6" />
@@ -590,8 +513,8 @@ export default function MemberDashboard() {
                       </div>
                       <Button 
                         onClick={() => {
-                          setGiveChurch(church.id);
-                          setShowGiveModal(true);
+                          setDonationType('donation');
+                          setShowDonationModal(true);
                         }}
                         className="w-full bg-churpay-gradient text-white"
                       >
@@ -697,121 +620,14 @@ export default function MemberDashboard() {
           </TabsContent>
         </Tabs>
 
-        {/* Give Modal */}
-        <Dialog open={showGiveModal} onOpenChange={setShowGiveModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Heart className="h-5 w-5 mr-2 text-purple-600" />
-                Make a Donation
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="give-church">Select Church</Label>
-                <Select value={giveChurch} onValueChange={setGiveChurch}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a church" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(churches as Church[]).map((church: Church) => (
-                      <SelectItem key={church.id} value={church.id}>
-                        {church.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="give-amount">Amount (ZAR)</Label>
-                <Input
-                  id="give-amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={giveAmount}
-                  onChange={(e) => setGiveAmount(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="give-note">Note (Optional)</Label>
-                <Textarea
-                  id="give-note"
-                  placeholder="Add a message with your donation"
-                  value={giveNote}
-                  onChange={(e) => setGiveNote(e.target.value)}
-                />
-              </div>
-
-              <div className="flex space-x-3">
-                <Button
-                  onClick={handleGive}
-                  disabled={!giveAmount || !giveChurch || giveMutation.isPending}
-                  className="flex-1 bg-churpay-gradient text-white"
-                >
-                  {giveMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Heart className="h-4 w-4 mr-2" />
-                  )}
-                  {giveMutation.isPending ? 'Processing...' : 'Give Now'}
-                </Button>
-                <Button variant="outline" onClick={() => setShowGiveModal(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Tithe Modal */}
-        <Dialog open={showTitheModal} onOpenChange={setShowTitheModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Church className="h-5 w-5 mr-2 text-blue-600" />
-                Pay Tithe
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Tithe:</strong> A tenth of your income given to support your church's ministry and mission.
-                </p>
-              </div>
-              
-              <div>
-                <Label htmlFor="tithe-amount">Tithe Amount (ZAR)</Label>
-                <Input
-                  id="tithe-amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={titheAmount}
-                  onChange={(e) => setTitheAmount(e.target.value)}
-                />
-              </div>
-
-              <div className="flex space-x-3">
-                <Button
-                  onClick={handleTithe}
-                  disabled={!titheAmount || titheMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                >
-                  {titheMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Church className="h-4 w-4 mr-2" />
-                  )}
-                  {titheMutation.isPending ? 'Processing...' : 'Pay Tithe'}
-                </Button>
-                <Button variant="outline" onClick={() => setShowTitheModal(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Enhanced Donation Modal */}
+        <EnhancedDonationModal
+          isOpen={showDonationModal}
+          onClose={() => setShowDonationModal(false)}
+          type={donationType}
+          churches={churches}
+          walletBalance={walletData ? parseFloat(walletData.availableBalance) : 0}
+        />
 
         {/* Sponsor Modal */}
         <Dialog open={showSponsorModal} onOpenChange={setShowSponsorModal}>

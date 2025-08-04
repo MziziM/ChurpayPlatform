@@ -408,6 +408,69 @@ export const activityLogs = pgTable("activity_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Enhanced payment methods for storing cards and bank accounts
+export const paymentMethods = pgTable("payment_methods", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // 'card', 'bank_account'
+  provider: varchar("provider").notNull().default('payfast'),
+  
+  // Card details (tokenized/encrypted)
+  maskedNumber: varchar("masked_number").notNull(), // Last 4 digits for cards
+  expiryMonth: varchar("expiry_month"), // For cards
+  expiryYear: varchar("expiry_year"), // For cards
+  cardType: varchar("card_type"), // 'visa', 'mastercard', etc.
+  
+  // Bank details
+  bankName: varchar("bank_name"), // For bank accounts
+  accountType: varchar("account_type"), // 'checking', 'savings'
+  
+  // User preferences
+  nickname: varchar("nickname"), // User-friendly name like "Main Card"
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  
+  // PayFast integration
+  payfastToken: varchar("payfast_token"), // PayFast card tokenization
+  
+  lastUsed: timestamp("last_used"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Enhanced donations table for tracking giving, tithing, and project sponsorship
+export const donations = pgTable("donations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  churchId: varchar("church_id"),
+  projectId: varchar("project_id"),
+  
+  // Financial details
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").default("ZAR"),
+  processingFee: decimal("processing_fee", { precision: 10, scale: 2 }),
+  netAmount: decimal("net_amount", { precision: 10, scale: 2 }),
+  
+  // Donation metadata
+  type: varchar("type").notNull(), // 'donation', 'tithe', 'project'
+  note: text("note"),
+  isRecurring: boolean("is_recurring").default(false),
+  isAnonymous: boolean("is_anonymous").default(false),
+  
+  // Payment details
+  paymentMethod: varchar("payment_method").notNull(), // 'wallet', 'card'
+  paymentMethodId: varchar("payment_method_id"), // Reference to stored payment method
+  status: varchar("status").notNull(), // 'pending', 'completed', 'failed'
+  
+  // References
+  reference: varchar("reference").notNull(),
+  payfastPaymentId: varchar("payfast_payment_id"),
+  walletTransactionId: uuid("wallet_transaction_id").references(() => walletTransactions.id),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   church: one(churches, {
@@ -598,6 +661,18 @@ export const insertPayfastTransactionSchema = createInsertSchema(payfastTransact
   updatedAt: true,
 });
 
+export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDonationSchema = createInsertSchema(donations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -629,3 +704,9 @@ export type InsertWalletTopUpMethod = z.infer<typeof insertWalletTopUpMethodSche
 
 export type PayfastTransaction = typeof payfastTransactions.$inferSelect;
 export type InsertPayfastTransaction = z.infer<typeof insertPayfastTransactionSchema>;
+
+export type PaymentMethod = typeof paymentMethods.$inferSelect;
+export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
+
+export type Donation = typeof donations.$inferSelect;
+export type InsertDonation = z.infer<typeof insertDonationSchema>;
