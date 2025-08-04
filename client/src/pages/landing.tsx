@@ -171,7 +171,7 @@ export default function Landing() {
                   onClick={() => window.location.href = '/api/login'}
                   className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                 >
-                  <span>Start Free Trial</span>
+                  <span>Get Started</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
