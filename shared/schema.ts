@@ -15,6 +15,34 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Platform fee constants
+export const PLATFORM_FEE_PERCENTAGE = 3.9; // 3.9%
+export const PLATFORM_FEE_FIXED = 3.00; // R3 fixed fee per transaction
+
+// Fee calculation utility
+export function calculatePlatformFees(amount: number): {
+  platformFee: number;
+  netAmount: number;
+  feeBreakdown: {
+    percentageFee: number;
+    fixedFee: number;
+  };
+} {
+  const percentageFee = (amount * PLATFORM_FEE_PERCENTAGE) / 100;
+  const fixedFee = PLATFORM_FEE_FIXED;
+  const platformFee = percentageFee + fixedFee;
+  const netAmount = amount - platformFee;
+  
+  return {
+    platformFee: Math.round(platformFee * 100) / 100, // Round to 2 decimal places
+    netAmount: Math.round(netAmount * 100) / 100,
+    feeBreakdown: {
+      percentageFee: Math.round(percentageFee * 100) / 100,
+      fixedFee: fixedFee
+    }
+  };
+}
+
 // Session storage table for Replit Auth
 export const sessions = pgTable(
   "sessions",

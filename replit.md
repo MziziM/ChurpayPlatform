@@ -6,6 +6,15 @@ ChurPay is a comprehensive church management and donation platform designed spec
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Changes
+
+## Pricing Model Update (January 2025)
+- Removed subscription tiers and free trial system
+- Implemented simple pay-per-transaction model: 3.9% + R3 per transaction  
+- Updated landing page to reflect new pricing structure
+- Added fee calculation utilities in shared schema
+- No monthly fees, setup costs, or subscription charges
+
 # System Architecture
 
 ## Frontend Architecture

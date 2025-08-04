@@ -625,100 +625,70 @@ export default function Landing() {
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Transparent Pricing</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Simple, fair pricing that grows with your church. No hidden fees, no long-term contracts.</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">No subscriptions, no monthly fees. Pay only when you receive donations.</p>
           </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Starter',
-                description: 'Perfect for small churches getting started',
-                price: '2.9%',
-                subPrice: 'per transaction + R0.30',
-                features: [
-                  'Up to R50,000/month',
-                  'Basic donation forms',
-                  'Email receipts',
-                  'Basic reporting',
-                  'Email support'
-                ],
-                buttonText: 'Start Free Trial',
-                buttonStyle: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-                popular: false
-              },
-              {
-                name: 'Professional',
-                description: 'Best for growing churches with active communities',
-                price: '2.5%',
-                subPrice: 'per transaction + R0.25',
-                features: [
-                  'Up to R200,000/month',
-                  'Advanced donation forms',
-                  'Recurring donations',
-                  'Project fundraising',
-                  'Advanced analytics',
-                  'Phone & email support'
-                ],
-                buttonText: 'Start Free Trial',
-                buttonStyle: 'bg-churpay-gradient text-white hover:shadow-lg',
-                popular: true
-              },
-              {
-                name: 'Enterprise',
-                description: 'For large churches and multi-campus organizations',
-                price: 'Custom',
-                subPrice: 'tailored pricing',
-                features: [
-                  'Unlimited volume',
-                  'White-label options',
-                  'API access',
-                  'Custom integrations',
-                  'Dedicated support manager',
-                  '24/7 priority support'
-                ],
-                buttonText: 'Contact Sales',
-                buttonStyle: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-                popular: false
-              }
-            ].map((plan, index) => (
-              <Card key={index} className={`${plan.popular ? 'border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100 transform scale-105' : 'border-2 border-gray-200 hover:border-purple-300'} transition-all duration-300 card-hover relative`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-churpay-gradient text-white">Most Popular</Badge>
-                  </div>
-                )}
+
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100 transition-all duration-300 card-hover relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-churpay-gradient text-white">Pay As You Go</Badge>
+              </div>
+              
+              <CardContent className="p-12 text-center">
+                <div className="mb-8">
+                  <h3 className="text-3xl font-bold text-gray-900 mb-4">Simple Pricing</h3>
+                  <p className="text-gray-600 mb-8">One transparent rate for all churches, regardless of size</p>
+                  <div className="text-5xl font-bold text-gray-900 mb-2">3.9%</div>
+                  <p className="text-xl text-gray-500 mb-2">per transaction + R3</p>
+                  <p className="text-sm text-gray-400">No monthly fees • No setup costs • No hidden charges</p>
+                </div>
                 
-                <CardContent className="p-8">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                    <p className="text-gray-600 mb-6">{plan.description}</p>
-                    <div className="text-4xl font-bold text-gray-900 mb-2">{plan.price}</div>
-                    <p className="text-gray-500">{plan.subPrice}</p>
-                  </div>
-                  
-                  <div className="space-y-4 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center space-x-3">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-700">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
+                <div className="space-y-4 mb-8 text-left">
+                  {[
+                    'Unlimited donation volume',
+                    'Advanced donation forms',
+                    'Recurring donations',
+                    'Project fundraising campaigns',
+                    'Real-time analytics & reporting',
+                    'Member wallet system',
+                    'Instant bank transfers',
+                    'Email & SMS receipts',
+                    'Multi-user church accounts',
+                    '24/7 customer support',
+                    'Bank-level security',
+                    'Mobile-optimized platform'
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <span className="text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-3">
                   <Button 
-                    className={`w-full ${plan.buttonStyle} transition-all duration-300 ${plan.popular ? 'transform hover:-translate-y-1' : ''}`}
-                    onClick={() => window.location.href = '/api/login'}
+                    className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-200"
+                    onClick={() => setLocation("/church-registration")}
                   >
-                    {plan.buttonText}
+                    Register Your Church
                   </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setLocation("/member-registration")}
+                  >
+                    Join as Member
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          
+
           <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">All plans include a 30-day free trial • No setup fees • Cancel anytime</p>
+            <p className="text-gray-600 mb-4">
+              Example: On a R100 donation, you keep R93 (R100 - 3.9% - R3 = R93)
+            </p>
             <div className="flex items-center justify-center space-x-8 text-sm text-gray-500">
               <div className="flex items-center space-x-2">
                 <Shield className="h-4 w-4 text-green-500" />
@@ -752,26 +722,27 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg"
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => setLocation("/church-registration")}
                 className="bg-white text-churpay-purple hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
               >
-                <span>Start Your Free Trial</span>
+                <span>Register Your Church</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 size="lg"
                 variant="outline"
                 className="bg-white/20 text-white border-2 border-white/30 hover:bg-white/30 transition-all duration-300"
+                onClick={() => setLocation("/member-registration")}
               >
                 <Bell className="mr-2 h-4 w-4" />
-                <span>Schedule a Demo</span>
+                <span>Join as Member</span>
               </Button>
             </div>
             
             <div className="mt-8 flex items-center justify-center space-x-6 text-white/80">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4" />
-                <span>30-day free trial</span>
+                <span>3.9% + R3 per transaction</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4" />
@@ -779,7 +750,7 @@ export default function Landing() {
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4" />
-                <span>Cancel anytime</span>
+                <span>No monthly charges</span>
               </div>
             </div>
           </div>
