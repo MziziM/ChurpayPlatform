@@ -19,6 +19,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   console.log("🔒 Code protection system active - Core files and fee structure locked");
 
+  // Authentication endpoints
+  app.post('/api/auth/member/signin', async (req, res) => {
+    try {
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string()
+      }).parse(req.body);
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.passwordHash) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Check if user is a member
+      if (user.role !== 'member') {
+        return res.status(401).json({ message: "Access denied. Member account required." });
+      }
+
+      // Create session data (excluding password hash)
+      const { passwordHash, ...userData } = user;
+      
+      // Log successful login
+      await storage.logActivity({
+        userId: user.id,
+        churchId: user.churchId,
+        action: 'member_login',
+        entity: 'user',
+        entityId: user.id,
+        details: { email: user.email, loginTime: new Date().toISOString() },
+      });
+
+      res.json({
+        user: userData,
+        message: "Sign in successful"
+      });
+    } catch (error: any) {
+      console.error("Member sign-in error:", error);
+      res.status(400).json({ message: "Sign in failed", error: error.message });
+    }
+  });
+
+  app.post('/api/auth/church/signin', async (req, res) => {
+    try {
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string()
+      }).parse(req.body);
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.passwordHash) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Check if user is church admin or staff
+      if (!['church_admin', 'church_staff'].includes(user.role || '')) {
+        return res.status(401).json({ message: "Access denied. Church account required." });
+      }
+
+      // Get church information
+      const church = user.churchId ? await storage.getChurch(user.churchId) : null;
+
+      // Create session data (excluding password hash)
+      const { passwordHash, ...userData } = user;
+      
+      // Log successful login
+      await storage.logActivity({
+        userId: user.id,
+        churchId: user.churchId,
+        action: 'church_admin_login',
+        entity: 'user',
+        entityId: user.id,
+        details: { email: user.email, role: user.role, churchName: church?.name },
+      });
+
+      res.json({
+        user: userData,
+        church: church,
+        message: "Sign in successful"
+      });
+    } catch (error: any) {
+      console.error("Church sign-in error:", error);
+      res.status(400).json({ message: "Sign in failed", error: error.message });
+    }
+  });
+
   // Public registration endpoints (NO AUTHENTICATION REQUIRED)
   app.post('/api/churches/register', async (req, res) => {
     try {
