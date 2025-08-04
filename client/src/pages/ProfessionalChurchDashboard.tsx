@@ -13,13 +13,9 @@ import {
   Receipt, BarChart3, FileText, UserPlus,
   Download, Eye, Calendar, MapPin
 } from 'lucide-react';
-import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
-import { ProjectsModal } from '@/components/ProjectsModal';
-import { ProfessionalWalletModal } from '@/components/ProfessionalWalletModal';
-import { ProfileModal } from '@/components/ProfileModal';
-import { ChurchModal } from '@/components/ChurchModal';
-import { NotificationModal } from '@/components/NotificationModal';
-import { ActivitiesModal } from '@/components/ActivitiesModal';
+import { ChurchPayoutModal } from '@/components/ChurchPayoutModal';
+import { ChurchMemberModal } from '@/components/ChurchMemberModal';
+import { ChurchProjectModal } from '@/components/ChurchProjectModal';
 
 interface ChurchData {
   id: string;
@@ -79,11 +75,7 @@ interface ProjectData {
 export default function ProfessionalChurchDashboard() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showProjectsModal, setShowProjectsModal] = useState(false);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
-  const [showReportsModal, setShowReportsModal] = useState(false);
+  const [showProjectModal, setShowProjectModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Data queries
@@ -133,416 +125,341 @@ export default function ProfessionalChurchDashboard() {
     queryKey: ['/api/church/analytics/monthly']
   });
 
-  // Quick actions
-  const quickActions = [
-    {
-      title: 'Add New Member',
-      description: 'Register a new church member',
-      icon: UserPlus,
-      action: () => setShowMemberModal(true),
-      color: 'bg-blue-500',
-    },
-    {
-      title: 'Create Project',
-      description: 'Start a new fundraising project',
-      icon: Target,
-      action: () => setShowProjectsModal(true),
-      color: 'bg-green-500',
-    },
-    {
-      title: 'Request Payout',
-      description: 'Request funds withdrawal',
-      icon: Wallet,
-      action: () => setShowPayoutModal(true),
-      color: 'bg-purple-500',
-    },
-    {
-      title: 'View Reports',
-      description: 'Access detailed analytics',
-      icon: BarChart3,
-      action: () => setShowReportsModal(true),
-      color: 'bg-orange-500',
-    },
-  ];
 
-  // Stats cards data
-  const statsCards = [
-    {
-      title: 'Total Members',
-      value: churchStats?.totalMembers?.toLocaleString() || '0',
-      subValue: `${churchStats?.activeMembers || 0} active`,
-      change: `+${churchStats?.memberGrowth || 0}%`,
-      trend: 'up',
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      title: 'Monthly Revenue',
-      value: `R${churchStats?.monthlyRevenue || '0'}`,
-      subValue: `R${churchStats?.averageDonation || '0'} avg`,
-      change: `+${churchStats?.revenueGrowth || 0}%`,
-      trend: 'up',
-      icon: DollarSign,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-    {
-      title: 'Available Balance',
-      value: `R${churchStats?.availableBalance || '0'}`,
-      subValue: `R${churchStats?.pendingPayouts || '0'} pending`,
-      change: 'Ready for payout',
-      trend: 'neutral',
-      icon: Wallet,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      title: 'Active Projects',
-      value: churchStats?.activeProjects?.toString() || '0',
-      subValue: `${churchStats?.projectCount || 0} total`,
-      change: 'Fundraising',
-      trend: 'neutral',
-      icon: Target,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-churpay-gradient rounded-xl flex items-center justify-center shadow-lg">
-                  <Church className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    {churchData?.name || 'Church Dashboard'}
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    {churchData?.denomination} • {churchData?.city}, {churchData?.province}
-                  </p>
-                </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Header - Same as Member Dashboard */}
+      <header className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">C</span>
               </div>
+              <span className="text-xl font-semibold text-gray-900">ChurPay</span>
             </div>
-
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search members, transactions..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 w-64 bg-gray-50 border-0 focus:bg-white"
-                />
+            
+            <nav className="hidden md:flex items-center space-x-6">
+              <Button variant="ghost" className="text-purple-600 font-medium">Dashboard</Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => setShowMemberModal(true)}
+              >
+                Members
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => setShowProjectModal(true)}
+              >
+                Projects
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => setShowPayoutModal(true)}
+              >
+                Payouts
+              </Button>
+            </nav>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative hover:bg-purple-50"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </Button>
+            
+            <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                <Church className="h-4 w-4 text-purple-600" />
               </div>
-
-              {/* Notifications */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNotificationModal(true)}
-                className="relative"
-              >
-                <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs bg-red-500 text-white rounded-full flex items-center justify-center">
-                  3
-                </Badge>
-              </Button>
-
-              {/* Settings */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowProfileModal(true)}
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-
-              {/* Church Profile */}
-              <Button
-                variant="outline"
-                onClick={() => setShowProfileModal(true)}
-                className="flex items-center space-x-2"
-              >
-                <div className="w-8 h-8 bg-churpay-gradient rounded-full flex items-center justify-center">
-                  <Building2 className="h-4 w-4 text-white" />
-                </div>
-                <span className="hidden md:block font-medium">Church Admin</span>
-              </Button>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium text-gray-900">{churchData?.name || 'Church Admin'}</p>
+                <p className="text-xs text-gray-500">Administrator</p>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="p-6 space-y-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsCards.map((stat, index) => (
-            <Card key={index} className="relative overflow-hidden hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-sm text-gray-500">{stat.subValue}</p>
-                    <div className="flex items-center space-x-1">
-                      {stat.trend === 'up' && <ArrowUpRight className="h-4 w-4 text-green-600" />}
-                      {stat.trend === 'down' && <ArrowDownRight className="h-4 w-4 text-red-600" />}
-                      <span className={`text-sm ${
-                        stat.trend === 'up' ? 'text-green-600' : 
-                        stat.trend === 'down' ? 'text-red-600' : 'text-gray-600'
-                      }`}>
-                        {stat.change}
-                      </span>
+      {/* Main Content - Same structure as Member Dashboard */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Good afternoon, {churchData?.name || 'Church Admin'}</h1>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <span>Here's your church overview and member activity</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Last active</p>
+              <p className="text-sm font-medium text-gray-900">2 minutes ago</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions with Enhanced UX - Same style as Member Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button
+                onClick={() => setShowMemberModal(true)}
+                className="h-24 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white flex flex-col items-center justify-center space-y-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                <UserPlus className="h-7 w-7" />
+                <div className="text-center">
+                  <span className="font-semibold">Add Member</span>
+                  <p className="text-xs opacity-90">Register new member</p>
+                </div>
+              </Button>
+              
+              <Button
+                onClick={() => setShowPayoutModal(true)}
+                variant="outline"
+                className="h-24 border-2 border-gray-200 hover:border-purple-300 bg-white hover:bg-purple-50 flex flex-col items-center justify-center space-y-2 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <Wallet className="h-7 w-7 text-purple-600" />
+                <div className="text-center">
+                  <span className="font-semibold text-gray-900">Request Payout</span>
+                  <p className="text-xs text-gray-600">R {churchStats?.availableBalance || '0'}</p>
+                </div>
+              </Button>
+              
+              <Button
+                onClick={() => setShowProjectModal(true)}
+                variant="outline"
+                className="h-24 border-2 border-gray-200 hover:border-orange-300 bg-white hover:bg-orange-50 flex flex-col items-center justify-center space-y-2 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <Target className="h-7 w-7 text-orange-600" />
+                <div className="text-center">
+                  <span className="font-semibold text-gray-900">New Project</span>
+                  <p className="text-xs text-gray-600">Create fundraiser</p>
+                </div>
+              </Button>
+            </div>
+
+            {/* Church Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-100 rounded-xl">
+                      <Users className="h-8 w-8 text-blue-600" />
                     </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      +{churchStats?.memberGrowth || 0}% growth
+                    </Badge>
                   </div>
-                  <div className={`w-16 h-16 ${stat.bgColor} rounded-2xl flex items-center justify-center`}>
-                    <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-blue-900">{churchStats?.totalMembers || 0}</h3>
+                    <p className="text-blue-700 font-medium">Total Members</p>
+                    <p className="text-sm text-blue-600">{churchStats?.activeMembers || 0} active this month</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-green-100 rounded-xl">
+                      <DollarSign className="h-8 w-8 text-green-600" />
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      +{churchStats?.revenueGrowth || 0}% growth
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-green-900">R{churchStats?.monthlyRevenue || '0'}</h3>
+                    <p className="text-green-700 font-medium">Monthly Revenue</p>
+                    <p className="text-sm text-green-600">R{churchStats?.availableBalance || '0'} available</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-purple-600" />
+                  <span>Recent Transactions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentTransactions?.slice(0, 5).map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                          {transaction.type === 'tithe' && <Church className="h-5 w-5 text-purple-600" />}
+                          {transaction.type === 'donation' && <Heart className="h-5 w-5 text-red-600" />}
+                          {transaction.type === 'project' && <Target className="h-5 w-5 text-blue-600" />}
+                          {transaction.type === 'offering' && <Banknote className="h-5 w-5 text-green-600" />}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{transaction.memberName}</p>
+                          <p className="text-sm text-gray-600">
+                            {transaction.type === 'project' ? transaction.projectTitle : transaction.type}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">R{transaction.amount}</p>
+                        <p className="text-xs text-gray-500">{new Date(transaction.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Church Overview */}
+          <div className="space-y-6">
+            {/* Church Summary Card */}
+            <Card className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <Building2 className="h-8 w-8 text-white" />
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-white hover:bg-white/20 rounded-lg"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{churchData?.name}</h3>
+                    <p className="text-purple-100">{churchData?.denomination}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-purple-400">
+                    <div>
+                      <p className="text-2xl font-bold text-white">{churchStats?.totalMembers}</p>
+                      <p className="text-sm text-purple-200">Members</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">R{churchStats?.monthlyRevenue}</p>
+                      <p className="text-sm text-purple-200">This Month</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+
+            {/* Top Donors */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  <span>Top Donors</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topMembers?.slice(0, 4).map((member, index) => (
+                    <div key={member.id} className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-purple-700">{index + 1}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">{member.firstName} {member.lastName}</p>
+                        <p className="text-xs text-gray-500">R{member.totalDonated} donated</p>
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="ghost" size="sm" className="w-full mt-4 text-purple-600 hover:bg-purple-50">
+                    View All Members
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Active Projects */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-orange-600" />
+                  <span>Active Projects</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {activeProjects?.slice(0, 2).map((project) => (
+                    <div key={project.id} className="p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200">
+                      <h4 className="font-semibold text-gray-900 text-sm mb-2">{project.title}</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-gray-600">
+                          <span>{project.progress}% complete</span>
+                          <span>R{project.currentAmount} / R{project.targetAmount}</span>
+                        </div>
+                        <div className="w-full bg-orange-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-4 text-orange-600 hover:bg-orange-50"
+                    onClick={() => setShowProjectModal(true)}
+                  >
+                    Create New Project
+                    <Plus className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+      </main>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Plus className="h-5 w-5" />
-              <span>Quick Actions</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {quickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  onClick={action.action}
-                  className="h-auto p-4 flex flex-col items-start space-y-2 hover:shadow-md transition-all duration-300"
-                >
-                  <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-2`}>
-                    <action.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900">{action.title}</p>
-                    <p className="text-sm text-gray-500">{action.description}</p>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Transactions */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <Receipt className="h-5 w-5" />
-                <span>Recent Transactions</span>
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowActivitiesModal(true)}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View All
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentTransactions?.slice(0, 5).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        {transaction.type === 'tithe' && <Church className="h-5 w-5 text-purple-600" />}
-                        {transaction.type === 'donation' && <Heart className="h-5 w-5 text-red-600" />}
-                        {transaction.type === 'project' && <Target className="h-5 w-5 text-blue-600" />}
-                        {transaction.type === 'offering' && <Banknote className="h-5 w-5 text-green-600" />}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{transaction.memberName}</p>
-                        <p className="text-sm text-gray-500">
-                          {transaction.type === 'project' ? transaction.projectTitle : transaction.type}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">R{transaction.amount}</p>
-                      <p className="text-xs text-gray-500">{new Date(transaction.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Top Donors */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Top Donors This Month</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topMembers?.slice(0, 5).map((member, index) => (
-                  <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-churpay-gradient rounded-full flex items-center justify-center text-white font-semibold">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{member.firstName} {member.lastName}</p>
-                        <p className="text-sm text-gray-500">{member.membershipType}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">R{member.totalDonated}</p>
-                      <p className="text-xs text-gray-500">Last: {new Date(member.lastDonation).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Active Projects */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <Target className="h-5 w-5" />
-                <span>Active Projects</span>
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowProjectsModal(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activeProjects?.slice(0, 3).map((project) => (
-                  <div key={project.id} className="p-4 rounded-lg border border-gray-200 hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-gray-900">{project.title}</h4>
-                      <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span>{project.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-churpay-gradient h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${project.progress}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>R{project.currentAmount} raised</span>
-                        <span>R{project.targetAmount} goal</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Members */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <UserPlus className="h-5 w-5" />
-                <span>Recent Members</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentMembers?.slice(0, 5).map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        <Users className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{member.firstName} {member.lastName}</p>
-                        <p className="text-sm text-gray-500">{member.membershipType}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                        {member.status}
-                      </Badge>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Joined {new Date(member.joinDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Modals */}
-      <ProfessionalDonationModal
+      {/* Church-specific Modals */}
+      <ChurchMemberModal
         isOpen={showMemberModal}
         onClose={() => setShowMemberModal(false)}
-        donationType="donation"
-        churches={[]}
-        projects={[]}
       />
 
-      <ProfessionalWalletModal
+      <ChurchPayoutModal
         isOpen={showPayoutModal}
         onClose={() => setShowPayoutModal(false)}
-        walletBalance={parseFloat(churchStats?.availableBalance?.replace(/,/g, '') || '0')}
-        rewardPoints={0}
-        transactions={[]}
-        onTopUp={() => console.log('Request payout')}
-        onSend={() => console.log('Transfer funds')}
+        availableBalance={churchStats?.availableBalance || '0'}
+        pendingPayouts={churchStats?.pendingPayouts || '0'}
       />
 
-      <ProjectsModal
-        isOpen={showProjectsModal}
-        onClose={() => setShowProjectsModal(false)}
-      />
-
-      <ProfileModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-      />
-
-      <NotificationModal
-        isOpen={showNotificationModal}
-        onClose={() => setShowNotificationModal(false)}
-      />
-
-      <ActivitiesModal
-        isOpen={showActivitiesModal}
-        onClose={() => setShowActivitiesModal(false)}
+      <ChurchProjectModal
+        isOpen={showProjectModal}
+        onClose={() => setShowProjectModal(false)}
       />
     </div>
   );
