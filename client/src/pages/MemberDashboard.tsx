@@ -228,8 +228,18 @@ export default function MemberDashboard() {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-yellow-500/5"></div>
             <div className="relative">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Overview</h2>
-              <p className="text-gray-600">Your wallet and giving activity</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">Financial Dashboard</h2>
+                  <p className="text-gray-600">Real-time account metrics</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Active
+                  </Badge>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -255,7 +265,10 @@ export default function MemberDashboard() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => setShowTopUpModal(true)}
+                    onClick={() => {
+                      setDonationType('topup');
+                      setShowDonationModal(true);
+                    }}
                     className="bg-white/20 hover:bg-white/30 text-white border-0"
                   >
                     <Plus className="h-4 w-4 mr-1" />
@@ -318,7 +331,12 @@ export default function MemberDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Transaction Center</h3>
+            <div className="text-sm text-gray-500">
+              Daily limit: R {walletData ? formatCurrency((walletData as WalletData).dailyTransferLimit) : '5,000.00'}
+            </div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button 
               onClick={() => {
@@ -366,8 +384,73 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="space-y-6">
+        {/* Analytics Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-purple-500">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Total Given</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    {(donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Avg Monthly</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    R {Math.round((donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0) / Math.max(1, new Set((donationHistory as DonationHistory[]).map((d: DonationHistory) => new Date(d.createdAt).getMonth())).size)).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-green-500">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Users className="h-5 w-5 text-green-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Churches</p>
+                  <p className="text-xl font-bold text-gray-900">{(churches as Church[]).length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-orange-500">
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Target className="h-5 w-5 text-orange-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Projects</p>
+                  <p className="text-xl font-bold text-gray-900">{(projects as Project[]).length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Left Column - Transactions */}
+          <div className="xl:col-span-2 space-y-6">
             <Card className="bg-white/60 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -406,8 +489,80 @@ export default function MemberDashboard() {
                 )}
               </CardContent>
             </Card>
+          </div>
 
+          {/* Right Column - Quick Info */}
+          <div className="space-y-6">
+            {/* Account Health */}
+            <Card className="bg-white/60 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center text-sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Account Health
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Verification</span>
+                  <Badge className="bg-green-500">Verified</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">PIN Status</span>
+                  <Badge variant={walletData && (walletData as WalletData).isPinSet ? "default" : "secondary"}>
+                    {walletData && (walletData as WalletData).isPinSet ? "Set" : "Not Set"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Auto Top-up</span>
+                  <Badge variant={walletData && (walletData as WalletData).autoTopUpEnabled ? "default" : "outline"}>
+                    {walletData && (walletData as WalletData).autoTopUpEnabled ? "On" : "Off"}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card className="bg-white/60 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center text-sm">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Quick Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">This Week</span>
+                  <span className="font-medium">
+                    {(donationHistory as DonationHistory[]).filter((d: DonationHistory) => {
+                      const donationDate = new Date(d.createdAt);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return donationDate >= weekAgo;
+                    }).reduce((sum: number, d: DonationHistory) => sum + parseFloat(d.amount), 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Transactions</span>
+                  <span className="font-medium">{(donationHistory as DonationHistory[]).length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Largest Gift</span>
+                  <span className="font-medium">
+                    {(donationHistory as DonationHistory[]).length > 0 ? 
+                      Math.max(...(donationHistory as DonationHistory[]).map((d: DonationHistory) => parseFloat(d.amount))).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' }) : 
+                      'R 0.00'}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Bottom Section - Churches & Projects */}
+        <div className="mt-8 space-y-8">
           {/* Churches */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Connected Churches</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(churches as Church[]).map((church: Church) => (
                 <Card key={church.id} className="bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
@@ -536,6 +691,7 @@ export default function MemberDashboard() {
                 )}
               </CardContent>
             </Card>
+          </div>
         </div>
 
         {/* Enhanced Donation Modal (unified for all types) */}
