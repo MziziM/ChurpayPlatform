@@ -6,17 +6,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 import { 
   Wallet, Heart, Church, Target, Gift, Send, Plus, Eye, EyeOff, 
   ArrowDown, ArrowUp, ArrowLeftRight, CheckCircle, Clock, AlertCircle, 
   RefreshCw, Bell, Settings, TrendingUp, Calendar, Users, DollarSign,
-  PiggyBank, Star, Award, Activity, CreditCard, Building
+  PiggyBank, Star, Award, Activity, CreditCard, Building, Search
 } from 'lucide-react';
 import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
 
@@ -75,7 +70,7 @@ interface DonationHistory {
   type: 'tithe' | 'donation' | 'project';
   churchName: string;
   projectTitle?: string;
-  date: string;
+  createdAt: string;
   status: string;
 }
 
@@ -118,10 +113,6 @@ export default function MemberDashboard() {
     retry: false,
   });
 
-
-
-
-
   const formatCurrency = (amount: string | number) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return `R ${Math.abs(numAmount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
@@ -136,577 +127,456 @@ export default function MemberDashboard() {
     });
   };
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case 'deposit': return <ArrowDown className="h-4 w-4 text-green-600" />;
-      case 'withdrawal': return <ArrowUp className="h-4 w-4 text-red-600" />;
-      case 'donation': return <Heart className="h-4 w-4 text-purple-600" />;
-      case 'tithe': return <Church className="h-4 w-4 text-blue-600" />;
-      case 'project': return <Target className="h-4 w-4 text-orange-600" />;
-      case 'reward': return <Gift className="h-4 w-4 text-yellow-600" />;
-      default: return <ArrowLeftRight className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'pending': return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'processing': return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
-      case 'failed': return <AlertCircle className="h-4 w-4 text-red-600" />;
-      default: return <Clock className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-
-
-
-
-  // Show loading state
-  if (walletLoading || churchesLoading || projectsLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-yellow-50 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const totalGiven = Array.isArray(donationHistory) ? (donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0) : 0;
+  const totalExpense = totalGiven * 0.85; // Simulate expense calculation
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-yellow-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-gray-800 min-h-screen p-6">
+          <div className="mb-8">
+            <h1 className="text-xl font-bold text-white mb-2">FINANCIAL DASHBOARD</h1>
+            <div className="flex items-center space-x-2 text-sm text-gray-400">
+              <span>UX/UI</span>
+              <div className="px-2 py-1 bg-blue-600 text-white text-xs rounded">WEB</div>
+            </div>
+          </div>
+          
+          <nav className="space-y-2">
+            <div className="flex items-center space-x-3 p-3 bg-purple-600 rounded-lg text-white">
+              <div className="w-2 h-6 bg-purple-400 rounded-full"></div>
+              <span>Dashboard</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
+              <Church className="h-5 w-5" />
+              <span>Churches</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
+              <Target className="h-5 w-5" />
+              <span>Projects</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
+              <Activity className="h-5 w-5" />
+              <span>History</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
+              <Wallet className="h-5 w-5" />
+              <span>Wallet</span>
+            </div>
+          </nav>
+
+          <div className="mt-auto pt-8">
+            <div className="bg-gray-700 rounded-xl p-4 mb-4">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <Gift className="h-4 w-4 text-black" />
+                </div>
+              </div>
+              <h3 className="font-semibold mb-2">Upgrade to Pro</h3>
+              <p className="text-sm text-gray-400 mb-3">Check your usage on this dashboard</p>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
+              </div>
+              <div className="flex items-center space-x-3 p-3 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-lg cursor-pointer">
+                <ArrowLeftRight className="h-5 w-5" />
+                <span>Logout</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-churpay-gradient rounded-lg flex items-center justify-center">
-                  <Wallet className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold bg-churpay-gradient bg-clip-text text-transparent">
-                    ChurPay Member
-                  </h1>
-                </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Tap here to search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-80 pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
+                />
+              </div>
+              <div className="flex space-x-3">
+                <Button className="relative bg-gray-800 hover:bg-gray-700 text-white border-gray-700">
+                  <Bell className="h-5 w-5" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white">3</div>
+                </Button>
+                <Button className="relative bg-gray-800 hover:bg-gray-700 text-white border-gray-700">
+                  <Bell className="h-5 w-5" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white">5</div>
+                </Button>
               </div>
             </div>
-
+            
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Button>
-
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
-                <Wallet className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">
-                  {showBalance ? (walletData ? formatCurrency(walletData.availableBalance) : 'R 0.00') : '****'}
-                </span>
+              <div className="text-right">
+                <p className="font-semibold">ChurPay Member</p>
+                <p className="text-sm text-gray-400">Dashboard</p>
               </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowBalance(!showBalance)}
-              >
-                {showBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </Button>
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <Wallet className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('donation');
+                    setShowDonationModal(true);
+                  }}
+                >
+                  <Heart className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('tithe');
+                    setShowDonationModal(true);
+                  }}
+                >
+                  <Church className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('topup');
+                    setShowDonationModal(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-yellow-500/5"></div>
-            <div className="relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">Financial Dashboard</h2>
-                  <p className="text-gray-600">Real-time account metrics</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Active
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium opacity-90 flex items-center">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  Available Balance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          {/* Main Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card className="bg-gradient-to-r from-purple-600 to-purple-700 border-0 text-white">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">
-                      {showBalance ? (walletData ? formatCurrency((walletData as WalletData).availableBalance) : 'R 0.00') : '****'}
-                    </p>
-                    <p className="text-sm opacity-75 mt-1">Available now</p>
+                    <h3 className="text-sm font-medium opacity-90 mb-2">Total Finance</h3>
+                    <p className="text-3xl font-bold">{formatCurrency(totalGiven)}</p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setDonationType('topup');
-                      setShowDonationModal(true);
-                    }}
-                    className="bg-white/20 hover:bg-white/30 text-white border-0"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Top Up
-                  </Button>
+                  <div className="relative w-16 h-16">
+                    <div className="w-16 h-16 rounded-full border-4 border-purple-400 border-t-white animate-spin opacity-75"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-semibold">+70%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white border-0 shadow-xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium opacity-90 flex items-center">
-                  <Gift className="h-4 w-4 mr-2" />
-                  Reward Points
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <Card className="bg-gradient-to-r from-pink-600 to-pink-700 border-0 text-white">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">
-                      {showBalance ? (walletData ? formatCurrency((walletData as WalletData).rewardPoints) : 'R 0.00') : '****'}
-                    </p>
-                    <p className="text-sm opacity-75 mt-1">Points earned</p>
+                    <h3 className="text-sm font-medium opacity-90 mb-2">Total Expense</h3>
+                    <p className="text-3xl font-bold">{formatCurrency(totalExpense)}</p>
                   </div>
-                  <Star className="h-8 w-8 opacity-50" />
+                  <div className="relative w-16 h-16">
+                    <div className="w-16 h-16 rounded-full border-4 border-pink-400 border-t-white animate-spin opacity-75"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-semibold">+50%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium opacity-90 flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Monthly Giving
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-3xl font-bold">
-                      {donationHistory.reduce((sum, donation) => {
-                        const donationDate = new Date(donation.createdAt);
-                        const now = new Date();
-                        const isThisMonth = donationDate.getMonth() === now.getMonth() && donationDate.getFullYear() === now.getFullYear();
-                        return isThisMonth ? sum + parseFloat(donation.amount) : sum;
-                      }, 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
-                    </p>
-                    <p className="text-sm opacity-75 mt-1">This month</p>
+          {/* Charts and Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Chart */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white">Monday, 28 December 2021</CardTitle>
                   </div>
-                  <Award className="h-8 w-8 opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-end space-x-4 px-4">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-32 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Mon</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-40 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Tue</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-48 w-8 bg-purple-600 rounded-t relative">
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-2 py-1 rounded text-xs">
+                          $2057
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-400">Wed</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-36 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Thu</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-44 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Fri</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-28 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Sat</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="h-52 w-8 bg-gray-600 rounded-t"></div>
+                      <span className="text-xs text-gray-400">Sun</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Transaction Center</h3>
-            <div className="text-sm text-gray-500">
-              Daily limit: R {walletData ? formatCurrency((walletData as WalletData).dailyTransferLimit) : '5,000.00'}
+              {/* Churches */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Connected Churches</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Array.isArray(churches) && churches.length > 0 ? (
+                      churches.slice(0, 2).map((church: any) => (
+                        <div key={church.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                              <Church className="h-4 w-4 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">{church.name}</p>
+                              <p className="text-gray-400 text-sm">{church.location}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-semibold">{formatCurrency(church.totalDonations)}</p>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-400 text-sm">{church.memberCount} members</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setDonationType('donation');
+                              setShowDonationModal(true);
+                            }}
+                            className="ml-3 bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Heart className="h-3 w-3 mr-1" />
+                            Give
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-400">
+                        <Church className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No churches connected</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Projects */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Active Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Array.isArray(projects) && projects.length > 0 ? (
+                      projects.slice(0, 2).map((project: any) => (
+                        <div key={project.id} className="p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-white font-medium">{project.title}</p>
+                              <p className="text-gray-400 text-sm">{project.churchName}</p>
+                            </div>
+                            <Badge className="bg-orange-500 text-white">{project.category}</Badge>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">Progress</span>
+                              <span className="text-white">{Math.round((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-600 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">{formatCurrency(project.currentAmount)}</span>
+                              <span className="text-gray-400">Goal: {formatCurrency(project.targetAmount)}</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setDonationType('project');
+                              setShowDonationModal(true);
+                            }}
+                            className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            <Target className="h-3 w-3 mr-1" />
+                            Support
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-400">
+                        <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No active projects</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button 
-              onClick={() => {
-                setDonationType('donation');
-                setShowDonationModal(true);
-              }}
-              className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
-            >
-              <Heart className="h-6 w-6" />
-              <span className="text-sm font-medium">Give</span>
-            </Button>
 
-            <Button 
-              onClick={() => {
-                setDonationType('tithe');
-                setShowDonationModal(true);
-              }}
-              className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-            >
-              <Church className="h-6 w-6" />
-              <span className="text-sm font-medium">Tithe</span>
-            </Button>
-
-            <Button 
-              onClick={() => {
-                setDonationType('project');
-                setShowDonationModal(true);
-              }}
-              className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
-            >
-              <Target className="h-6 w-6" />
-              <span className="text-sm font-medium">Sponsor</span>
-            </Button>
-
-            <Button 
-              onClick={() => {
-                setDonationType('topup');
-                setShowDonationModal(true);
-              }}
-              className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
-            >
-              <Plus className="h-6 w-6" />
-              <span className="text-sm font-medium">Top Up</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Analytics Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-purple-500">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">Total Given</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {(donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-blue-500">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">Avg Monthly</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    R {Math.round((donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0) / Math.max(1, new Set((donationHistory as DonationHistory[]).map((d: DonationHistory) => new Date(d.createdAt).getMonth())).size)).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-green-500">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Users className="h-5 w-5 text-green-600" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">Churches</p>
-                  <p className="text-xl font-bold text-gray-900">{(churches as Church[]).length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/60 backdrop-blur-sm border-l-4 border-l-orange-500">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Target className="h-5 w-5 text-orange-600" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">Projects</p>
-                  <p className="text-xl font-bold text-gray-900">{(projects as Project[]).length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left Column - Transactions */}
-          <div className="xl:col-span-2 space-y-6">
-            <Card className="bg-white/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Activity className="h-5 w-5 mr-2" />
-                  Recent Transactions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(transactions as WalletTransaction[]).length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>No recent activity</p>
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Finance Target */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-sm">Your Finance Target</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-center">
+                    <div className="relative w-32 h-32">
+                      <svg className="w-32 h-32 transform -rotate-90">
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="none"
+                          className="text-gray-700"
+                        />
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="none"
+                          strokeDasharray={`${2 * Math.PI * 56}`}
+                          strokeDashoffset={`${2 * Math.PI * 56 * (1 - 0.78)}`}
+                          className="text-purple-500"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-white">78%</span>
+                      </div>
+                    </div>
                   </div>
-                ) : (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-gray-400 text-sm">Result Achieved</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                      <span className="text-gray-400 text-sm">In The Process</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Giving History */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-sm">Recent Giving</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-3">
-                    {(transactions as WalletTransaction[]).slice(0, 5).map((transaction: WalletTransaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          {getTransactionIcon(transaction.type)}
-                          <div>
-                            <p className="font-medium text-gray-900">{transaction.description}</p>
-                            <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
+                    {Array.isArray(donationHistory) && donationHistory.length > 0 ? (
+                      (donationHistory as DonationHistory[]).slice(0, 3).map((donation: DonationHistory) => (
+                        <div key={donation.id} className="flex items-center justify-between p-2 bg-gray-700 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                              {donation.type === 'tithe' ? <Church className="h-3 w-3 text-white" /> : 
+                               donation.type === 'project' ? <Target className="h-3 w-3 text-white" /> :
+                               <Heart className="h-3 w-3 text-white" />}
+                            </div>
+                            <div>
+                              <p className="text-white text-sm font-medium">{donation.churchName}</p>
+                              <p className="text-gray-400 text-xs capitalize">{donation.type}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white text-sm font-semibold">{formatCurrency(donation.amount)}</p>
+                            <p className="text-gray-400 text-xs">{formatDate(donation.createdAt)}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`font-medium ${
-                            transaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {transaction.type === 'deposit' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                          </span>
-                          {getStatusIcon(transaction.status)}
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-400">
+                        <Activity className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                        <p className="text-xs">No giving history</p>
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
 
-          {/* Right Column - Quick Info */}
-          <div className="space-y-6">
-            {/* Account Health */}
-            <Card className="bg-white/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center text-sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Account Health
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Verification</span>
-                  <Badge className="bg-green-500">Verified</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">PIN Status</span>
-                  <Badge variant={walletData && (walletData as WalletData).isPinSet ? "default" : "secondary"}>
-                    {walletData && (walletData as WalletData).isPinSet ? "Set" : "Not Set"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Auto Top-up</span>
-                  <Badge variant={walletData && (walletData as WalletData).autoTopUpEnabled ? "default" : "outline"}>
-                    {walletData && (walletData as WalletData).autoTopUpEnabled ? "On" : "Off"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="bg-white/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center text-sm">
-                  <Activity className="h-4 w-4 mr-2" />
-                  Quick Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">This Week</span>
-                  <span className="font-medium">
-                    {(donationHistory as DonationHistory[]).filter((d: DonationHistory) => {
-                      const donationDate = new Date(d.createdAt);
-                      const weekAgo = new Date();
-                      weekAgo.setDate(weekAgo.getDate() - 7);
-                      return donationDate >= weekAgo;
-                    }).reduce((sum: number, d: DonationHistory) => sum + parseFloat(d.amount), 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Transactions</span>
-                  <span className="font-medium">{(donationHistory as DonationHistory[]).length}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Largest Gift</span>
-                  <span className="font-medium">
-                    {(donationHistory as DonationHistory[]).length > 0 ? 
-                      Math.max(...(donationHistory as DonationHistory[]).map((d: DonationHistory) => parseFloat(d.amount))).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' }) : 
-                      'R 0.00'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Bottom Section - Churches & Projects */}
-        <div className="mt-8 space-y-8">
-          {/* Churches */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Connected Churches</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(churches as Church[]).map((church: Church) => (
-                <Card key={church.id} className="bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-churpay-gradient rounded-lg flex items-center justify-center">
-                        <Church className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{church.name}</CardTitle>
-                        <p className="text-sm text-gray-600">{church.location}</p>
+              {/* Wallet Balance */}
+              <Card className="bg-gradient-to-r from-purple-600 to-pink-600 border-0 text-white">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">Wallet Balance</h3>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-white rounded-full opacity-75"></div>
+                        <span className="text-white/75 text-sm">Available Now</span>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Members:</span>
-                        <span className="font-medium">{church.memberCount.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Total Donations:</span>
-                        <span className="font-medium text-green-600">{formatCurrency(church.totalDonations)}</span>
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          setDonationType('donation');
-                          setShowDonationModal(true);
-                        }}
-                        className="w-full bg-churpay-gradient text-white"
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-white">
+                        {showBalance ? (walletData && typeof walletData === 'object' && 'availableBalance' in walletData ? formatCurrency((walletData as WalletData).availableBalance) : 'R 0.00') : '****'}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowBalance(!showBalance)}
+                        className="mt-2 bg-white/20 hover:bg-white/30 text-white border-0"
                       >
-                        <Heart className="h-4 w-4 mr-2" />
-                        Donate
+                        {showBalance ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-          {/* Projects */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {(projects as Project[]).map((project: Project) => (
-                <Card key={project.id} className="bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{project.title}</CardTitle>
-                      <Badge variant="secondary">{project.category}</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">{project.churchName}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-700">{project.description}</p>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Progress</span>
-                          <span>{Math.round((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-churpay-gradient h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100, 100)}%` }}
-                          ></div>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Raised: {formatCurrency(project.currentAmount)}</span>
-                          <span className="text-gray-600">Goal: {formatCurrency(project.targetAmount)}</span>
-                        </div>
-                      </div>
-
-                      <Button 
-                        onClick={() => {
-                          setDonationType('project');
-                          setShowDonationModal(true);
-                        }}
-                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                      >
-                        <Target className="h-4 w-4 mr-2" />
-                        Support
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-          {/* Giving History */}
-            <Card className="bg-white/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Giving History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(donationHistory as DonationHistory[]).length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Heart className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>No donations yet</p>
-                    <p className="text-sm">Your giving history will appear here</p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {(donationHistory as DonationHistory[]).map((donation: DonationHistory) => (
-                      <div key={donation.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          {getTransactionIcon(donation.type)}
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {donation.type === 'tithe' ? 'Tithe' : 
-                               donation.type === 'project' ? `Project: ${donation.projectTitle}` : 'Donation'}
-                            </p>
-                            <p className="text-sm text-gray-500">{donation.churchName}</p>
-                            <p className="text-xs text-gray-400">{formatDate(donation.date)}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-purple-600">{formatCurrency(donation.amount)}</span>
-                          {getStatusIcon(donation.status)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Enhanced Donation Modal (unified for all types) */}
-        <EnhancedDonationModal
-          isOpen={showDonationModal}
-          onClose={() => setShowDonationModal(false)}
-          type={donationType}
-          churches={churches as Church[]}
-          projects={projects as Project[]}
-          walletBalance={walletData ? parseFloat(walletData.availableBalance) : 0}
-        />
-
-
-      </main>
+      {/* Enhanced Donation Modal */}
+      <EnhancedDonationModal
+        isOpen={showDonationModal}
+        onClose={() => setShowDonationModal(false)}
+        type={donationType}
+        churches={Array.isArray(churches) ? churches : []}
+        projects={Array.isArray(projects) ? projects : []}
+        walletBalance={walletData && typeof walletData === 'object' && 'availableBalance' in walletData ? String((walletData as WalletData).availableBalance) : '0'}
+      />
     </div>
   );
 }
