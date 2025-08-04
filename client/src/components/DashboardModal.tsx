@@ -20,7 +20,12 @@ import {
   Wallet,
   Star,
   ArrowUpRight,
-  X
+  X,
+  DollarSign,
+  Activity,
+  Receipt,
+  BarChart3,
+  CheckCircle
 } from "lucide-react";
 
 interface DashboardModalProps {
@@ -121,76 +126,170 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   const renderMemberOverview = () => (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">C</span>
+      {/* Enhanced Welcome Section with Professional Design */}
+      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+        
+        <div className="relative">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <span className="text-white font-bold text-xl">C</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Welcome back, {memberData.member.firstName}</h2>
+                <p className="text-purple-100 flex items-center">
+                  <Church className="h-4 w-4 mr-2" />
+                  {memberData.member.churchName}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-purple-100 text-sm">Impact Score</p>
+              <p className="text-2xl font-bold">{memberData.stats.impactScore}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold">Welcome back, {memberData.member.firstName}</h2>
-            <p className="text-purple-100">Member of {memberData.member.churchName}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="bg-white/10 rounded-lg p-3">
-            <p className="text-purple-100 text-sm">Total Given</p>
-            <p className="text-xl font-bold">R {memberData.stats.totalDonated.toLocaleString()}</p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <p className="text-purple-100 text-sm">This Year</p>
-            <p className="text-xl font-bold">R {memberData.stats.donationsThisYear.toLocaleString()}</p>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <Heart className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Total Given</p>
+              </div>
+              <p className="text-2xl font-bold">R {memberData.stats.totalDonated.toLocaleString()}</p>
+              <p className="text-purple-200 text-xs">{memberData.stats.totalDonations} donations</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <Calendar className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">This Year</p>
+              </div>
+              <p className="text-2xl font-bold">R {memberData.stats.donationsThisYear.toLocaleString()}</p>
+              <p className="text-purple-200 text-xs">Monthly avg: R {Math.round(memberData.stats.donationsThisYear/12).toLocaleString()}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Streak</p>
+              </div>
+              <p className="text-2xl font-bold">{memberData.stats.consecutiveMonths}</p>
+              <p className="text-purple-200 text-xs">consecutive months</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
+      {/* Enhanced Quick Actions */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('donate')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Donations</p>
-                <p className="text-2xl font-bold">{memberData.stats.totalDonations}</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Quick Give</p>
+                <p className="text-lg font-bold text-gray-900">Donate Now</p>
               </div>
-              <CreditCard className="h-8 w-8 text-blue-500" />
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Heart className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('projects')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Impact Score</p>
-                <p className="text-2xl font-bold">{memberData.stats.impactScore}</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Projects</p>
+                <p className="text-lg font-bold text-gray-900">{memberData.projects.length} Active</p>
               </div>
-              <Target className="h-8 w-8 text-orange-500" />
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Target className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">History</p>
+                <p className="text-lg font-bold text-gray-900">View All</p>
+              </div>
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <History className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Wallet</p>
+                <p className="text-lg font-bold text-gray-900">R 1,247</p>
+              </div>
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Wallet className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card>
+      {/* Enhanced Recent Activity */}
+      <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Recent Donations</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-purple-600" />
+              Recent Activity
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
+              View All
+              <ArrowUpRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {memberData.recentDonations.map((donation) => (
-              <div key={donation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Heart className="h-4 w-4 text-green-600" />
+          <div className="space-y-4">
+            {memberData.recentDonations.slice(0, 3).map((donation) => (
+              <div key={donation.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border border-purple-100 hover:border-purple-200 transition-colors">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
+                    <Heart className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-medium">R {donation.amount.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">{donation.type}</p>
+                    <p className="font-semibold text-gray-900">R {donation.amount.toLocaleString()}</p>
+                    <p className="text-sm text-gray-600">{donation.type} • {donation.date}</p>
                   </div>
                 </div>
-                <Badge className="bg-green-100 text-green-800">{donation.status}</Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    {donation.status}
+                  </Badge>
+                </div>
               </div>
             ))}
+          </div>
+          
+          {/* Summary Stats */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{memberData.stats.totalDonations}</p>
+                <p className="text-xs text-gray-600">Total Donations</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">R {memberData.stats.donationsThisMonth.toLocaleString()}</p>
+                <p className="text-xs text-gray-600">This Month</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{memberData.stats.consecutiveMonths}</p>
+                <p className="text-xs text-gray-600">Month Streak</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -199,76 +298,179 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   const renderChurchOverview = () => (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <Church className="h-5 w-5 text-white" />
+      {/* Enhanced Church Welcome Section */}
+      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+        
+        <div className="relative">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Church className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">{churchData.church.name}</h2>
+                <p className="text-purple-100 flex items-center">
+                  <Users className="h-4 w-4 mr-2" />
+                  Admin: {churchData.church.admin}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-purple-100 text-sm">Growth Rate</p>
+              <p className="text-2xl font-bold">+12.5%</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold">{churchData.church.name}</h2>
-            <p className="text-purple-100">Admin: {churchData.church.admin}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="bg-white/10 rounded-lg p-3">
-            <p className="text-purple-100 text-sm">Total Received</p>
-            <p className="text-xl font-bold">R {churchData.stats.totalReceived.toLocaleString()}</p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <p className="text-purple-100 text-sm">Active Members</p>
-            <p className="text-xl font-bold">{churchData.stats.activeMembers}</p>
+          
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <DollarSign className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Total Received</p>
+              </div>
+              <p className="text-xl font-bold">R {churchData.stats.totalReceived.toLocaleString()}</p>
+              <p className="text-purple-200 text-xs">This month: R {churchData.stats.thisMonth.toLocaleString()}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <Users className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Members</p>
+              </div>
+              <p className="text-xl font-bold">{churchData.stats.activeMembers}</p>
+              <p className="text-purple-200 text-xs">Active members</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <Target className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Projects</p>
+              </div>
+              <p className="text-xl font-bold">{churchData.stats.projectsFunded}</p>
+              <p className="text-purple-200 text-xs">funded projects</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center space-x-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-purple-100" />
+                <p className="text-purple-100 text-sm">Avg Donation</p>
+              </div>
+              <p className="text-xl font-bold">R {churchData.stats.avgDonation}</p>
+              <p className="text-purple-200 text-xs">per member</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
+      {/* Enhanced Church Quick Actions */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-2xl font-bold">R {churchData.stats.thisMonth.toLocaleString()}</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Transactions</p>
+                <p className="text-lg font-bold text-gray-900">View All</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Receipt className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('projects')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Avg Donation</p>
-                <p className="text-2xl font-bold">R {churchData.stats.avgDonation}</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Projects</p>
+                <p className="text-lg font-bold text-gray-900">{churchData.activeProjects.length} Active</p>
               </div>
-              <Wallet className="h-8 w-8 text-blue-500" />
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Target className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Members</p>
+                <p className="text-lg font-bold text-gray-900">{churchData.stats.activeMembers}</p>
+              </div>
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
+                <p className="text-lg font-bold text-gray-900">Reports</p>
+              </div>
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <BarChart3 className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Transactions */}
-      <Card>
+      {/* Enhanced Recent Transactions */}
+      <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-purple-600" />
+              Recent Transactions
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
+              View All
+              <ArrowUpRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {churchData.recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Users className="h-4 w-4 text-green-600" />
+          <div className="space-y-4">
+            {churchData.recentTransactions.slice(0, 3).map((transaction) => (
+              <div key={transaction.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border border-purple-100 hover:border-purple-200 transition-colors">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
+                    <Users className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-medium">{transaction.member}</p>
+                    <p className="font-semibold text-gray-900">{transaction.member}</p>
                     <p className="text-sm text-gray-600">R {transaction.amount.toLocaleString()} • {transaction.type}</p>
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</span>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</p>
+                  <Badge className="bg-green-100 text-green-800 border-green-200 mt-1">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Completed
+                  </Badge>
+                </div>
               </div>
             ))}
+          </div>
+          
+          {/* Church Summary Stats */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">R {churchData.stats.thisMonth.toLocaleString()}</p>
+                <p className="text-xs text-gray-600">This Month</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{churchData.stats.activeMembers}</p>
+                <p className="text-xs text-gray-600">Active Members</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">R {churchData.stats.avgDonation}</p>
+                <p className="text-xs text-gray-600">Avg Donation</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
