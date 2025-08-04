@@ -13,8 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
-import { isUnauthorizedError } from "@/lib/authUtils";
+// Removed auth dependencies since this is a public registration page
 import { 
   Church, 
   ArrowLeft, 
@@ -91,7 +90,6 @@ export default function ChurchRegistration() {
   const [currentStep, setCurrentStep] = useState(1);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
@@ -106,29 +104,21 @@ export default function ChurchRegistration() {
 
   const churchRegistrationMutation = useMutation({
     mutationFn: async (data: ChurchRegistrationForm) => {
-      const response = await apiRequest("POST", "/api/churches", data);
+      const response = await apiRequest("POST", "/api/churches/register", data);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: "Your church registration has been submitted for review. You'll receive an email notification once it's processed.",
+        title: "Registration Submitted!",
+        description: "Your church registration has been submitted for review. Please sign in to track the status and complete your setup once approved.",
         variant: "default",
       });
-      setLocation("/");
+      // Redirect to login after successful registration
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 3000);
     },
     onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Session Expired",
-          description: "Please sign in again to continue.",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 1000);
-        return;
-      }
       toast({
         title: "Registration Failed",
         description: error.message || "There was an error registering your church. Please try again.",

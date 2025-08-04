@@ -44,7 +44,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Church registration and management
+  // Public church registration endpoint
+  app.post('/api/churches/register', async (req, res) => {
+    try {
+      const validatedData = insertChurchSchema.parse(req.body);
+      
+      const churchData = {
+        ...validatedData,
+        status: 'pending' as const,
+        // Will be updated when admin logs in and completes setup
+        adminUserId: 'pending',
+      };
+
+      const church = await storage.createChurch(churchData);
+      
+      // Log activity (without user ID since this is public registration)
+      await storage.logActivity({
+        userId: null,
+        churchId: church.id,
+        action: 'church_registered',
+        entity: 'church',
+        entityId: church.id,
+        details: { churchName: church.name, status: 'pending_approval' },
+      });
+
+      res.json(church);
+    } catch (error) {
+      console.error("Error creating church:", error);
+      res.status(400).json({ message: "Failed to create church", error: error.message });
+    }
+  });
+
+  // Church registration and management (authenticated)
   app.post('/api/churches', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -128,7 +159,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Member registration (join church)
+  // Public member registration endpoint
+  app.post('/api/members/register', async (req, res) => {
+    try {
+      const { churchId, ...memberData } = req.body;
+
+      if (!churchId) {
+        return res.status(400).json({ message: "Church ID is required" });
+      }
+
+      const church = await storage.getChurch(churchId);
+      if (!church || church.status !== 'approved') {
+        return res.status(400).json({ message: "Church not found or not approved" });
+      }
+
+      // Store registration data (will be completed when user signs in)
+      const registrationData = {
+        ...memberData,
+        churchId,
+        status: 'pending_activation',
+        registrationCompleted: false
+      };
+
+      // Log activity
+      await storage.logActivity({
+        userId: null,
+        churchId,
+        action: 'member_registered',
+        entity: 'registration',
+        entityId: churchId,
+        details: { 
+          churchName: church.name,
+          email: memberData.email,
+          status: 'pending_activation'
+        },
+      });
+
+      res.json({ 
+        message: "Registration successful",
+        churchName: church.name,
+        nextStep: "Please sign in to complete your membership"
+      });
+    } catch (error) {
+      console.error("Error registering member:", error);
+      res.status(500).json({ message: "Failed to register member" });
+    }
+  });
+
+  // Member registration (join church) - authenticated
   app.post('/api/members/join', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
