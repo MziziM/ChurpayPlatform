@@ -1,14 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-
+// Removed authentication - ChurPay is now completely public
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/user"],
-    retry: false,
-  });
-
   return {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
+    user: null,
+    isLoading: false,
+    isAuthenticated: false,
   };
 }
