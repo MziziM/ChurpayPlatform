@@ -8,7 +8,8 @@ import {
   Wallet, HandHeart, Building2, Receipt, 
   Activity, CreditCard, Banknote, Shield,
   Search, Bell, User, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Clock, Plus
+  ArrowUpRight, ArrowDownRight, Clock, Plus,
+  Heart, Church, Target, TrendingUp
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
 import { ProjectsModal } from '@/components/ProjectsModal';
@@ -63,6 +64,32 @@ export default function ProfessionalMemberDashboard() {
 
   const { data: churches = [] } = useQuery<any[]>({
     queryKey: ['/api/churches']
+  });
+
+  // User stats query
+  const { data: userStats } = useQuery<{
+    memberSince: string;
+    totalGiven: string;
+    thisYearGiven: string;
+    goalProgress: number;
+    annualGoal: string;
+    transactionCount: number;
+    averageGift: string;
+  }>({
+    queryKey: ['/api/user/stats']
+  });
+
+  // Recent activity query
+  const { data: recentActivity = [] } = useQuery<Array<{
+    id: string;
+    type: string;
+    amount: string;
+    description: string;
+    timeAgo: string;
+    status: string;
+    icon: string;
+  }>>({
+    queryKey: ['/api/user/recent-activity']
   });
 
   const walletBalance = parseFloat(walletData?.availableBalance || '0');
@@ -311,7 +338,12 @@ export default function ProfessionalMemberDashboard() {
                     </CardTitle>
                     <p className="text-gray-300 text-sm mt-1">Your latest transactions</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-lg">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-white hover:bg-white/10 rounded-lg"
+                    onClick={() => setShowActivitiesModal(true)}
+                  >
                     View All
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -319,66 +351,92 @@ export default function ProfessionalMemberDashboard() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {donationHistory?.slice(0, 5).map((donation, index) => (
-                    <div key={donation.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
-                      index % 2 === 0 ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'
-                    }`}>
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          donation.type === 'tithe' ? 'bg-green-100 text-green-600' :
-                          donation.type === 'donation' ? 'bg-purple-100 text-purple-600' :
-                          'bg-blue-100 text-blue-600'
-                        }`}>
-                          {donation.type === 'tithe' ? <Building2 className="h-6 w-6" /> :
-                           donation.type === 'donation' ? <HandHeart className="h-6 w-6" /> :
-                           <Receipt className="h-6 w-6" />}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{donation.churchName}</p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-sm text-gray-600 capitalize">{donation.type}</p>
-                            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                            <p className="text-sm text-gray-500">{new Date(donation.createdAt).toLocaleDateString('en-ZA')}</p>
+                  {recentActivity.length > 0 ? recentActivity.slice(0, 6).map((activity, index) => {
+                    const getActivityIcon = (iconType: string) => {
+                      switch (iconType) {
+                        case 'heart':
+                          return <Heart className="h-5 w-5" />;
+                        case 'church':
+                          return <Church className="h-5 w-5" />;
+                        case 'target':
+                          return <Target className="h-5 w-5" />;
+                        case 'wallet':
+                          return <Wallet className="h-5 w-5" />;
+                        default:
+                          return <Activity className="h-5 w-5" />;
+                      }
+                    };
+
+                    const getActivityColor = (type: string) => {
+                      switch (type) {
+                        case 'tithe':
+                          return 'bg-green-100 text-green-600 border-green-200';
+                        case 'donation':
+                          return 'bg-purple-100 text-purple-600 border-purple-200';
+                        case 'project':
+                          return 'bg-blue-100 text-blue-600 border-blue-200';
+                        case 'topup':
+                          return 'bg-yellow-100 text-yellow-600 border-yellow-200';
+                        default:
+                          return 'bg-gray-100 text-gray-600 border-gray-200';
+                      }
+                    };
+
+                    return (
+                      <div key={activity.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-pointer ${getActivityColor(activity.type)}`}>
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getActivityColor(activity.type)}`}>
+                            {getActivityIcon(activity.icon)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{activity.description}</p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-sm text-gray-600 capitalize">{activity.type}</p>
+                              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                              <p className="text-sm text-gray-500">{activity.timeAgo}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-xl text-gray-900">R {parseFloat(donation.amount).toLocaleString()}</p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Badge 
-                            variant={donation.status === 'completed' ? 'default' : 'secondary'} 
-                            className={`text-xs ${
-                              donation.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                            }`}
-                          >
-                            {donation.status}
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-gray-900">{activity.amount}</p>
+                          <Badge variant="outline" className="text-xs mt-1 capitalize">
+                            {activity.status}
                           </Badge>
-                          <ArrowUpRight className="h-4 w-4 text-gray-400" />
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  {(!donationHistory || donationHistory.length === 0) && (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Activity className="h-10 w-10 text-gray-400" />
-                      </div>
-                      <p className="text-lg font-medium text-gray-600 mb-2">No recent activity</p>
-                      <p className="text-sm text-gray-500 mb-6">Your giving history will appear here</p>
+                    );
+                  }) : (
+                    <div className="text-center py-8">
+                      <Activity className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium">No recent activity</p>
+                      <p className="text-gray-500 text-sm mt-1">Your transactions will appear here</p>
                       <Button
                         onClick={() => {
                           setDonationType('donation');
                           setShowDonationModal(true);
                         }}
-                        className="bg-purple-600 hover:bg-purple-700"
+                        size="sm"
+                        className="mt-4 bg-purple-600 hover:bg-purple-700 text-white"
                       >
-                        <HandHeart className="h-4 w-4 mr-2" />
+                        <Heart className="h-4 w-4 mr-2" />
                         Make Your First Donation
                       </Button>
                     </div>
                   )}
                 </div>
+                {recentActivity.length > 0 && (
+                  <div className="mt-6 text-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowActivitiesModal(true)}
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      View All Activity
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -461,25 +519,38 @@ export default function ProfessionalMemberDashboard() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
                     <span className="text-gray-700 font-medium">Member since</span>
-                    <span className="font-bold text-gray-900">Jan 2022</span>
+                    <span className="font-bold text-gray-900">{userStats?.memberSince || 'Jan 2022'}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
                     <span className="text-gray-700 font-medium">Total given</span>
-                    <span className="font-bold text-xl text-gray-900">R 28,500</span>
+                    <span className="font-bold text-xl text-gray-900">R {userStats?.totalGiven ? parseFloat(userStats.totalGiven).toLocaleString() : '0'}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
                     <span className="text-gray-700 font-medium">This year</span>
-                    <span className="font-bold text-lg text-gray-900">R 18,200</span>
+                    <span className="font-bold text-lg text-gray-900">R {userStats?.thisYearGiven ? parseFloat(userStats.thisYearGiven).toLocaleString() : '0'}</span>
                   </div>
                   <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-200">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700 font-medium">Goal Progress</span>
-                      <span className="font-bold text-purple-700">73%</span>
+                      <span className="font-bold text-purple-700">{userStats?.goalProgress || 0}%</span>
                     </div>
                     <div className="w-full bg-white rounded-full h-2 mt-2">
-                      <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full" style={{width: '73%'}}></div>
+                      <div 
+                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300" 
+                        style={{width: `${userStats?.goalProgress || 0}%`}}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-600 mt-1">
+                      <span>Goal: R {userStats?.annualGoal ? parseFloat(userStats.annualGoal).toLocaleString() : '25,000'}</span>
+                      <span>{userStats?.transactionCount || 0} gifts</span>
                     </div>
                   </div>
+                  {userStats?.averageGift && parseFloat(userStats.averageGift) > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                      <span className="text-gray-700 font-medium">Average gift</span>
+                      <span className="font-bold text-green-700">R {parseFloat(userStats.averageGift).toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
