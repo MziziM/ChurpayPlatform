@@ -30,24 +30,50 @@ import {
 } from "lucide-react";
 
 const churchRegistrationSchema = z.object({
+  // Church Information
   name: z.string().min(1, "Church name is required"),
-  denomination: z.string().optional(),
-  registrationNumber: z.string().min(1, "Registration number is required"),
-  taxNumber: z.string().optional(),
+  denomination: z.string().min(1, "Denomination is required"),
+  registrationNumber: z.string().min(1, "NPO/PBO registration number is required"),
+  taxNumber: z.string().min(1, "Tax clearance number is required"),
+  yearEstablished: z.string().min(4, "Year established is required"),
+  
+  // Contact Information
   contactEmail: z.string().email("Valid email is required"),
   contactPhone: z.string().min(1, "Contact phone is required"),
-  address: z.string().min(1, "Address is required"),
+  alternativePhone: z.string().optional(),
+  website: z.string().url().optional().or(z.literal("")),
+  
+  // Physical Address
+  address: z.string().min(1, "Street address is required"),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
   postalCode: z.string().min(1, "Postal code is required"),
   country: z.string().default("South Africa"),
+  
+  // Banking Information
   bankName: z.string().min(1, "Bank name is required"),
   accountNumber: z.string().min(1, "Account number is required"),
   branchCode: z.string().min(1, "Branch code is required"),
   accountHolder: z.string().min(1, "Account holder name is required"),
-  website: z.string().url().optional().or(z.literal("")),
-  description: z.string().optional(),
-  memberCount: z.number().min(0).optional(),
+  accountType: z.string().min(1, "Account type is required"),
+  
+  // Church Details
+  description: z.string().min(10, "Please provide a brief description (minimum 10 characters)"),
+  memberCount: z.number().min(1, "Estimated member count is required"),
+  servicesTimes: z.string().min(1, "Service times are required"),
+  leadPastor: z.string().min(1, "Lead pastor name is required"),
+  
+  // Administrative Contact
+  adminFirstName: z.string().min(1, "Admin first name is required"),
+  adminLastName: z.string().min(1, "Admin last name is required"),
+  adminEmail: z.string().email("Valid admin email is required"),
+  adminPhone: z.string().min(1, "Admin phone is required"),
+  adminPosition: z.string().min(1, "Admin position/title is required"),
+  
+  // Documents (required for verification)
+  hasNpoRegistration: z.boolean().refine(val => val === true, "NPO registration certificate is required"),
+  hasTaxClearance: z.boolean().refine(val => val === true, "Tax clearance certificate is required"),
+  hasBankConfirmation: z.boolean().refine(val => val === true, "Bank confirmation letter is required"),
 });
 
 type ChurchRegistrationForm = z.infer<typeof churchRegistrationSchema>;
