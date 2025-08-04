@@ -156,368 +156,295 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header - Same as Member/Church Dashboard */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
-                </div>
-                <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                    ChurPay Admin
-                  </h1>
-                  <p className="text-xs text-gray-500">Super Administrator</p>
-                </div>
+      {/* Professional Navigation Header - Banking Grade */}
+      <header className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  ChurPay Admin
+                </span>
+                <p className="text-xs text-gray-500 -mt-1">Super Administrator Portal</p>
               </div>
             </div>
+            
+            <nav className="hidden lg:flex items-center space-x-6">
+              <Button variant="ghost" className="text-purple-600 font-medium bg-purple-50">Dashboard</Button>
+              <Button variant="ghost" className="text-gray-600 hover:text-purple-600" onClick={() => setShowChurchModal(true)}>
+                Churches
+              </Button>
+              <Button variant="ghost" className="text-gray-600 hover:text-purple-600" onClick={() => setShowMemberModal(true)}>
+                Members
+              </Button>
+              <Button variant="ghost" className="text-gray-600 hover:text-purple-600" onClick={() => setShowPayoutModal(true)}>
+                Payouts
+              </Button>
+              <Button variant="ghost" className="text-gray-600 hover:text-purple-600" onClick={() => setShowReportsModal(true)}>
+                Analytics
+              </Button>
+            </nav>
+          </div>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search churches, members, payouts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 w-full"
-                />
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search platform data..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 w-full border-gray-200 focus:border-purple-300 focus:ring-purple-200"
+              />
             </div>
 
-            {/* Right Section */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-5 w-5" />
+            <Button variant="ghost" size="sm" className="relative hover:bg-purple-50">
+              <Bell className="h-5 w-5 text-gray-600" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
 
-            <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+            <div className="flex items-center space-x-3 cursor-pointer hover:bg-purple-50 rounded-lg p-2 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
                 <Shield className="h-4 w-4 text-purple-600" />
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-medium text-gray-900">Super Admin</p>
-                <p className="text-xs text-gray-500">ChurPay Platform</p>
+                <p className="text-xs text-gray-500">Platform Administrator</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex">
-        {/* Main Dashboard */}
-        <div className="flex-1 p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statsCards.map((card, index) => {
-              const IconComponent = card.icon;
-              return (
-                <Card key={index} className="relative overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">{card.title}</p>
-                        <p className="text-2xl font-bold text-gray-900 mt-1">{card.value}</p>
-                        <p className="text-xs text-gray-500 mt-1">{card.subValue}</p>
-                      </div>
-                      <div className={`p-3 rounded-full ${card.bgColor}`}>
-                        <IconComponent className={`h-6 w-6 ${card.color}`} />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        card.trend === 'up' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {card.change}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+      {/* Main Content with Professional Layout */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Professional Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Platform Overview</h1>
+          <p className="text-gray-600">Comprehensive administration of the ChurPay platform</p>
+        </div>
 
-          {/* Tabbed Content */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="churches">Churches</TabsTrigger>
-              <TabsTrigger value="payouts">Payouts</TabsTrigger>
-              <TabsTrigger value="members">Members</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
-            </TabsList>
-
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Revenue Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <BarChart3 className="h-5 w-5" />
-                      <span>Platform Revenue</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(analyticsData?.revenueChart.labels || []).map((month, index) => (
-                        <div key={month} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">{month}</span>
-                          <div className="flex items-center space-x-4">
-                            <div className="w-24 text-right">
-                              <span className="text-sm font-medium">
-                                R{analyticsData.revenueChart.revenue[index]?.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="w-20 text-right">
-                              <span className="text-xs text-purple-600">
-                                R{analyticsData.revenueChart.fees[index]?.toLocaleString()} fees
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Recent Activity */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Activity className="h-5 w-5" />
-                      <span>Platform Activity</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(platformActivity || []).slice(0, 6).map((activity) => (
-                        <div key={activity.id} className="flex items-center space-x-3">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">
-                              {activity.description}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {activity.churchName} • {new Date(activity.timestamp).toLocaleString()}
-                            </p>
-                          </div>
-                          {activity.amount && (
-                            <span className="text-sm font-medium text-green-600">
-                              R{activity.amount}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Churches Tab */}
-            <TabsContent value="churches" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Church Management</h2>
-                <Button onClick={() => setShowChurchModal(true)}>
-                  <Building2 className="h-4 w-4 mr-2" />
-                  View Church Details
-                </Button>
-              </div>
-              
-              <div className="grid gap-4">
-                {(churches || []).map((church) => (
-                  <Card key={church.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                            {church.profileImageUrl ? (
-                              <img 
-                                src={church.profileImageUrl} 
-                                alt={church.name} 
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Building2 className="h-6 w-6 text-purple-600" />
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900">{church.name}</h3>
-                            <p className="text-sm text-gray-500">
-                              {church.denomination} • {church.city}, {church.province}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {church.memberCount} members • R{church.monthlyRevenue}/month
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Badge 
-                            variant={church.status === 'active' ? 'default' : 'secondary'}
-                            className={church.status === 'active' ? 'bg-green-100 text-green-800' : ''}
-                          >
-                            {church.status}
-                          </Badge>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* Payouts Tab */}
-            <TabsContent value="payouts" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Payout Management</h2>
-                <div className="flex space-x-2">
-                  <Badge variant="outline" className="bg-orange-50 text-orange-800">
-                    {(payoutRequests || []).filter(p => p.status === 'pending').length} Pending
-                  </Badge>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-800">
-                    {(payoutRequests || []).filter(p => p.status === 'processing').length} Processing
-                  </Badge>
+        {/* Professional Stats Cards - Banking Grade Design */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Churches Card */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <Building2 className="h-8 w-8 text-blue-600" />
+                </div>
+                <div className="text-right">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 </div>
               </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-blue-900">
+                  {adminStats?.totalChurches?.toLocaleString() || '0'}
+                </h3>
+                <p className="text-blue-700 font-medium">Total Churches</p>
+                <p className="text-xs text-blue-600">{adminStats?.activeChurches || 0} active churches</p>
+              </div>
+            </CardContent>
+          </Card>
 
-              <div className="grid gap-4">
-                {(payoutRequests || []).map((payout) => (
-                  <Card key={payout.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-gray-900">{payout.churchName}</h3>
-                            <Badge 
-                              variant={payout.status === 'pending' ? 'secondary' : 'default'}
-                              className={
-                                payout.status === 'pending' ? 'bg-orange-100 text-orange-800' :
-                                payout.status === 'approved' ? 'bg-blue-100 text-blue-800' :
-                                payout.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                'bg-red-100 text-red-800'
-                              }
-                            >
-                              <Clock className="h-3 w-3 mr-1" />
-                              {payout.status}
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-500">Amount</p>
-                              <p className="font-medium">R{payout.amount}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Bank</p>
-                              <p className="font-medium">{payout.bankDetails.bankName}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Account</p>
-                              <p className="font-medium">***{payout.bankDetails.accountNumber.slice(-4)}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Requested</p>
-                              <p className="font-medium">{new Date(payout.requestDate).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handlePayoutAction(payout)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Review
-                          </Button>
-                          {payout.status === 'pending' && (
-                            <>
-                              <Button 
-                                size="sm" 
-                                className="bg-green-600 hover:bg-green-700"
-                                onClick={() => handlePayoutAction(payout)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                onClick={() => handlePayoutAction(payout)}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                        </div>
+          {/* Platform Revenue Card */}
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+                <div className="text-right">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-green-900">
+                  R{adminStats?.totalRevenue || '0'}
+                </h3>
+                <p className="text-green-700 font-medium">Platform Revenue</p>
+                <p className="text-xs text-green-600">R{adminStats?.monthlyRevenue || '0'} this month</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pending Payouts Card */}
+          <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-orange-100 rounded-xl">
+                  <Wallet className="h-8 w-8 text-orange-600" />
+                </div>
+                <div className="text-right">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-orange-900">
+                  R{adminStats?.pendingPayouts || '0'}
+                </h3>
+                <p className="text-orange-700 font-medium">Pending Payouts</p>
+                <p className="text-xs text-orange-600">R{adminStats?.completedPayouts || '0'} completed</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Platform Fees Card */}
+          <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200 hover:shadow-lg transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-purple-100 rounded-xl">
+                  <Shield className="h-8 w-8 text-purple-600" />
+                </div>
+                <div className="text-right">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-purple-900">
+                  R{adminStats?.platformFees || '0'}
+                </h3>
+                <p className="text-purple-700 font-medium">Platform Fees</p>
+                <p className="text-xs text-purple-600">3.9% + R3 per transaction</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Professional Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => setShowChurchModal(true)}>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Building2 className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Manage Churches</h3>
+              <p className="text-sm text-gray-600 mb-4">Oversee all registered churches</p>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                View Churches
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => setShowMemberModal(true)}>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Users className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Member Analytics</h3>
+              <p className="text-sm text-gray-600 mb-4">Monitor platform members</p>
+              <Button className="w-full bg-green-600 hover:bg-green-700">
+                View Members
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => setShowPayoutModal(true)}>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Wallet className="h-6 w-6 text-orange-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Process Payouts</h3>
+              <p className="text-sm text-gray-600 mb-4">Manage church payouts</p>
+              <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                View Payouts
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => setShowReportsModal(true)}>
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Platform Reports</h3>
+              <p className="text-sm text-gray-600 mb-4">Generate analytics reports</p>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                View Reports
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Professional Activity Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Recent Activity */}
+          <Card className="shadow-sm">
+            <CardHeader className="border-b border-gray-100">
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5 text-gray-600" />
+                <span>Recent Platform Activity</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="space-y-1">
+                {(platformActivity || []).slice(0, 6).map((activity, index) => (
+                  <div key={activity.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Activity className="h-4 w-4 text-blue-600" />
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{activity.description}</p>
+                        <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {activity.amount && (
+                        <p className="text-sm font-semibold text-gray-900">R{activity.amount}</p>
+                      )}
+                      <Badge variant="outline" className="text-xs">
+                        {activity.status}
+                      </Badge>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </TabsContent>
+            </CardContent>
+          </Card>
 
-            {/* Members Tab */}
-            <TabsContent value="members" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Member Overview</h2>
-                <Button onClick={() => setShowMemberModal(true)}>
-                  <Users className="h-4 w-4 mr-2" />
-                  View All Members
-                </Button>
-              </div>
-              <Card>
-                <CardContent className="p-6">
+          {/* Quick Stats */}
+          <Card className="shadow-sm">
+            <CardHeader className="border-b border-gray-100">
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5 text-gray-600" />
+                <span>Platform Performance</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Total Members</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {adminStats?.totalMembers?.toLocaleString() || '0'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Monthly Growth</span>
+                  <span className="text-lg font-bold text-green-600">
+                    +{adminStats?.revenueGrowth || 0}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Church Growth</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    +{adminStats?.churchGrowth || 0}%
+                  </span>
+                </div>
+                <div className="pt-4 border-t border-gray-100">
                   <div className="text-center">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Member Management</h3>
-                    <p className="text-gray-500 mb-4">
-                      Access detailed member analytics and management tools
-                    </p>
-                    <Button onClick={() => setShowMemberModal(true)}>
-                      Open Member Dashboard
-                    </Button>
+                    <p className="text-sm text-gray-600 mb-2">PayFast Integration</p>
+                    <Badge className="bg-green-100 text-green-800 font-medium">
+                      Active • 3.9% + R3 fees
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Reports Tab */}
-            <TabsContent value="reports" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Platform Reports</h2>
-                <Button onClick={() => setShowReportsModal(true)}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generate Report
-                </Button>
+                </div>
               </div>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Analytics</h3>
-                    <p className="text-gray-500 mb-4">
-                      Generate comprehensive reports on platform performance
-                    </p>
-                    <Button onClick={() => setShowReportsModal(true)}>
-                      Open Reports Dashboard
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
