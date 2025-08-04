@@ -68,7 +68,7 @@ import {
   ExternalLink,
   Paperclip
 } from 'lucide-react';
-import { FinancialTrendsChart } from './FinancialTrendsChart';
+import FinancialTrendsChart from './FinancialTrendsChart';
 
 interface SuperAdminDashboardProps {
   isOpen: boolean;
@@ -1019,6 +1019,56 @@ export default function SuperAdminDashboard({ isOpen, onClose }: SuperAdminDashb
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+
+  const renderAnalyticsTab = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Platform Analytics</h2>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <TrendingUp className="h-6 w-6 text-purple-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">R {mockPlatformStats.totalRevenue.toLocaleString()}</p>
+            <p className="text-sm text-gray-600">Total Platform Revenue</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <BarChart3 className="h-6 w-6 text-blue-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.platformGrowthRate}%</p>
+            <p className="text-sm text-gray-600">Monthly Growth Rate</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <DollarSign className="h-6 w-6 text-green-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">R {mockPlatformStats.monthlyRevenue.toLocaleString()}</p>
+            <p className="text-sm text-gray-600">This Month Revenue</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <FinancialTrendsChart churchName="ChurPay Platform" userType="superadmin" />
     </div>
   );
 
