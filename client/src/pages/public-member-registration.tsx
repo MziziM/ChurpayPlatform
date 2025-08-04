@@ -114,7 +114,7 @@ const membershipSteps = [
   { id: 2, title: "Personal Information", icon: User },
   { id: 3, title: "Account Security", icon: Lock },
   { id: 4, title: "Address Information", icon: MapPin },
-  { id: 5, title: "Emergency Contact", icon: Shield },
+  { id: 5, title: "Complete Registration", icon: Shield },
 ];
 
 // South African provinces for consistency
@@ -248,9 +248,38 @@ export default function PublicMemberRegistration() {
     setCurrentStep(currentStep + 1);
   };
 
-  const nextStep = () => {
-    if (currentStep < membershipSteps.length) {
+  const nextStep = async () => {
+    // Validate current step before proceeding
+    let fieldsToValidate: string[] = [];
+    
+    switch (currentStep) {
+      case 1:
+        fieldsToValidate = ['churchId'];
+        break;
+      case 2:
+        fieldsToValidate = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth'];
+        break;
+      case 3:
+        fieldsToValidate = ['password', 'confirmPassword'];
+        break;
+      case 4:
+        fieldsToValidate = ['address', 'city', 'province', 'postalCode'];
+        break;
+      case 5:
+        fieldsToValidate = ['emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelationship', 'membershipType', 'howDidYouHear'];
+        break;
+    }
+    
+    const isValid = await form.trigger(fieldsToValidate as any);
+    
+    if (isValid && currentStep < membershipSteps.length) {
       setCurrentStep(currentStep + 1);
+    } else if (!isValid) {
+      toast({
+        title: "Please complete all required fields",
+        description: "Fill in all required information before proceeding to the next step.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -705,8 +734,8 @@ export default function PublicMemberRegistration() {
                   {currentStep === 5 && (
                     <div className="space-y-6">
                       <div className="mb-4">
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact</h3>
-                        <p className="text-sm text-gray-600">Please provide details for someone we can contact in case of emergency.</p>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact & Church Information</h3>
+                        <p className="text-sm text-gray-600">Please provide emergency contact details and complete your church membership information.</p>
                       </div>
 
                       <FormField
@@ -877,7 +906,7 @@ export default function PublicMemberRegistration() {
                         onClick={nextStep}
                         className="ml-auto bg-purple-600 hover:bg-purple-700 text-white"
                       >
-                        Next
+                        Continue to Next Step
                       </Button>
                     ) : (
                       <Button
