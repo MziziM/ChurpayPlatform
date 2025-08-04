@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RegistrationModal } from "@/components/RegistrationModal";
 import { 
   Church, 
   Users, 
@@ -29,6 +30,7 @@ import {
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -169,20 +171,10 @@ export default function Landing() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg"
-                    onClick={() => window.location.href = '/church-registration'}
+                    onClick={() => setRegistrationModalOpen(true)}
                     className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                   >
-                    <Church className="mr-2 h-5 w-5" />
-                    <span>Register Church</span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <Button 
-                    size="lg"
-                    onClick={() => window.location.href = '/member-registration'}
-                    className="bg-white text-churpay-purple border-2 border-churpay-purple hover:bg-churpay-purple hover:text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
-                  >
-                    <Users className="mr-2 h-5 w-5" />
-                    <span>Join as Member</span>
+                    <span>Get Started</span>
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
@@ -998,6 +990,10 @@ export default function Landing() {
         </Button>
       </div>
 
+      <RegistrationModal 
+        isOpen={registrationModalOpen} 
+        onClose={() => setRegistrationModalOpen(false)} 
+      />
     </div>
   );
 }
