@@ -5,6 +5,7 @@ import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, inser
 import { protectCoreEndpoints, validateFeeStructure, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -56,7 +57,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         phone: z.string(),
         dateOfBirth: z.string(),
+        password: z.string(),
         address: z.string(),
+        addressLine2: z.string().optional(),
         city: z.string(),
         province: z.string(),
         postalCode: z.string(),
@@ -64,13 +67,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emergencyContactName: z.string(),
         emergencyContactPhone: z.string(),
         emergencyContactRelationship: z.string(),
+        emergencyContactEmail: z.string().optional(),
+        emergencyContactAddress: z.string(),
         membershipType: z.string(),
         previousChurch: z.string().optional(),
         howDidYouHear: z.string().optional(),
       }).parse(req.body);
 
+      // Hash the password before storing
+      const saltRounds = 12;
+      const passwordHash = await bcrypt.hash(validatedData.password, saltRounds);
+
       const memberData = {
         ...validatedData,
+        passwordHash,
         id: randomUUID(),
         role: 'member' as const,
         profileImageUrl: null,
