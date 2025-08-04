@@ -523,27 +523,26 @@ export default function SuperAdminDashboard() {
 
       {/* Modals */}
       <SuperAdminPayoutModal
-        isOpen={showPayoutModal}
-        onClose={() => {
-          setShowPayoutModal(false);
-          setSelectedPayout(null);
+        open={showPayoutModal}
+        onOpenChange={(open) => {
+          setShowPayoutModal(open);
+          if (!open) setSelectedPayout(null);
         }}
-        payout={selectedPayout}
       />
 
       <SuperAdminChurchModal
-        isOpen={showChurchModal}
-        onClose={() => setShowChurchModal(false)}
+        open={showChurchModal}
+        onOpenChange={setShowChurchModal}
       />
 
       <SuperAdminMemberModal
-        isOpen={showMemberModal}
-        onClose={() => setShowMemberModal(false)}
+        open={showMemberModal}
+        onOpenChange={setShowMemberModal}
       />
 
       <SuperAdminReportsModal
-        isOpen={showReportsModal}
-        onClose={() => setShowReportsModal(false)}
+        open={showReportsModal}
+        onOpenChange={setShowReportsModal}
       />
     </div>
   );
