@@ -238,6 +238,7 @@ export default function FinancialTrendsChart({ churchName = "Grace Baptist Churc
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" stroke="#666" />
                 <YAxis stroke="#666" />
+                <YAxis yAxisId="right" orientation="right" stroke="#666" />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 <Area

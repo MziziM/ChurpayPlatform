@@ -68,6 +68,7 @@ import {
   ExternalLink,
   Paperclip
 } from 'lucide-react';
+import { FinancialTrendsChart } from './FinancialTrendsChart';
 
 interface SuperAdminDashboardProps {
   isOpen: boolean;
@@ -1039,7 +1040,7 @@ export default function SuperAdminDashboard({ isOpen, onClose }: SuperAdminDashb
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <div className="px-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger 
                   value="overview"
                   className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
@@ -1069,6 +1070,13 @@ export default function SuperAdminDashboard({ isOpen, onClose }: SuperAdminDashb
                   Members
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="analytics"
+                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Analytics
+                </TabsTrigger>
+                <TabsTrigger 
                   value="system"
                   className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white"
                 >
@@ -1090,6 +1098,9 @@ export default function SuperAdminDashboard({ isOpen, onClose }: SuperAdminDashb
               </TabsContent>
               <TabsContent value="members" className="mt-0">
                 {renderMembersTab()}
+              </TabsContent>
+              <TabsContent value="analytics" className="mt-0">
+                {renderAnalyticsTab()}
               </TabsContent>
               <TabsContent value="system" className="mt-0">
                 {renderSystemTab()}
