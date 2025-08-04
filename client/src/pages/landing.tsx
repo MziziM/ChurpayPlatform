@@ -87,38 +87,14 @@ export default function Landing() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="relative group">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-600 hover:text-churpay-purple"
-                >
-                  Quick Access
-                </Button>
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <button 
-                    onClick={() => { setDashboardUserType('member'); setDashboardModalOpen(true); }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2"
-                  >
-                    <Users className="h-4 w-4 text-blue-500" />
-                    <span>Member Dashboard</span>
-                  </button>
-                  <button 
-                    onClick={() => { setDashboardUserType('church'); setDashboardModalOpen(true); }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2"
-                  >
-                    <Church className="h-4 w-4 text-purple-500" />
-                    <span>Church Dashboard</span>
-                  </button>
-                  <div className="border-t border-gray-200 my-1"></div>
-                  <button 
-                    onClick={() => window.location.href = '/sign-in'}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2"
-                  >
-                    <Heart className="h-4 w-4 text-red-500" />
-                    <span>Full Sign In</span>
-                  </button>
-                </div>
-              </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => window.location.href = '/sign-in'}
+                className="text-gray-600 hover:text-churpay-purple font-medium"
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                Sign In
+              </Button>
               <Button 
                 onClick={() => window.location.href = '/church-registration'}
                 className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
@@ -194,50 +170,25 @@ export default function Landing() {
                 Empower your church with world-class fintech infrastructure. Accept donations, manage funds, and grow your ministry with enterprise-grade security and compliance.
               </p>
               
-              <div className="space-y-6">
-                {/* Quick Dashboard Access */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-purple-200/50 shadow-lg">
-                  <p className="text-lg font-semibold text-gray-900 mb-4">Quick Dashboard Access</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Button 
-                      onClick={() => { setDashboardUserType('member'); setDashboardModalOpen(true); }}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg transition-all duration-300 h-12"
-                    >
-                      <Users className="mr-2 h-4 w-4" />
-                      Member Dashboard
-                    </Button>
-                    <Button 
-                      onClick={() => { setDashboardUserType('church'); setDashboardModalOpen(true); }}
-                      className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 h-12"
-                    >
-                      <Church className="mr-2 h-4 w-4" />
-                      Church Dashboard
-                    </Button>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3 text-center">Experience ChurPay instantly - no signup required</p>
-                </div>
-
-                {/* Registration */}
-                <div className="space-y-3">
-                  <p className="text-lg font-medium text-gray-700">Ready to join ChurPay?</p>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button 
-                      size="lg"
-                      onClick={() => setRegistrationModalOpen(true)}
-                      className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
-                    >
-                      <span>Get Started</span>
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                    <Button 
-                      size="lg"
-                      variant="outline"
-                      className="border-2 border-purple-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300"
-                    >
-                      <Play className="mr-2 h-4 w-4" />
-                      <span>Watch Demo</span>
-                    </Button>
-                  </div>
+              <div className="space-y-3">
+                <p className="text-lg font-medium text-gray-700">Ready to join ChurPay?</p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    size="lg"
+                    onClick={() => setRegistrationModalOpen(true)}
+                    className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-purple-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300"
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    <span>Watch Demo</span>
+                  </Button>
                 </div>
               </div>
               
