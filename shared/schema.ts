@@ -70,6 +70,22 @@ export const payoutStatusEnum = pgEnum('payout_status', ['requested', 'under_rev
 // Project status enum
 export const projectStatusEnum = pgEnum('project_status', ['draft', 'active', 'completed', 'cancelled']);
 
+// Wallet transaction types enum
+export const walletTransactionTypeEnum = pgEnum('wallet_transaction_type', [
+  'deposit', 'withdrawal', 'transfer_sent', 'transfer_received', 'donation', 
+  'reward', 'refund', 'fee', 'cashback'
+]);
+
+// Wallet transaction status enum
+export const walletTransactionStatusEnum = pgEnum('wallet_transaction_status', [
+  'pending', 'completed', 'failed', 'cancelled', 'processing'
+]);
+
+// Payment method enum
+export const paymentMethodEnum = pgEnum('payment_method', [
+  'card', 'bank_transfer', 'eft', 'wallet', 'payfast', 'ozow', 'snapscan'
+]);
+
 // Users table (Required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -253,6 +269,131 @@ export const payouts = pgTable("payouts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Member wallets table
+export const wallets = pgTable("wallets", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  
+  // Wallet balances
+  availableBalance: decimal("available_balance", { precision: 12, scale: 2 }).default('0.00'),
+  pendingBalance: decimal("pending_balance", { precision: 12, scale: 2 }).default('0.00'),
+  rewardPoints: decimal("reward_points", { precision: 12, scale: 2 }).default('0.00'),
+  
+  // Wallet settings
+  isActive: boolean("is_active").default(true),
+  isPinSet: boolean("is_pin_set").default(false),
+  pinHash: varchar("pin_hash"), // Hashed wallet PIN for transactions
+  
+  // Limits and restrictions
+  dailyTransferLimit: decimal("daily_transfer_limit", { precision: 12, scale: 2 }).default('10000.00'),
+  monthlyTransferLimit: decimal("monthly_transfer_limit", { precision: 12, scale: 2 }).default('50000.00'),
+  
+  // Auto settings
+  autoTopUpEnabled: boolean("auto_top_up_enabled").default(false),
+  autoTopUpAmount: decimal("auto_top_up_amount", { precision: 12, scale: 2 }),
+  autoTopUpThreshold: decimal("auto_top_up_threshold", { precision: 12, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Wallet transactions table
+export const walletTransactions = pgTable("wallet_transactions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletId: uuid("wallet_id").notNull(),
+  
+  // Transaction details
+  type: walletTransactionTypeEnum("type").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default('ZAR'),
+  description: text("description"),
+  
+  // Related entities
+  fromWalletId: uuid("from_wallet_id"), // For transfers
+  toWalletId: uuid("to_wallet_id"), // For transfers
+  transactionId: uuid("transaction_id"), // Link to main transactions table
+  churchId: uuid("church_id"), // For donations/church-related transactions
+  
+  // Payment processing
+  paymentMethod: paymentMethodEnum("payment_method"),
+  paymentReference: varchar("payment_reference"),
+  processingFee: decimal("processing_fee", { precision: 8, scale: 2 }),
+  
+  // Status and metadata
+  status: walletTransactionStatusEnum("status").default('pending'),
+  failureReason: text("failure_reason"),
+  
+  // Balance tracking
+  balanceBefore: decimal("balance_before", { precision: 12, scale: 2 }),
+  balanceAfter: decimal("balance_after", { precision: 12, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Wallet top-up methods table
+export const walletTopUpMethods = pgTable("wallet_top_up_methods", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletId: uuid("wallet_id").notNull(),
+  
+  // Payment method details
+  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  methodName: varchar("method_name"), // User-defined name
+  
+  // Card details (encrypted/tokenized)
+  cardToken: varchar("card_token"), // Tokenized card for PayFast
+  cardLast4: varchar("card_last_4", { length: 4 }),
+  cardBrand: varchar("card_brand", { length: 20 }),
+  expiryMonth: varchar("expiry_month", { length: 2 }),
+  expiryYear: varchar("expiry_year", { length: 4 }),
+  
+  // Bank details
+  bankName: varchar("bank_name"),
+  accountNumber: varchar("account_number"), // Masked
+  branchCode: varchar("branch_code"),
+  accountType: varchar("account_type"),
+  
+  // Status and settings
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// PayFast integration table
+export const payfastTransactions = pgTable("payfast_transactions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletTransactionId: uuid("wallet_transaction_id"),
+  
+  // PayFast specific fields
+  paymentId: varchar("payment_id").notNull(), // PayFast payment_id
+  merchantId: varchar("merchant_id").notNull(),
+  merchantKey: varchar("merchant_key").notNull(),
+  
+  // Transaction details
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  itemName: varchar("item_name").notNull(),
+  itemDescription: text("item_description"),
+  
+  // Status tracking
+  paymentStatus: varchar("payment_status"), // COMPLETE, CANCELLED, FAILED
+  paymentDate: timestamp("payment_date"),
+  
+  // PayFast response data
+  pfPaymentId: varchar("pf_payment_id"),
+  paymentMethod: varchar("payment_method"),
+  amountGross: decimal("amount_gross", { precision: 12, scale: 2 }),
+  amountFee: decimal("amount_fee", { precision: 12, scale: 2 }),
+  amountNet: decimal("amount_net", { precision: 12, scale: 2 }),
+  
+  // Security
+  signature: varchar("signature"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Activity logs for audit trail
 export const activityLogs = pgTable("activity_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -276,6 +417,60 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   transactions: many(transactions),
   payouts: many(payouts),
   activityLogs: many(activityLogs),
+  wallet: one(wallets, {
+    fields: [users.id],
+    references: [wallets.userId],
+  }),
+}));
+
+export const walletsRelations = relations(wallets, ({ one, many }) => ({
+  user: one(users, {
+    fields: [wallets.userId],
+    references: [users.id],
+  }),
+  transactions: many(walletTransactions),
+  topUpMethods: many(walletTopUpMethods),
+}));
+
+export const walletTransactionsRelations = relations(walletTransactions, ({ one }) => ({
+  wallet: one(wallets, {
+    fields: [walletTransactions.walletId],
+    references: [wallets.id],
+  }),
+  fromWallet: one(wallets, {
+    fields: [walletTransactions.fromWalletId],
+    references: [wallets.id],
+  }),
+  toWallet: one(wallets, {
+    fields: [walletTransactions.toWalletId],
+    references: [wallets.id],
+  }),
+  transaction: one(transactions, {
+    fields: [walletTransactions.transactionId],
+    references: [transactions.id],
+  }),
+  church: one(churches, {
+    fields: [walletTransactions.churchId],
+    references: [churches.id],
+  }),
+  payfastTransaction: one(payfastTransactions, {
+    fields: [walletTransactions.id],
+    references: [payfastTransactions.walletTransactionId],
+  }),
+}));
+
+export const walletTopUpMethodsRelations = relations(walletTopUpMethods, ({ one }) => ({
+  wallet: one(wallets, {
+    fields: [walletTopUpMethods.walletId],
+    references: [wallets.id],
+  }),
+}));
+
+export const payfastTransactionsRelations = relations(payfastTransactions, ({ one }) => ({
+  walletTransaction: one(walletTransactions, {
+    fields: [payfastTransactions.walletTransactionId],
+    references: [walletTransactions.id],
+  }),
 }));
 
 export const churchesRelations = relations(churches, ({ one, many }) => ({
@@ -379,6 +574,30 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
   createdAt: true,
 });
 
+export const insertWalletSchema = createInsertSchema(wallets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWalletTransactionSchema = createInsertSchema(walletTransactions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWalletTopUpMethodSchema = createInsertSchema(walletTopUpMethods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPayfastTransactionSchema = createInsertSchema(payfastTransactions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -398,3 +617,15 @@ export type InsertPayout = z.infer<typeof insertPayoutSchema>;
 
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+
+export type Wallet = typeof wallets.$inferSelect;
+export type InsertWallet = z.infer<typeof insertWalletSchema>;
+
+export type WalletTransaction = typeof walletTransactions.$inferSelect;
+export type InsertWalletTransaction = z.infer<typeof insertWalletTransactionSchema>;
+
+export type WalletTopUpMethod = typeof walletTopUpMethods.$inferSelect;
+export type InsertWalletTopUpMethod = z.infer<typeof insertWalletTopUpMethodSchema>;
+
+export type PayfastTransaction = typeof payfastTransactions.$inferSelect;
+export type InsertPayfastTransaction = z.infer<typeof insertPayfastTransactionSchema>;
