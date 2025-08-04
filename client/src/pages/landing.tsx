@@ -92,7 +92,6 @@ export default function Landing() {
                 onClick={() => window.location.href = '/sign-in'}
                 className="text-gray-600 hover:text-churpay-purple font-medium"
               >
-                <Heart className="mr-2 h-4 w-4" />
                 Sign In
               </Button>
               <Button 
@@ -170,7 +169,7 @@ export default function Landing() {
                 Empower your church with world-class fintech infrastructure. Accept donations, manage funds, and grow your ministry with enterprise-grade security and compliance.
               </p>
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-lg font-medium text-gray-700">Ready to join ChurPay?</p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
@@ -904,7 +903,7 @@ export default function Landing() {
             className="bg-churpay-gradient text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110"
             onClick={() => setRegistrationModalOpen(true)}
           >
-            <Heart className="h-6 w-6" />
+            <ArrowRight className="h-6 w-6" />
           </Button>
           <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
             Get Started
