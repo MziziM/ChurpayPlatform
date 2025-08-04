@@ -321,6 +321,265 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Churches API
+  app.get('/api/churches', async (req, res) => {
+    try {
+      // Mock churches data for now
+      const churches = [
+        {
+          id: '1',
+          name: 'Grace Baptist Church',
+          description: 'A welcoming community focused on faith, hope, and love.',
+          location: 'Cape Town, South Africa',
+          memberCount: 450,
+          totalDonations: '125000.00',
+          image: null
+        },
+        {
+          id: '2',
+          name: 'New Life Methodist Church',
+          description: 'Building stronger communities through worship and service.',
+          location: 'Johannesburg, South Africa',
+          memberCount: 320,
+          totalDonations: '98500.00',
+          image: null
+        },
+        {
+          id: '3',
+          name: 'Faith Assembly Church',
+          description: 'Empowering believers to live purposeful lives.',
+          location: 'Durban, South Africa',
+          memberCount: 275,
+          totalDonations: '87250.00',
+          image: null
+        }
+      ];
+      res.json(churches);
+    } catch (error) {
+      console.error("Error fetching churches:", error);
+      res.status(500).json({ message: "Failed to fetch churches" });
+    }
+  });
+
+  // Projects API
+  app.get('/api/projects', async (req, res) => {
+    try {
+      // Mock projects data for now
+      const projects = [
+        {
+          id: '1',
+          churchId: '1',
+          churchName: 'Grace Baptist Church',
+          title: 'New Sanctuary Building',
+          description: 'Help us build a new sanctuary to accommodate our growing congregation.',
+          targetAmount: '500000.00',
+          currentAmount: '285000.00',
+          deadline: '2025-12-01',
+          category: 'Building',
+          image: null,
+          status: 'active'
+        },
+        {
+          id: '2',
+          churchId: '2',
+          churchName: 'New Life Methodist Church',
+          title: 'Community Outreach Program',
+          description: 'Support our mission to help local families in need.',
+          targetAmount: '75000.00',
+          currentAmount: '42500.00',
+          deadline: '2025-06-30',
+          category: 'Outreach',
+          image: null,
+          status: 'active'
+        },
+        {
+          id: '3',
+          churchId: '3',
+          churchName: 'Faith Assembly Church',
+          title: 'Youth Ministry Equipment',
+          description: 'Purchase new equipment for our growing youth ministry.',
+          targetAmount: '25000.00',
+          currentAmount: '18750.00',
+          deadline: '2025-08-15',
+          category: 'Ministry',
+          image: null,
+          status: 'active'
+        }
+      ];
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+
+  // Donations API
+  app.get('/api/donations/history', async (req, res) => {
+    try {
+      // Mock donation history for now
+      const donations = [
+        {
+          id: '1',
+          amount: '500.00',
+          type: 'donation',
+          churchName: 'Grace Baptist Church',
+          date: '2025-01-04T10:30:00Z',
+          status: 'completed'
+        },
+        {
+          id: '2',
+          amount: '1000.00',
+          type: 'tithe',
+          churchName: 'Grace Baptist Church',
+          date: '2025-01-01T09:00:00Z',
+          status: 'completed'
+        },
+        {
+          id: '3',
+          amount: '250.00',
+          type: 'project',
+          churchName: 'New Life Methodist Church',
+          projectTitle: 'Community Outreach Program',
+          date: '2024-12-28T14:15:00Z',
+          status: 'completed'
+        }
+      ];
+      res.json(donations);
+    } catch (error) {
+      console.error("Error fetching donation history:", error);
+      res.status(500).json({ message: "Failed to fetch donation history" });
+    }
+  });
+
+  // Give donation
+  app.post('/api/donations/give', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { churchId, amount, note } = req.body;
+
+      if (!churchId || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid donation data" });
+      }
+
+      // Check wallet balance
+      const wallet = await storage.getUserWallet(userId);
+      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
+        return res.status(400).json({ message: "Insufficient wallet balance" });
+      }
+
+      // Create wallet transaction
+      const transaction = await storage.createWalletTransaction({
+        walletId: wallet.id,
+        type: 'donation',
+        amount: (-amount).toString(),
+        description: `Donation to church - ${note || 'General donation'}`,
+        status: 'completed',
+        currency: 'ZAR',
+        reference: `DON${Date.now()}`,
+        balanceBefore: wallet.availableBalance,
+        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
+      });
+
+      // Update wallet balance
+      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
+
+      res.json({ 
+        success: true, 
+        transactionId: transaction.id,
+        message: "Donation processed successfully" 
+      });
+    } catch (error) {
+      console.error("Error processing donation:", error);
+      res.status(500).json({ message: "Failed to process donation" });
+    }
+  });
+
+  // Pay tithe
+  app.post('/api/donations/tithe', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { churchId, amount } = req.body;
+
+      if (!churchId || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid tithe data" });
+      }
+
+      // Check wallet balance
+      const wallet = await storage.getUserWallet(userId);
+      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
+        return res.status(400).json({ message: "Insufficient wallet balance" });
+      }
+
+      // Create wallet transaction
+      const transaction = await storage.createWalletTransaction({
+        walletId: wallet.id,
+        type: 'tithe',
+        amount: (-amount).toString(),
+        description: `Tithe payment`,
+        status: 'completed',
+        currency: 'ZAR',
+        reference: `TIT${Date.now()}`,
+        balanceBefore: wallet.availableBalance,
+        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
+      });
+
+      // Update wallet balance
+      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
+
+      res.json({ 
+        success: true, 
+        transactionId: transaction.id,
+        message: "Tithe processed successfully" 
+      });
+    } catch (error) {
+      console.error("Error processing tithe:", error);
+      res.status(500).json({ message: "Failed to process tithe" });
+    }
+  });
+
+  // Sponsor project
+  app.post('/api/projects/sponsor', async (req, res) => {
+    try {
+      const userId = 'demo-user-123'; // In real app, get from authenticated session
+      const { projectId, amount } = req.body;
+
+      if (!projectId || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid sponsorship data" });
+      }
+
+      // Check wallet balance
+      const wallet = await storage.getUserWallet(userId);
+      if (!wallet || parseFloat(wallet.availableBalance) < amount) {
+        return res.status(400).json({ message: "Insufficient wallet balance" });
+      }
+
+      // Create wallet transaction
+      const transaction = await storage.createWalletTransaction({
+        walletId: wallet.id,
+        type: 'project',
+        amount: (-amount).toString(),
+        description: `Project sponsorship`,
+        status: 'completed',
+        currency: 'ZAR',
+        reference: `PRJ${Date.now()}`,
+        balanceBefore: wallet.availableBalance,
+        balanceAfter: (parseFloat(wallet.availableBalance) - amount).toString(),
+      });
+
+      // Update wallet balance
+      await storage.updateWalletBalance(wallet.id, parseFloat(wallet.availableBalance) - amount);
+
+      res.json({ 
+        success: true, 
+        transactionId: transaction.id,
+        message: "Project sponsorship processed successfully" 
+      });
+    } catch (error) {
+      console.error("Error processing sponsorship:", error);
+      res.status(500).json({ message: "Failed to process sponsorship" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
