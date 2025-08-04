@@ -56,7 +56,7 @@ export const sessions = pgTable(
 );
 
 // User roles enum
-export const userRoleEnum = pgEnum('user_role', ['superadmin', 'church_admin', 'church_staff', 'member', 'public']);
+export const userRoleEnum = pgEnum('user_role', ['superadmin', 'admin', 'church_admin', 'church_staff', 'member', 'public']);
 
 // Church status enum
 export const churchStatusEnum = pgEnum('church_status', ['pending', 'under_review', 'approved', 'rejected', 'suspended']);
@@ -680,10 +680,37 @@ export const insertDonationSchema = createInsertSchema(donations).omit({
   updatedAt: true,
 });
 
+// Admin users table - separate from regular users for enhanced security
+export const admins = pgTable("admins", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: userRoleEnum("role").default('admin'),
+  isActive: boolean("is_active").default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  accountLockedUntil: timestamp("account_locked_until"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Zod schemas for admins
+export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type InsertAdmin = typeof admins.$inferInsert;
+export type Admin = typeof admins.$inferSelect;
 
 export type Church = typeof churches.$inferSelect;
 export type InsertChurch = z.infer<typeof insertChurchSchema>;

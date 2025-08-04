@@ -35,6 +35,9 @@ import {
   type InsertPaymentMethod,
   type Donation,
   type InsertDonation,
+  admins,
+  type Admin,
+  type InsertAdmin,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
@@ -109,6 +112,13 @@ export interface IStorage {
   
   // Additional methods for API endpoints
   getAllTransactions(): Promise<Transaction[]>;
+  
+  // Admin operations
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+  getAdminByEmail(email: string): Promise<Admin | undefined>;
+  getAdminById(id: string): Promise<Admin | undefined>;
+  updateAdminLogin(adminId: string): Promise<Admin>;
+  incrementFailedLoginAttempts(adminId: string): Promise<Admin>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -764,6 +774,57 @@ export class DatabaseStorage implements IStorage {
   // Additional methods for API endpoints
   async getAllTransactions(): Promise<Transaction[]> {
     return await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+  }
+  
+  // Admin operations
+  async createAdmin(adminData: InsertAdmin): Promise<Admin> {
+    const [admin] = await db.insert(admins).values(adminData).returning();
+    return admin;
+  }
+
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.email, email));
+    return admin;
+  }
+
+  async getAdminById(id: string): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.id, id));
+    return admin;
+  }
+
+  async updateAdminLogin(adminId: string): Promise<Admin> {
+    const [admin] = await db
+      .update(admins)
+      .set({ 
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        accountLockedUntil: null,
+        updatedAt: new Date()
+      })
+      .where(eq(admins.id, adminId))
+      .returning();
+    return admin;
+  }
+
+  async incrementFailedLoginAttempts(adminId: string): Promise<Admin> {
+    // First get current admin to check failed attempts
+    const currentAdmin = await this.getAdminById(adminId);
+    if (!currentAdmin) throw new Error('Admin not found');
+    
+    const newFailedAttempts = currentAdmin.failedLoginAttempts + 1;
+    const shouldLockAccount = newFailedAttempts >= 5;
+    const lockUntil = shouldLockAccount ? new Date(Date.now() + 30 * 60 * 1000) : null; // 30 minutes
+    
+    const [admin] = await db
+      .update(admins)
+      .set({ 
+        failedLoginAttempts: newFailedAttempts,
+        accountLockedUntil: lockUntil,
+        updatedAt: new Date()
+      })
+      .where(eq(admins.id, adminId))
+      .returning();
+    return admin;
   }
 }
 
