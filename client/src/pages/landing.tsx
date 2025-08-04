@@ -276,6 +276,43 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      {/* Revenue Sharing Highlight */}
+      <section className="py-16 bg-gradient-to-r from-yellow-50 via-orange-50 to-yellow-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full mb-4">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="font-bold text-lg">10%</span>
+              </div>
+              <span className="font-semibold">Annual Revenue Sharing</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Your Church Grows, We All Grow
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Churches receive 10% of the annual revenue generated from their transactions. The more your church grows digitally, the more you earn back to reinvest in your ministry.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <div className="text-2xl font-bold text-gray-900 mb-2">R10,000</div>
+                <div className="text-gray-600 text-sm">Monthly donations</div>
+                <div className="text-yellow-600 font-semibold mt-2">R468 annual bonus</div>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <div className="text-2xl font-bold text-gray-900 mb-2">R50,000</div>
+                <div className="text-gray-600 text-sm">Monthly donations</div>
+                <div className="text-yellow-600 font-semibold mt-2">R2,340 annual bonus</div>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <div className="text-2xl font-bold text-gray-900 mb-2">R100,000</div>
+                <div className="text-gray-600 text-sm">Monthly donations</div>
+                <div className="text-yellow-600 font-semibold mt-2">R4,680 annual bonus</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* User Type Selection */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -299,6 +336,7 @@ export default function Landing() {
                     'Multi-channel donation acceptance',
                     'Real-time financial analytics',
                     'Secure payout management',
+                    '10% annual revenue sharing for churches',
                     'Member engagement tools'
                   ].map((feature, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -317,7 +355,7 @@ export default function Landing() {
                 </Button>
                 
                 <div className="mt-4 text-center">
-                  <span className="text-sm text-gray-500"> No setup fees</span>
+                  <span className="text-sm text-gray-500">10% annual revenue sharing • No setup fees</span>
                 </div>
               </CardContent>
             </Card>
@@ -636,6 +674,16 @@ export default function Landing() {
                   <p className="text-sm text-gray-400">No monthly fees • No setup costs • No hidden charges</p>
                 </div>
                 
+                <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">10%</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">Annual Revenue Sharing</span>
+                  </div>
+                  <p className="text-gray-600 text-sm">Churches receive 10% of annual revenue generated from their transactions - growing your ministry while growing with us.</p>
+                </div>
+                
                 <div className="space-y-4 mb-8 text-left">
                   {[
                     'Unlimited donation volume',
@@ -730,10 +778,14 @@ export default function Landing() {
               </Button>
             </div>
             
-            <div className="mt-8 flex items-center justify-center space-x-6 text-white/80">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-white/80">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4" />
                 <span>3.9% + R3 per transaction</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4" />
+                <span>10% annual revenue sharing</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4" />
