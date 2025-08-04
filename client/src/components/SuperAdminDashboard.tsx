@@ -1068,7 +1068,7 @@ export default function SuperAdminDashboard({ isOpen, onClose }: SuperAdminDashb
         </Card>
       </div>
 
-      <FinancialTrendsChart churchName="ChurPay Platform" userType="superadmin" />
+      <FinancialTrendsChart churchName="ChurPay Platform" userType="super_admin" />
     </div>
   );
 
