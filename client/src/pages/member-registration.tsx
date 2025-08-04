@@ -27,6 +27,7 @@ import {
   Shield,
   Heart
 } from "lucide-react";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
 const memberRegistrationSchema = z.object({
   churchId: z.string().min(1, "Please select a church"),
@@ -292,88 +293,24 @@ export default function MemberRegistration() {
       case 2:
         return (
           <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Street Address *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Main Street" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <AddressAutocomplete
+              label="Your Address"
+              placeholder="Search for your address..."
+              onAddressSelect={(addressComponents) => {
+                form.setValue('address', addressComponents.address);
+                form.setValue('city', addressComponents.city);
+                form.setValue('province', addressComponents.province);
+                form.setValue('postalCode', addressComponents.postalCode);
+                form.setValue('country', addressComponents.country);
+              }}
+              initialAddress={{
+                address: form.getValues('address') || '',
+                city: form.getValues('city') || '',
+                province: form.getValues('province') || '',
+                postalCode: form.getValues('postalCode') || '',
+                country: form.getValues('country') || 'South Africa'
+              }}
             />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Cape Town" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Province *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a province" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {provinces.map((province) => (
-                          <SelectItem key={province} value={province}>
-                            {province}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="postalCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Postal Code *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="8001" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
           </div>
         );
 

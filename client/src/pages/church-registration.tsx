@@ -28,6 +28,7 @@ import {
   FileText,
   Shield
 } from "lucide-react";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
 const churchRegistrationSchema = z.object({
   // Church Information
@@ -333,35 +334,26 @@ export default function ChurchRegistration() {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Street Address *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Church Street" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <AddressAutocomplete
+              label="Church Address"
+              placeholder="Search for your church address..."
+              onAddressSelect={(addressComponents) => {
+                form.setValue('address', addressComponents.address);
+                form.setValue('city', addressComponents.city);
+                form.setValue('province', addressComponents.province);
+                form.setValue('postalCode', addressComponents.postalCode);
+                form.setValue('country', addressComponents.country);
+              }}
+              initialAddress={{
+                address: form.getValues('address') || '',
+                city: form.getValues('city') || '',
+                province: form.getValues('province') || '',
+                postalCode: form.getValues('postalCode') || '',
+                country: form.getValues('country') || 'South Africa'
+              }}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Cape Town" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="province"
