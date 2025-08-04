@@ -21,6 +21,7 @@ interface Church {
   memberCount: number;
   totalDonations: string;
   image?: string;
+  logoUrl?: string;
 }
 
 interface ChurchModalProps {
@@ -133,9 +134,13 @@ export function ChurchModal({ isOpen, onClose, churchId }: ChurchModalProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start space-x-6">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src={churchDetails.image} />
-                    <AvatarFallback className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white text-2xl">
+                  <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
+                    <AvatarImage 
+                      src={churchDetails.logoUrl || churchDetails.image} 
+                      alt={`${churchDetails.name} logo`}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white text-2xl font-bold">
                       {churchDetails.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>

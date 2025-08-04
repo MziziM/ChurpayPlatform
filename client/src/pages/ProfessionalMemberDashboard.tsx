@@ -59,6 +59,10 @@ export default function ProfessionalMemberDashboard() {
     queryKey: ['/api/donations/history']
   });
 
+  const { data: churches = [] } = useQuery<any[]>({
+    queryKey: ['/api/churches']
+  });
+
   const walletBalance = parseFloat(walletData?.availableBalance || '0');
   const rewardPoints = parseInt(walletData?.rewardPoints || '0');
 
@@ -415,12 +419,20 @@ export default function ProfessionalMemberDashboard() {
               <CardContent className="p-6">
                 <div className="space-y-5">
                   <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-xl border border-green-200">
-                    <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
-                      <Building2 className="h-8 w-8 text-green-600" />
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-green-200 bg-white flex items-center justify-center">
+                      {churches[0]?.logoUrl ? (
+                        <img 
+                          src={churches[0].logoUrl} 
+                          alt={`${churches[0].name} logo`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-green-600" />
+                      )}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-lg">Grace Chapel</p>
-                      <p className="text-gray-600">Johannesburg, South Africa</p>
+                      <p className="font-bold text-gray-900 text-lg">{churches[0]?.name || 'Grace Chapel'}</p>
+                      <p className="text-gray-600">{churches[0]?.location || 'Johannesburg, South Africa'}</p>
                       <div className="flex items-center space-x-2 mt-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span className="text-sm text-green-600 font-medium">Active Member</span>

@@ -451,7 +451,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           location: 'Cape Town, South Africa',
           memberCount: 450,
           totalDonations: '125000.00',
-          image: null
+          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center',
+          logoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center'
         },
         {
           id: '2',
@@ -460,7 +461,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           location: 'Johannesburg, South Africa',
           memberCount: 320,
           totalDonations: '98500.00',
-          image: null
+          image: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=200&h=200&fit=crop&crop=center',
+          logoUrl: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=200&h=200&fit=crop&crop=center'
         },
         {
           id: '3',
@@ -469,7 +471,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           location: 'Durban, South Africa',
           memberCount: 275,
           totalDonations: '87250.00',
-          image: null
+          image: 'https://images.unsplash.com/photo-1520637836862-4d197d17c86a?w=200&h=200&fit=crop&crop=center',
+          logoUrl: 'https://images.unsplash.com/photo-1520637836862-4d197d17c86a?w=200&h=200&fit=crop&crop=center'
         }
       ];
       res.json(churches);
