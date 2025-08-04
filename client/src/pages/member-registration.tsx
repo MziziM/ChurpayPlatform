@@ -22,11 +22,39 @@ import {
   CheckCircle,
   Church,
   Mail,
-  Phone
+  Phone,
+  User,
+  Shield,
+  Heart
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 const memberRegistrationSchema = z.object({
   churchId: z.string().min(1, "Please select a church"),
+  // Personal Information
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  
+  // Address Information
+  address: z.string().min(1, "Street address is required"),
+  city: z.string().min(1, "City is required"),
+  province: z.string().min(1, "Province is required"),
+  postalCode: z.string().min(1, "Postal code is required"),
+  country: z.string().default("South Africa"),
+  
+  // Emergency Contact
+  emergencyContactName: z.string().min(1, "Emergency contact name is required"),
+  emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
+  emergencyContactRelationship: z.string().min(1, "Relationship is required"),
+  
+  // Church-related Information
+  membershipType: z.string().min(1, "Please select membership type"),
+  previousChurch: z.string().optional(),
+  howDidYouHear: z.string().optional(),
 });
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
@@ -43,7 +71,15 @@ interface Church {
   status: string;
 }
 
+const membershipSteps = [
+  { id: 1, title: "Personal Details", icon: User },
+  { id: 2, title: "Address Information", icon: MapPin },
+  { id: 3, title: "Emergency Contact", icon: Shield },
+  { id: 4, title: "Church Selection", icon: Church },
+];
+
 export default function MemberRegistration() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [, setLocation] = useLocation();
@@ -52,6 +88,25 @@ export default function MemberRegistration() {
 
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
+    defaultValues: {
+      country: "South Africa",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      dateOfBirth: "",
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelationship: "",
+      membershipType: "",
+      previousChurch: "",
+      howDidYouHear: "",
+      churchId: "",
+    },
   });
 
   // In a real implementation, this would fetch approved churches
