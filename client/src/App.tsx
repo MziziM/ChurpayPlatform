@@ -12,7 +12,7 @@ import MemberDashboardDark from "@/pages/MemberDashboardDark";
 import WalletDashboard from "@/pages/WalletDashboard";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
-import MemberRegistration from "./pages/MemberRegistration";
+
 
 function Router() {
   return (
@@ -20,7 +20,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/church-registration" component={PublicChurchRegistration} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
-      <Route path="/register" component={MemberRegistration} />
+      <Route path="/register" component={PublicMemberRegistration} />
       <Route path="/member-dashboard" component={ProfessionalMemberDashboard} />
       <Route path="/member" component={ProfessionalMemberDashboard} />
       <Route path="/member-old" component={MemberDashboard} />

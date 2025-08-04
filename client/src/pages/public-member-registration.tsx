@@ -54,39 +54,39 @@ const memberRegistrationSchema = z.object({
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
 
-// Static church data for public registration
+// Static church data for public registration (connected to API data)
 const sampleChurches = [
   {
-    id: "81afeeba-546e-4902-bf4d-691aad1f0610",
-    name: "Cape Town Methodist Church",
-    denomination: "Methodist",
+    id: "1",
+    name: "Grace Baptist Church",
+    denomination: "Baptist",
     city: "Cape Town",
     province: "Western Cape",
-    contactEmail: "info@ctmethodist.org.za",
+    contactEmail: "info@gracebaptist.org.za",
     contactPhone: "+27 21 123 4567",
     memberCount: 450,
     status: "approved"
   },
   {
-    id: "b76e2587-7977-48b2-8d2d-132d2fceacfc",
-    name: "Johannesburg Baptist Fellowship", 
-    denomination: "Baptist",
+    id: "2",
+    name: "New Life Methodist Church", 
+    denomination: "Methodist",
     city: "Johannesburg",
     province: "Gauteng",
-    contactEmail: "connect@jbfellowship.co.za",
+    contactEmail: "connect@newlifemethodist.co.za",
     contactPhone: "+27 11 987 6543",
     memberCount: 320,
     status: "approved"
   },
   {
-    id: "c123456-7890-1234-5678-901234567890",
-    name: "Durban Presbyterian Church",
-    denomination: "Presbyterian", 
+    id: "3",
+    name: "Faith Assembly Church",
+    denomination: "Assembly", 
     city: "Durban",
     province: "KwaZulu-Natal",
-    contactEmail: "welcome@dpc.org.za",
+    contactEmail: "welcome@faithassembly.org.za",
     contactPhone: "+27 31 456 7890",
-    memberCount: 280,
+    memberCount: 275,
     status: "approved"
   }
 ];
@@ -166,15 +166,20 @@ export default function PublicMemberRegistration() {
         throw new Error(errorData.message || "Registration failed");
       }
 
+      const result = await response.json();
+
       toast({
         title: "Registration Successful!",
-        description: `You've successfully registered with ${selectedChurch?.name}. Your registration is complete!`,
+        description: `Welcome to ChurPay! You can now access your member dashboard.`,
         variant: "default",
       });
+
+      // Store member info for dashboard access
+      localStorage.setItem('churpayMember', JSON.stringify(result.user));
       
-      // Redirect to home after successful registration
+      // Redirect to member dashboard after successful registration
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/member-dashboard";
       }, 2000);
     } catch (error: any) {
       toast({
