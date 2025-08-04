@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/Textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -18,28 +19,27 @@ import {
   Clock,
   Shield,
   DollarSign,
-  Calendar
+  Calendar,
+  ArrowRight,
+  Eye
 } from "lucide-react";
 
 interface PayoutRequest {
   id: string;
-  churchId: string;
   churchName: string;
-  amount: string;
-  requestDate: string;
+  requestedAmount: string;
+  availableAmount: string;
+  fees: string;
   status: 'pending' | 'approved' | 'rejected' | 'processing' | 'completed';
+  requestDate: string;
+  processedDate?: string;
+  details: string;
   bankDetails: {
-    bankName: string;
+    accountName: string;
     accountNumber: string;
-    branchCode: string;
-    accountType: string;
+    bank: string;
   };
   notes?: string;
-  churchDetails?: {
-    email: string;
-    phone: string;
-    registrationNumber: string;
-  };
 }
 
 interface SuperAdminPayoutModalProps {
@@ -58,15 +58,13 @@ export function SuperAdminPayoutModal({
   const [adminNotes, setAdminNotes] = useState("");
   const [processingAction, setProcessingAction] = useState<'approve' | 'reject' | null>(null);
 
-  // PayFast payout processing mutation
   const processPayoutMutation = useMutation({
     mutationFn: async (data: { 
       payoutId: string; 
       action: 'approve' | 'reject'; 
       notes?: string;
-      paymentMethod: 'payfast' | 'manual';
     }) => {
-      const response = await fetch('/api/super-admin/payouts/process', {
+      const response = await fetch(`/api/super-admin/payouts/${data.payoutId}/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,305 +78,227 @@ export function SuperAdminPayoutModal({
       
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       toast({
-        title: variables.action === 'approve' ? "Payout Approved" : "Payout Rejected",
-        description: variables.action === 'approve' 
-          ? "Payout has been approved and sent to PayFast for processing."
-          : "Payout request has been rejected.",
+        title: "Payout Processed",
+        description: `Payout request has been ${processingAction}d successfully.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/payouts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/stats'] });
-      setAdminNotes("");
-      setProcessingAction(null);
       onClose();
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast({
-        title: "Processing Failed",
-        description: error.message || "Failed to process payout request.",
+        title: "Error",
+        description: "Failed to process payout request. Please try again.",
         variant: "destructive",
       });
-      setProcessingAction(null);
-    }
+    },
   });
 
   const handleProcessPayout = (action: 'approve' | 'reject') => {
     if (!payout) return;
-    
     setProcessingAction(action);
     processPayoutMutation.mutate({
       payoutId: payout.id,
       action,
-      notes: adminNotes,
-      paymentMethod: 'payfast'
+      notes: adminNotes
     });
-  };
-
-  if (!payout) return null;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-orange-100 text-orange-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-purple-100 text-purple-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return Clock;
-      case 'approved': return CheckCircle;
-      case 'processing': return Shield;
-      case 'completed': return CheckCircle;
-      case 'rejected': return XCircle;
-      default: return AlertCircle;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      case 'approved':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'rejected':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'processing':
+        return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const StatusIcon = getStatusIcon(payout.status);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-500/10 text-yellow-600 border-yellow-200';
+      case 'approved':
+        return 'bg-green-500/10 text-green-600 border-green-200';
+      case 'rejected':
+        return 'bg-red-500/10 text-red-600 border-red-200';
+      case 'processing':
+        return 'bg-blue-500/10 text-blue-600 border-blue-200';
+      default:
+        return 'bg-gray-500/10 text-gray-600 border-gray-200';
+    }
+  };
+
+  if (!payout) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Wallet className="h-5 w-5 text-purple-600" />
-            <span>Payout Request Review</span>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="flex items-center space-x-3 text-xl">
+            <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+              <Wallet className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Payout Request Details
+            </span>
           </DialogTitle>
-          <DialogDescription>
-            Review and process church payout request via PayFast
+          <DialogDescription className="text-base text-gray-600 dark:text-gray-300">
+            Review and process payout request from {payout.churchName}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Status and Basic Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <Badge className={getStatusColor(payout.status)}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
-                  {payout.status.toUpperCase()}
+          {/* Status and Amount Overview */}
+          <Card className="border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Building2 className="h-5 w-5 text-purple-600" />
+                  <span>{payout.churchName}</span>
+                </CardTitle>
+                <Badge className={`${getStatusColor(payout.status)} flex items-center space-x-1 px-3 py-1`}>
+                  {getStatusIcon(payout.status)}
+                  <span className="capitalize font-medium">{payout.status}</span>
                 </Badge>
-                <span className="text-sm text-gray-500">
-                  Request ID: {payout.id}
-                </span>
               </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">R{payout.amount}</p>
-                <p className="text-sm text-gray-500">
-                  Requested {new Date(payout.requestDate).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Church Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Church Details</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Church Name</Label>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Building2 className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm font-medium">{payout.churchName}</span>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">Requested Amount</span>
+                    <span className="text-lg font-bold text-green-800 dark:text-green-200">R{payout.requestedAmount}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Available Amount</span>
+                    <span className="text-lg font-bold text-blue-800 dark:text-blue-200">R{payout.availableAmount}</span>
                   </div>
                 </div>
-                
-                {payout.churchDetails && (
-                  <>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700">Contact Email</Label>
-                      <p className="text-sm text-gray-900 mt-1">{payout.churchDetails.email}</p>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
-                      <p className="text-sm text-gray-900 mt-1">{payout.churchDetails.phone}</p>
-                    </div>
-                  </>
-                )}
-              </div>
-              
-              <div className="space-y-3">
-                {payout.churchDetails && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">NPO Registration</Label>
-                    <p className="text-sm text-gray-900 mt-1">{payout.churchDetails.registrationNumber}</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">ChurPay Fees</span>
+                    <span className="text-lg font-bold text-yellow-800 dark:text-yellow-200">R{payout.fees}</span>
                   </div>
-                )}
-                
+                  <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Request Date</span>
+                    <span className="text-sm font-bold text-purple-800 dark:text-purple-200">
+                      {new Date(payout.requestDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bank Details */}
+          <Card className="border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <CreditCard className="h-5 w-5 text-indigo-600" />
+                <span>Bank Details</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Church ID</Label>
-                  <p className="text-sm font-mono text-gray-600 mt-1">{payout.churchId}</p>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Account Name</Label>
+                  <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{payout.bankDetails.accountName}</p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Banking Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Banking Information</h3>
-            
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <div className="flex items-start space-x-3">
-                <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-blue-900">PayFast Integration</h4>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Payout will be processed securely through PayFast's banking network.
-                  </p>
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Bank</Label>
+                  <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{payout.bankDetails.bank}</p>
                 </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-gray-700">Bank Name</Label>
-                <div className="flex items-center space-x-2 mt-1">
-                  <CreditCard className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm font-medium">{payout.bankDetails.bankName}</span>
-                </div>
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Account Number</Label>
+                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{payout.bankDetails.accountNumber}</p>
               </div>
-              
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Account Type</Label>
-                <p className="text-sm text-gray-900 mt-1">{payout.bankDetails.accountType}</p>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Account Number</Label>
-                <p className="text-sm font-mono text-gray-900 mt-1">
-                  {payout.bankDetails.accountNumber.replace(/(.{4})/g, '$1 ')}
-                </p>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Branch Code</Label>
-                <p className="text-sm font-mono text-gray-900 mt-1">{payout.bankDetails.branchCode}</p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Payout Calculation */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Payout Breakdown</h3>
-            
-            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Requested Amount</span>
-                <span className="font-medium">R{payout.amount}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">PayFast Processing Fee</span>
-                <span className="font-medium text-red-600">-R15.00</span>
-              </div>
-              <div className="border-t pt-3 flex justify-between items-center">
-                <span className="font-semibold">Net Payout Amount</span>
-                <span className="font-bold text-lg">
-                  R{(parseFloat(payout.amount.replace(/,/g, '')) - 15).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </div>
+          {/* Request Details */}
+          <Card className="border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <Eye className="h-5 w-5 text-green-600" />
+                <span>Request Details</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{payout.details}</p>
+            </CardContent>
+          </Card>
 
-          {/* Request Notes */}
-          {payout.notes && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Church Request Notes</Label>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-sm text-gray-900">{payout.notes}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Notes */}
+          {/* Admin Actions */}
           {payout.status === 'pending' && (
-            <div className="space-y-2">
-              <Label htmlFor="adminNotes" className="text-sm font-medium text-gray-700">
-                Admin Notes (Optional)
-              </Label>
-              <Textarea
-                id="adminNotes"
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Add notes about this payout decision..."
-                rows={3}
-              />
-            </div>
+            <Card className="border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                  <span>Admin Actions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="adminNotes" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Processing Notes (Optional)
+                  </Label>
+                  <Textarea
+                    id="adminNotes"
+                    placeholder="Add any notes about this payout decision..."
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    className="mt-2"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex space-x-3 pt-4">
+                  <Button
+                    onClick={() => handleProcessPayout('approve')}
+                    disabled={processPayoutMutation.isPending}
+                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-2.5"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {processPayoutMutation.isPending && processingAction === 'approve' ? 'Approving...' : 'Approve Payout'}
+                  </Button>
+                  <Button
+                    onClick={() => handleProcessPayout('reject')}
+                    disabled={processPayoutMutation.isPending}
+                    variant="outline"
+                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium py-2.5"
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    {processPayoutMutation.isPending && processingAction === 'reject' ? 'Rejecting...' : 'Reject Payout'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex space-x-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              disabled={processPayoutMutation.isPending}
-            >
-              Close
-            </Button>
-            
-            {payout.status === 'pending' && (
-              <>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleProcessPayout('reject')}
-                  className="flex-1"
-                  disabled={processPayoutMutation.isPending}
-                >
-                  {processingAction === 'reject' && processPayoutMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Rejecting...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Reject Payout
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  onClick={() => handleProcessPayout('approve')}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  disabled={processPayoutMutation.isPending}
-                >
-                  {processingAction === 'approve' && processPayoutMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Processing via PayFast...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve & Pay via PayFast
-                    </>
-                  )}
-                </Button>
-              </>
-            )}
-          </div>
-
-          {/* PayFast Info */}
-          <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-            <div className="flex items-start space-x-3">
-              <Shield className="h-5 w-5 text-purple-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-purple-900">Secure PayFast Processing</h4>
-                <p className="text-sm text-purple-700 mt-1">
-                  All payouts are processed through PayFast's secure banking network with full compliance 
-                  to South African financial regulations. Processing typically takes 1-3 business days.
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Processed Information */}
+          {payout.status === 'approved' && payout.processedDate && (
+            <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 shadow-lg border border-green-200 dark:border-green-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div>
+                    <p className="text-green-800 dark:text-green-200 font-semibold">Payout Approved</p>
+                    <p className="text-green-600 dark:text-green-300 text-sm">
+                      Processed on {new Date(payout.processedDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>
