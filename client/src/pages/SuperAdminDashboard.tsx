@@ -16,6 +16,7 @@ import { SuperAdminPayoutModal } from '@/components/SuperAdminPayoutModal';
 import { SuperAdminChurchModal } from '@/components/SuperAdminChurchModal';
 import { SuperAdminMemberModal } from '@/components/SuperAdminMemberModal';
 import { SuperAdminReportsModal } from '@/components/SuperAdminReportsModal';
+import { SimpleTestModal } from '@/components/SimpleTestModal';
 
 interface SuperAdminStats {
   totalChurches: number;
@@ -543,6 +544,11 @@ export default function SuperAdminDashboard() {
       <SuperAdminReportsModal
         open={showReportsModal}
         onOpenChange={setShowReportsModal}
+      />
+      
+      <SimpleTestModal
+        open={showPayoutModal}
+        onOpenChange={setShowPayoutModal}
       />
     </div>
   );
