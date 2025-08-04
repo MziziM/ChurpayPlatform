@@ -13,6 +13,7 @@ import ProfessionalMemberDashboard from "@/pages/ProfessionalMemberDashboard";
 import ProfessionalChurchDashboard from "@/pages/ProfessionalChurchDashboard";
 import MemberDashboardDark from "@/pages/MemberDashboardDark";
 import WalletDashboard from "@/pages/WalletDashboard";
+import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 
@@ -32,6 +33,8 @@ function Router() {
       <Route path="/church-dashboard" component={ProfessionalChurchDashboard} />
       <Route path="/church" component={ProfessionalChurchDashboard} />
       <Route path="/wallet" component={WalletDashboard} />
+      <Route path="/super-admin" component={SuperAdminDashboard} />
+      <Route path="/admin" component={SuperAdminDashboard} />
       <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
     </Switch>
