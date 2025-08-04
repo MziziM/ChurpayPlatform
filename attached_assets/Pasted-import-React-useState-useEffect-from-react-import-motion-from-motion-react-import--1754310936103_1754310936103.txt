@@ -1,0 +1,893 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { Alert, AlertDescription } from './ui/alert';
+import { 
+  Heart, 
+  Receipt, 
+  Rocket, 
+  Clock, 
+  Plus, 
+  HelpCircle, 
+  CheckCircle,
+  Bell,
+  Menu,
+  Download,
+  Users,
+  DollarSign,
+  Target,
+  Gift,
+  TrendingUp,
+  Calendar,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Settings,
+  User,
+  Repeat,
+  Share,
+  History,
+  AlertTriangle,
+  Mail,
+  Calculator,
+  Info,
+  Wallet,
+  CreditCard,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Banknote,
+  CheckCircle2,
+  Sparkles,
+  Copy,
+  Edit,
+  Save
+} from 'lucide-react';
+import { PaymentGateway } from './PaymentGateway';
+import { useAuth } from './AuthProvider';
+import { projects } from './constants';
+import { getGreeting } from './helpers';
+import { BiometricSettings } from './BiometricSettings';
+import { NotificationSettings } from './NotificationSettings';
+import { DeviceManagement } from './DeviceManagement';
+
+interface MemberDashboardProps {
+  theme: any;
+  dashboard: any;
+  isDark: boolean;
+  setIsDark: (dark: boolean) => void;
+}
+
+interface PaymentSuccessData {
+  type: 'wallet' | 'gateway';
+  action: string;
+  amount: string;
+  transactionId?: string;
+  timestamp: string;
+  method: string;
+}
+
+export function MemberDashboard({ theme, dashboard, isDark, setIsDark }: MemberDashboardProps) {
+  const { user } = useAuth();
+  const [showBalance, setShowBalance] = useState(true);
+  const [showPaymentGateway, setShowPaymentGateway] = useState(false);
+  
+  // Separate modal states for each action
+  const [showGiveModal, setShowGiveModal] = useState(false);
+  const [showTitheModal, setShowTitheModal] = useState(false);
+  const [showSponsorModal, setShowSponsorModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'biometric' | 'notifications' | 'devices'>('biometric');
+  
+  // Payment states
+  const [paymentAction, setPaymentAction] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'gateway'>('wallet');
+  const [giveAmount, setGiveAmount] = useState('');
+  const [titheAmount, setTitheAmount] = useState('');
+  const [sponsorAmount, setSponsorAmount] = useState('');
+  const [walletTopUpAmount, setWalletTopUpAmount] = useState('');
+  const [monthlyIncome, setMonthlyIncome] = useState('');
+  const [selectedProject, setSelectedProject] = useState(1);
+  const [giveType, setGiveType] = useState<'offering' | 'special' | 'thanksgiving'>('offering');
+  const [paymentSuccessData, setPaymentSuccessData] = useState<PaymentSuccessData | null>(null);
+
+  // Annual Giving Goal states
+  const [givingGoal, setGivingGoal] = useState(() => {
+    const saved = localStorage.getItem('churpay-annual-goal');
+    return saved ? parseFloat(saved) : 10000.00;
+  });
+  const [tempGoalAmount, setTempGoalAmount] = useState('');
+
+  // Mock data for member dashboard - consistent with version 1
+  const walletBalance = dashboard?.walletBalance || 1247.50;
+  const donations = dashboard?.donations || [
+    { id: 1, project: 'Youth Project', amount: 250, date: '2 days ago', status: 'completed', type: 'give' },
+    { id: 2, project: 'Building Fund', amount: 350, date: '3 days ago', status: 'completed', type: 'sponsor' },
+    { id: 3, project: 'Feeding Scheme', amount: 100, date: '5 days ago', status: 'completed', type: 'give' },
+    { id: 4, project: 'Monthly Tithe', amount: 500, date: '1 week ago', status: 'completed', type: 'tithe' },
+    { id: 5, project: 'Special Offering', amount: 200, date: '2 weeks ago', status: 'completed', type: 'give' },
+    { id: 6, project: 'Community Outreach', amount: 125, date: '3 weeks ago', status: 'completed', type: 'sponsor' },
+  ];
+
+  // Mock wallet transactions
+  const walletTransactions = [
+    { id: 1, type: 'topup', amount: 500, description: 'Wallet Top-up', date: '1 day ago', status: 'completed' },
+    { id: 2, type: 'payment', amount: -250, description: 'Youth Project Donation', date: '2 days ago', status: 'completed' },
+    { id: 3, type: 'topup', amount: 1000, description: 'Wallet Top-up', date: '5 days ago', status: 'completed' },
+    { id: 4, type: 'payment', amount: -500, description: 'Monthly Tithe', date: '1 week ago', status: 'completed' },
+    { id: 5, type: 'payment', amount: -100, description: 'Feeding Scheme', date: '1 week ago', status: 'completed' },
+  ];
+
+  const memberData = {
+    thisMonth: 850.00,
+    yearToDate: 8450.00,
+    givingGoal: givingGoal,
+    church: {
+      name: "Grace Community Church",
+      logo: null,
+      pastor: "Pastor John Smith"
+    }
+  };
+
+  // Save giving goal to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('churpay-annual-goal', givingGoal.toString());
+  }, [givingGoal]);
+
+  const generateTransactionId = () => {
+    return 'CP' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 5).toUpperCase();
+  };
+
+  const getActionTitle = (action: string) => {
+    switch (action) {
+      case 'give':
+        return 'Offering Given';
+      case 'tithe':
+        return 'Tithe Paid';
+      case 'sponsor':
+        return 'Project Sponsored';
+      case 'wallet-topup':
+        return 'Wallet Topped Up';
+      default:
+        return 'Payment Successful';
+    }
+  };
+
+  const getActionDescription = (action: string, amount: string) => {
+    switch (action) {
+      case 'give':
+        return `Your offering of R${amount} has been successfully given to support the church ministry.`;
+      case 'tithe':
+        return `Your tithe of R${amount} has been faithfully given as an act of worship and obedience.`;
+      case 'sponsor':
+        return `Your sponsorship of R${amount} will help bring this important project to completion.`;
+      case 'wallet-topup':
+        return `R${amount} has been successfully added to your ChurPay wallet and is ready to use.`;
+      default:
+        return `Your payment of R${amount} has been processed successfully.`;
+    }
+  };
+
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case 'give':
+        return Heart;
+      case 'tithe':
+        return Receipt;
+      case 'sponsor':
+        return Rocket;
+      case 'wallet-topup':
+        return Wallet;
+      default:
+        return CheckCircle2;
+    }
+  };
+
+  const handlePaymentAction = (action: string, amount: string, method: 'wallet' | 'gateway' = 'wallet') => {
+    const amountNum = parseFloat(amount);
+    
+    // Check if using wallet and has sufficient balance
+    if (method === 'wallet' && amountNum > walletBalance) {
+      alert(`Insufficient wallet balance. Your balance is R${walletBalance.toFixed(2)}. Please add funds to your wallet or use card payment.`);
+      return;
+    }
+
+    setPaymentAction(action);
+    setPaymentMethod(method);
+    
+    // Close all modals
+    setShowGiveModal(false);
+    setShowTitheModal(false);
+    setShowSponsorModal(false);
+    setShowWalletModal(false);
+    
+    if (method === 'wallet') {
+      // Process wallet payment immediately
+      handleWalletPayment(action, amountNum);
+    } else {
+      // Open payment gateway
+      setShowPaymentGateway(true);
+    }
+  };
+
+  const handleWalletPayment = (action: string, amount: number) => {
+    // Simulate wallet payment processing
+    console.log(`Processing wallet payment: ${action} - R${amount}`);
+    
+    // In a real app, this would make an API call to process the wallet payment
+    setTimeout(() => {
+      const successData: PaymentSuccessData = {
+        type: 'wallet',
+        action,
+        amount: amount.toString(),
+        transactionId: generateTransactionId(),
+        timestamp: new Date().toLocaleString(),
+        method: 'ChurPay Wallet'
+      };
+      
+      setPaymentSuccessData(successData);
+      setShowSuccessModal(true);
+      
+      // Here you would update the wallet balance and transaction history
+    }, 1000);
+  };
+
+  const handleWalletTopUp = (amount: string) => {
+    setPaymentAction('wallet-topup');
+    setWalletTopUpAmount(amount);
+    setShowWalletModal(false);
+    setShowPaymentGateway(true);
+  };
+
+  const handlePaymentSuccess = (transactionId: string) => {
+    setShowPaymentGateway(false);
+    
+    const amount = paymentAction === 'give' ? giveAmount : 
+                  paymentAction === 'tithe' ? titheAmount : 
+                  paymentAction === 'sponsor' ? sponsorAmount : 
+                  paymentAction === 'wallet-topup' ? walletTopUpAmount : '0';
+
+    const successData: PaymentSuccessData = {
+      type: 'gateway',
+      action: paymentAction,
+      amount,
+      transactionId,
+      timestamp: new Date().toLocaleString(),
+      method: 'Bank Card'
+    };
+    
+    setPaymentSuccessData(successData);
+    setShowSuccessModal(true);
+  };
+
+  const handleGoalUpdate = () => {
+    const newGoal = parseFloat(tempGoalAmount);
+    if (newGoal && newGoal > 0) {
+      setGivingGoal(newGoal);
+      setShowGoalModal(false);
+      setTempGoalAmount('');
+    }
+  };
+
+  const openGoalModal = () => {
+    setTempGoalAmount(givingGoal.toString());
+    setShowGoalModal(true);
+  };
+
+  const goalProgress = (memberData.yearToDate / memberData.givingGoal) * 100;
+
+  const handleBiometricUpdate = (hasEnabled: boolean) => {
+    console.log('Biometric authentication updated:', hasEnabled);
+  };
+
+  const handleNotificationUpdate = (settings: any) => {
+    console.log('Notification settings updated:', settings);
+  };
+
+  const handleDeviceUpdate = () => {
+    console.log('Device list updated');
+  };
+
+  // Calculate tithe based on monthly income
+  const calculateTithe = () => {
+    if (monthlyIncome) {
+      const tithe = (parseFloat(monthlyIncome) * 0.1).toFixed(2);
+      setTitheAmount(tithe);
+    }
+  };
+
+  const copyTransactionId = () => {
+    if (paymentSuccessData?.transactionId) {
+      navigator.clipboard.writeText(paymentSuccessData.transactionId);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto lg:max-w-2xl p-6 space-y-6 pb-20">
+      {/* Email Verification Alert */}
+      {user && !user.email_verified && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4"
+        >
+          <Alert className="bg-yellow-50 border-yellow-200">
+            <Mail className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              Please verify your email address to secure your account and enable all features.
+              <Button variant="link" className="p-0 h-auto text-yellow-800 underline ml-2">
+                Resend verification email
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+      )}
+
+      {/* Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <p style={{ color: theme.textSecondary }}>{getGreeting()},</p>
+          <h1 style={{ color: theme.text }} className="text-2xl font-bold">
+            {user?.first_name || user?.name?.split(' ')[0]}
+          </h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setShowSettingsModal(true)}
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+          <button onClick={() => setShowProfileModal(true)}>
+            <div className="w-14 h-14 rounded-full border-2 bg-purple-100 flex items-center justify-center" style={{ borderColor: theme.accent }}>
+              <span className="font-medium text-purple-600 text-lg">
+                {user?.first_name?.[0] || 'U'}{user?.last_name?.[0] || ''}
+              </span>
+            </div>
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Enhanced Wallet Card with Top-up Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1 }}
+        className="bg-gradient-to-br from-purple-600 via-purple-500 to-amber-400 rounded-3xl p-8 text-white shadow-xl"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <Wallet className="w-5 h-5" />
+              <p className="text-white/90">Wallet Balance</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <p className="text-4xl font-bold mb-1">
+                {showBalance ? `R${walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : 'R••••••'}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBalance(!showBalance)}
+                className="text-white hover:bg-white/20 p-1"
+              >
+                {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </Button>
+            </div>
+            <p className="text-white/80 text-sm">
+              Powered by ChurPay • {new Date().toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <Button
+              onClick={() => setShowWalletModal(true)}
+              className="bg-white text-amber-500 hover:bg-white/90 rounded-full w-14 h-14 p-0"
+            >
+              <Plus className="w-7 h-7" />
+            </Button>
+            <Button
+              onClick={() => setShowGiveModal(true)}
+              variant="ghost"
+              className="text-white hover:bg-white/20 rounded-full w-14 h-14 p-0"
+            >
+              <Heart className="w-6 h-6" />
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Version 1 Action Buttons Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-4 gap-3"
+      >
+        {[
+          { icon: Heart, text: 'Give', action: () => setShowGiveModal(true), colors: 'from-purple-600 to-amber-400' },
+          { icon: Receipt, text: 'Tithe', action: () => setShowTitheModal(true), colors: 'from-purple-500 to-purple-600' },
+          { icon: Rocket, text: 'Sponsor', action: () => setShowSponsorModal(true), colors: 'from-amber-400 to-amber-500' },
+          { icon: Clock, text: 'History', action: () => setShowHistoryModal(true), colors: 'from-purple-600 to-purple-500' },
+        ].map((item, index) => (
+          <motion.button
+            key={item.text}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 + index * 0.1 }}
+            onClick={item.action}
+            className={`bg-gradient-to-br ${item.colors} rounded-2xl p-4 text-white flex flex-col items-center space-y-2 shadow-lg hover:scale-105 transition-transform`}
+          >
+            <item.icon className="w-7 h-7" />
+            <span className="text-xs font-semibold">{item.text}</span>
+          </motion.button>
+        ))}
+      </motion.div>
+
+      {/* Quick Actions for Tithe */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Receipt className="w-6 h-6" style={{ color: theme.primary }} />
+              <div>
+                <h3 className="font-semibold" style={{ color: theme.text }}>Quick Tithe</h3>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  Calculate 10% of your income
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {['500', '1000', '2000'].map((amt) => (
+              <Button
+                key={amt}
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setTitheAmount(amt);
+                  setShowTitheModal(true);
+                }}
+                className="text-center"
+              >
+                R{amt}
+              </Button>
+            ))}
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Editable Giving Goal */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+      >
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Target className="w-6 h-6" style={{ color: theme.primary }} />
+              <div>
+                <h3 className="font-semibold" style={{ color: theme.text }}>Annual Giving Goal</h3>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  {goalProgress.toFixed(0)}% Complete
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="text-xs">
+                R{(memberData.givingGoal - memberData.yearToDate).toFixed(0)} left
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={openGoalModal}
+                className="p-1 h-auto"
+                title="Edit Goal"
+              >
+                <Edit className="w-4 h-4" style={{ color: theme.primary }} />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span style={{ color: theme.textSecondary }}>
+                R{memberData.yearToDate.toFixed(0)} of R{memberData.givingGoal.toFixed(0)}
+              </span>
+              <span style={{ color: theme.primary }} className="font-semibold">
+                {goalProgress.toFixed(0)}%
+              </span>
+            </div>
+            <Progress value={goalProgress} className="h-2" />
+            <div className="flex justify-between items-center text-xs">
+              <span style={{ color: theme.textSecondary }}>
+                {goalProgress >= 100 ? '🎉 Goal achieved!' : 
+                 goalProgress >= 75 ? '🔥 Almost there!' : 
+                 goalProgress >= 50 ? '💪 Great progress!' : 
+                 '📈 Keep going!'}
+              </span>
+              <button
+                onClick={openGoalModal}
+                className="text-xs underline hover:no-underline"
+                style={{ color: theme.primary }}
+              >
+                Adjust Goal
+              </button>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Projects Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h2 style={{ color: theme.text }} className="text-xl font-bold">Active Projects</h2>
+          <Button variant="outline" size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Suggest Project
+          </Button>
+        </div>
+        {projects.slice(0, 3).map((project, index) => (
+          <motion.div
+            key={project.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 + index * 0.1 }}
+          >
+            <Card className="p-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+              <div className="flex justify-between items-start mb-2">
+                <h3 style={{ color: theme.text }} className="font-semibold">{project.name}</h3>
+                <Badge variant="secondary" style={{ backgroundColor: theme.primary, color: 'white' }}>
+                  {Math.round((project.raised / project.goal) * 100)}%
+                </Badge>
+              </div>
+              <p style={{ color: theme.textSecondary }} className="text-sm mb-3">
+                R{project.raised.toLocaleString()} of R{project.goal.toLocaleString()}
+              </p>
+              <Progress value={(project.raised / project.goal) * 100} className="h-2 mb-3" />
+              <div className="flex justify-between items-center">
+                <span className="text-sm" style={{ color: theme.textSecondary }}>
+                  Deadline: {project.deadline}
+                </span>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedProject(project.id);
+                    setShowSponsorModal(true);
+                  }}
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  Sponsor
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Recent Activity */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="space-y-4"
+      >
+        <h2 style={{ color: theme.text }} className="text-xl font-bold">Recent Activity</h2>
+        <Card className="p-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          {donations.length === 0 ? (
+            <p style={{ color: theme.textSecondary }}>No recent transactions.</p>
+          ) : (
+            <div className="space-y-3">
+              {donations.slice(0, 3).map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  className="flex items-center space-x-3 py-2"
+                >
+                  <div className="w-10 h-10 rounded-full border bg-purple-100 flex items-center justify-center" style={{ borderColor: theme.accent }}>
+                    <DollarSign className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p style={{ color: theme.text }} className="font-semibold text-sm">{item.project}</p>
+                    <p style={{ color: theme.textSecondary }} className="text-xs">{item.date}</p>
+                    <Badge 
+                      variant={item.amount > 0 ? "default" : "destructive"} 
+                      className="text-xs mt-1"
+                    >
+                      {item.type === 'give' ? 'Donated' : item.type === 'tithe' ? 'Tithed' : 'Sponsored'}
+                    </Badge>
+                  </div>
+                  <div className="text-right">
+                    <p 
+                      className="font-bold"
+                      style={{ color: item.amount > 0 ? theme.accent : '#ef4444' }}
+                    >
+                      {item.amount > 0 ? `+R${item.amount}` : `-R${Math.abs(item.amount)}`}
+                    </p>
+                    <Badge variant={item.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
+                      {item.status}
+                    </Badge>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </motion.div>
+
+      {/* Church Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+      >
+        <Card className="p-4" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-purple-600 font-bold">
+                {memberData.church.name.charAt(0)}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold" style={{ color: theme.text }}>
+                {memberData.church.name}
+              </h3>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>
+                {memberData.church.pastor}
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" size="sm" className="text-sm">
+              <Calendar className="w-4 h-4 mr-2" />
+              Events
+            </Button>
+            <Button variant="outline" size="sm" className="text-sm">
+              <Download className="w-4 h-4 mr-2" />
+              Receipts
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Help Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+      >
+        <Card className="p-4 text-white" style={{ backgroundColor: theme.primary }}>
+          <div className="flex items-center space-x-3">
+            <HelpCircle className="w-7 h-7" />
+            <div>
+              <p className="font-semibold">Need help?</p>
+              <p className="text-sm opacity-90">Contact support at support@churpay.com</p>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ANNUAL GIVING GOAL MODAL */}
+      <Dialog open={showGoalModal} onOpenChange={setShowGoalModal}>
+        <DialogContent className="sm:max-w-md" style={{ backgroundColor: theme.card }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: theme.text }}>
+              <div className="flex items-center space-x-2">
+                <Target className="w-5 h-5 text-purple-600" />
+                <span>Set Annual Giving Goal</span>
+              </div>
+            </DialogTitle>
+            <DialogDescription style={{ color: theme.textSecondary }}>
+              Set your personal annual giving goal to track your spiritual journey and commitment to God's work.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Current Progress */}
+            <div className="bg-gradient-to-r from-purple-100 to-amber-100 p-4 rounded-lg">
+              <div className="text-center">
+                <p className="text-sm text-purple-700 mb-2">Current Progress</p>
+                <div className="flex items-center justify-center space-x-4">
+                  <div>
+                    <p className="text-xl font-bold text-purple-600">R{memberData.yearToDate.toLocaleString()}</p>
+                    <p className="text-xs text-purple-600">Given This Year</p>
+                  </div>
+                  <div className="text-purple-400">→</div>
+                  <div>
+                    <p className="text-xl font-bold text-amber-600">R{memberData.givingGoal.toLocaleString()}</p>
+                    <p className="text-xs text-amber-600">Annual Goal</p>
+                  </div>
+                </div>
+                <Progress value={goalProgress} className="h-2 mt-3" />
+                <p className="text-xs text-purple-600 mt-1">{goalProgress.toFixed(0)}% Complete</p>
+              </div>
+            </div>
+
+            {/* Goal Input */}
+            <div>
+              <label style={{ color: theme.textSecondary }} className="block text-sm font-medium mb-2">
+                New Annual Goal Amount
+              </label>
+              <div className="flex items-center">
+                <span style={{ color: theme.text }} className="text-2xl font-bold mr-2">R</span>
+                <Input
+                  type="number"
+                  value={tempGoalAmount}
+                  onChange={(e) => setTempGoalAmount(e.target.value)}
+                  placeholder="10000.00"
+                  className="text-2xl font-bold"
+                  style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+                />
+              </div>
+            </div>
+
+            {/* Suggested Goals */}
+            <div>
+              <p style={{ color: theme.textSecondary }} className="text-sm font-medium mb-2">
+                Suggested Goals
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[5000, 10000, 20000].map((amount) => (
+                  <Button
+                    key={amount}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTempGoalAmount(amount.toString())}
+                    className="text-xs"
+                  >
+                    R{amount.toLocaleString()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowGoalModal(false)}
+                className="flex-1"
+                style={{ borderColor: theme.border, color: theme.text }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleGoalUpdate}
+                className="flex-1 text-white"
+                style={{ backgroundColor: theme.primary }}
+                disabled={!tempGoalAmount || parseFloat(tempGoalAmount) <= 0}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Goal
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* All other modals remain the same... */}
+      {/* Payment Gateway Modal */}
+      <Dialog open={showPaymentGateway} onOpenChange={setShowPaymentGateway}>
+        <DialogContent className="sm:max-w-lg" style={{ backgroundColor: theme.card }}>
+          <PaymentGateway
+            amount={parseFloat(walletTopUpAmount) || 100}
+            purpose="Wallet Top-up"
+            onSuccess={handlePaymentSuccess}
+            onCancel={() => setShowPaymentGateway(false)}
+            theme={theme}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      {showSuccessModal && paymentSuccessData && (
+        <Dialog open={showSuccessModal} onOpenChange={() => {
+          setShowSuccessModal(false);
+          setPaymentSuccessData(null);
+        }}>
+          <DialogContent className="sm:max-w-md" style={{ backgroundColor: theme.card }}>
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: theme.text }}>
+                  {getActionTitle(paymentSuccessData.action)}
+                </h3>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  {getActionDescription(paymentSuccessData.action, paymentSuccessData.amount)}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4" style={{ backgroundColor: theme.accent }}>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span style={{ color: theme.textSecondary }}>Amount:</span>
+                    <span className="font-semibold" style={{ color: theme.text }}>R{paymentSuccessData.amount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span style={{ color: theme.textSecondary }}>Method:</span>
+                    <span className="font-semibold" style={{ color: theme.text }}>{paymentSuccessData.method}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span style={{ color: theme.textSecondary }}>Transaction ID:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono text-xs" style={{ color: theme.text }}>
+                        {paymentSuccessData.transactionId}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={copyTransactionId}
+                        className="p-1 h-auto"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span style={{ color: theme.textSecondary }}>Date & Time:</span>
+                    <span className="font-semibold" style={{ color: theme.text }}>{paymentSuccessData.timestamp}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setPaymentSuccessData(null);
+                  }}
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Download receipt functionality
+                    console.log('Download receipt for:', paymentSuccessData.transactionId);
+                  }}
+                  className="flex-1"
+                  style={{ backgroundColor: theme.primary, color: 'white' }}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Receipt
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}

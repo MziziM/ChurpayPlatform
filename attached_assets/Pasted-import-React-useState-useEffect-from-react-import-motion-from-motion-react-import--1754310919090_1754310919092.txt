@@ -1,0 +1,2557 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Progress } from './ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { 
+  Building2, 
+  DollarSign, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  Shield,
+  TrendingUp,
+  Eye,
+  Download,
+  Plus,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Server,
+  Activity,
+  Globe,
+  CreditCard,
+  FileText,
+  UserCheck,
+  UserX,
+  Search,
+  Filter,
+  MoreVertical,
+  Zap,
+  Database,
+  Lock,
+  Bell,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Target,
+  PieChart,
+  LineChart,
+  Monitor,
+  Cpu,
+  HardDrive,
+  Wifi,
+  RefreshCw,
+  X,
+  Save,
+  Edit,
+  Trash2,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Receipt,
+  Heart,
+  Rocket,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  Crown,
+  Church,
+  User,
+  Image,
+  ExternalLink,
+  Paperclip
+} from 'lucide-react';
+import { useAuth } from './AuthProvider';
+import { getGreeting } from './helpers';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+
+export function ChurPayPlatformDashboard({ theme, dashboard, isDark }: any) {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedChurch, setSelectedChurch] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [showChurchModal, setShowChurchModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showSystemModal, setShowSystemModal] = useState(false);
+  
+  // Payout request management states
+  const [selectedPayoutRequest, setSelectedPayoutRequest] = useState(null);
+  const [payoutDecision, setPayoutDecision] = useState('');
+  const [payoutNotes, setPayoutNotes] = useState('');
+  
+  // Church management states
+  const [churchDecision, setChurchDecision] = useState('');
+  const [churchNotes, setChurchNotes] = useState('');
+
+  // Platform commission settings
+  const [commissionRate, setCommissionRate] = useState(() => {
+    const saved = localStorage.getItem('churpay-commission-rate');
+    return saved ? parseFloat(saved) : 6.0;
+  });
+  const [tempCommissionRate, setTempCommissionRate] = useState('');
+  const [showCommissionModal, setShowCommissionModal] = useState(false);
+
+  // Get registrations from localStorage or initialize empty
+  const [registrations, setRegistrations] = useState(() => {
+    try {
+      const stored = localStorage.getItem('churpay-registrations');
+      return stored ? JSON.parse(stored) : { churches: [], members: [] };
+    } catch {
+      return { churches: [], members: [] };
+    }
+  });
+
+  // Platform statistics that update based on real registrations
+  const mockPlatformStats = {
+    totalChurches: 124 + registrations.churches.length,
+    activeChurches: 118 + registrations.churches.filter((c: any) => c.status === 'Active').length,
+    pendingApprovals: 8 + registrations.churches.filter((c: any) => c.status === 'Pending').length,
+    suspendedChurches: 3 + registrations.churches.filter((c: any) => c.status === 'Suspended').length,
+    totalRevenue: 2456780,
+    monthlyRevenue: 245600,
+    commissionEarned: 147406,
+    activeUsers: 15420 + registrations.members.length,
+    totalTransactions: 45670,
+    successRate: 99.2,
+    avgResponseTime: 145,
+    systemUptime: 99.8,
+    platformGrowthRate: 18.5,
+    recentChurches: [
+      ...registrations.churches.map((church: any, index: number) => ({
+        id: church.id || (1000 + index),
+        name: church.churchName || church.name,
+        location: `${church.city}, ${church.province}`,
+        members: parseInt(church.membershipSize?.split('-')[0] || '50'),
+        status: church.status || 'Pending',
+        joined: church.submittedAt || new Date().toISOString().split('T')[0],
+        revenue: church.status === 'Active' ? Math.floor(Math.random() * 50000) + 10000 : 0,
+        monthlyGrowth: church.status === 'Active' ? (Math.random() * 20).toFixed(1) : 0,
+        admin: church.contactName,
+        email: church.email || church.contactEmail,
+        phone: church.phone || church.contactPhone,
+        logo: church.churchLogo || null,
+        denomination: church.denomination,
+        establishedYear: church.establishedYear,
+        description: church.description,
+        bankDetails: church.bankName ? `${church.bankName} - ${church.accountNumber}` : null,
+        website: church.website,
+        streetAddress: church.streetAddress,
+        city: church.city,
+        province: church.province,
+        postalCode: church.postalCode,
+        country: church.country,
+        contactTitle: church.contactTitle,
+        bankName: church.bankName,
+        accountName: church.accountName,
+        accountNumber: church.accountNumber,
+        branchCode: church.branchCode,
+        accountType: church.accountType,
+        // Document uploads
+        ckDocument: church.ckDocument,
+        bankConfirmation: church.bankConfirmation,
+        churchLogo: church.churchLogo,
+        // Document upload status
+        documentsUploaded: {
+          ckDocument: !!church.ckDocument,
+          bankConfirmation: !!church.bankConfirmation,
+          churchLogo: !!church.churchLogo
+        },
+        isNewRegistration: true
+      })),
+      { 
+        id: 1, 
+        name: 'Grace Baptist Church', 
+        location: 'Cape Town', 
+        members: 342, 
+        status: 'Active', 
+        joined: '2024-01-10', 
+        revenue: 45670,
+        monthlyGrowth: 14.7,
+        admin: 'Jane Smith',
+        email: 'admin@gracebaptist.org.za',
+        phone: '+27 21 123 4567',
+        logo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+      },
+      { 
+        id: 2, 
+        name: 'New Life Methodist', 
+        location: 'Johannesburg', 
+        members: 156, 
+        status: 'Pending', 
+        joined: '2024-01-12', 
+        revenue: 0,
+        monthlyGrowth: 0,
+        admin: 'Mike Johnson',
+        email: 'admin@newlifemethodist.org.za',
+        phone: '+27 11 234 5678',
+        logo: null
+      },
+      { 
+        id: 3, 
+        name: 'Faith Community Church', 
+        location: 'Durban', 
+        members: 289, 
+        status: 'Active', 
+        joined: '2024-01-08', 
+        revenue: 38450,
+        monthlyGrowth: 8.2,
+        admin: 'Sarah Williams',
+        email: 'admin@faithcommunity.org.za',
+        phone: '+27 31 345 6789',
+        logo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
+      },
+      { 
+        id: 4, 
+        name: 'Hope Presbyterian', 
+        location: 'Pretoria', 
+        members: 198, 
+        status: 'Under Review', 
+        joined: '2024-01-05', 
+        revenue: 24380,
+        monthlyGrowth: 12.1,
+        admin: 'David Brown',
+        email: 'admin@hopepres.org.za',
+        phone: '+27 12 456 7890',
+        logo: null
+      },
+      { 
+        id: 5, 
+        name: 'Unity Christian Center', 
+        location: 'Port Elizabeth', 
+        members: 87, 
+        status: 'Suspended', 
+        joined: '2024-01-14', 
+        revenue: 12450,
+        monthlyGrowth: -15.2,
+        admin: 'Lisa Davis',
+        email: 'admin@unitychristian.org.za',
+        phone: '+27 41 567 8901',
+        logo: null
+      }
+    ].slice(0, 10), // Limit to most recent 10
+    recentMembers: [
+      ...registrations.members.map((member: any, index: number) => ({
+        id: member.id || (2000 + index),
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        phone: member.phone,
+        address: member.address,
+        dateOfBirth: member.dateOfBirth,
+        membershipType: member.membershipType || 'member',
+        churchName: member.churchName || member.selectedChurch?.name,
+        churchId: member.churchId || member.selectedChurch?.id,
+        joinedAt: member.submittedAt || new Date().toISOString(),
+        status: 'Active',
+        avatar: `https://images.unsplash.com/photo-${Math.random() > 0.5 ? '1507003211169-0a1dd7228f2d' : '1438761681033-6461ffad8d80'}?w=100&h=100&fit=crop&crop=face`,
+        isNewRegistration: true,
+        totalDonations: Math.floor(Math.random() * 5000) + 500,
+        lastDonation: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        // Additional member details for comprehensive tracking
+        membershipStatus: 'Active',
+        registrationSource: 'ChurPay App',
+        deviceInfo: 'Mobile App',
+        verificationStatus: 'Verified',
+        lastLogin: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        totalGivingHistory: Math.floor(Math.random() * 20) + 1
+      })),
+      // Mock existing members
+      {
+        id: 101,
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        email: 'sarah.johnson@email.com',
+        phone: '+27 82 123 4567',
+        address: 'Cape Town, Western Cape',
+        membershipType: 'member',
+        churchName: 'Grace Baptist Church',
+        churchId: 1,
+        joinedAt: '2024-01-05',
+        status: 'Active',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+        totalDonations: 12500,
+        lastDonation: '2024-01-15'
+      },
+      {
+        id: 102,
+        firstName: 'David',
+        lastName: 'Williams',
+        email: 'david.williams@email.com',
+        phone: '+27 83 234 5678',
+        address: 'Johannesburg, Gauteng',
+        membershipType: 'volunteer',
+        churchName: 'Faith Community Church',
+        churchId: 3,
+        joinedAt: '2024-01-03',
+        status: 'Active',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+        totalDonations: 8750,
+        lastDonation: '2024-01-14'
+      },
+      {
+        id: 103,
+        firstName: 'Mary',
+        lastName: 'Brown',
+        email: 'mary.brown@email.com',
+        phone: '+27 84 345 6789',
+        address: 'Durban, KwaZulu-Natal',
+        membershipType: 'visitor',
+        churchName: 'Hope Presbyterian',
+        churchId: 4,
+        joinedAt: '2024-01-08',
+        status: 'Active',
+        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b2cb25e6?w=100&h=100&fit=crop&crop=face',
+        totalDonations: 3200,
+        lastDonation: '2024-01-13'
+      }
+    ].slice(0, 12), // Show recent members
+    payoutRequests: [
+      {
+        id: 1,
+        church: 'Grace Baptist Church',
+        admin: 'Jane Smith',
+        amount: 8500,
+        category: 'tithes',
+        description: 'Monthly tithe collection withdrawal for church operations',
+        requestDate: '2024-01-15',
+        status: 'pending',
+        bankDetails: 'FNB - 12345678901',
+        churchRevenue: 45670,
+        availableBalance: 12450.25
+      },
+      {
+        id: 2,
+        church: 'Faith Community Church',
+        admin: 'Sarah Williams',
+        amount: 3200,
+        category: 'offerings',
+        description: 'Weekly offerings collection for community outreach',
+        requestDate: '2024-01-14',
+        status: 'pending',
+        bankDetails: 'Standard Bank - 23456789012',
+        churchRevenue: 38450,
+        availableBalance: 6780.50
+      },
+      {
+        id: 3,
+        church: 'Hope Presbyterian',
+        admin: 'David Brown',
+        amount: 1500,
+        category: 'special-offerings',
+        description: 'Building fund special collection withdrawal',
+        requestDate: '2024-01-13',
+        status: 'approved',
+        bankDetails: 'ABSA - 34567890123',
+        churchRevenue: 24380,
+        availableBalance: 2890.00,
+        processedDate: '2024-01-13',
+        processedBy: 'Mike SuperAdmin'
+      },
+      {
+        id: 4,
+        church: 'Grace Baptist Church',
+        admin: 'Jane Smith',
+        amount: 2100,
+        category: 'project-donations',
+        description: 'Youth building project funds withdrawal',
+        requestDate: '2024-01-12',
+        status: 'rejected',
+        bankDetails: 'FNB - 12345678901',
+        churchRevenue: 45670,
+        availableBalance: 1330.00,
+        rejectionReason: 'Insufficient documentation provided',
+        processedDate: '2024-01-12',
+        processedBy: 'Mike SuperAdmin'
+      }
+    ],
+    activityLog: [
+      // Real registration activity
+      ...registrations.churches.map((church: any, index: number) => ({
+        id: 1000 + index,
+        timestamp: church.submittedAt ? new Date(church.submittedAt).toLocaleString() : new Date().toLocaleString(),
+        action: 'New Church Application Received',
+        details: `${church.churchName} submitted application for ChurPay platform - Admin: ${church.contactName}`,
+        type: 'church_management',
+        severity: 'info',
+        user: 'System',
+        churchId: church.id || (1000 + index),
+        isNewRegistration: true
+      })),
+      ...registrations.members.map((member: any, index: number) => ({
+        id: 2000 + index,
+        timestamp: member.submittedAt ? new Date(member.submittedAt).toLocaleString() : new Date().toLocaleString(),
+        action: 'New Member Registration',
+        details: `${member.firstName} ${member.lastName} joined ${member.churchName || member.selectedChurch?.name} as ${member.membershipType}`,
+        type: 'user_management',
+        severity: 'info',
+        user: 'System',
+        churchId: member.churchId || member.selectedChurch?.id,
+        isNewRegistration: true
+      })),
+      // Existing mock activity
+      {
+        id: 1,
+        timestamp: '2024-01-15 14:30:22',
+        action: 'Church Application Approved',
+        details: 'Grace Baptist Church application approved by Mike SuperAdmin',
+        type: 'church_management',
+        severity: 'info',
+        user: 'Mike SuperAdmin',
+        churchId: 1
+      },
+      {
+        id: 2,
+        timestamp: '2024-01-15 13:45:12',
+        action: 'Payout Request Processed',
+        details: 'R8,500 payout approved for Grace Baptist Church - Tithes withdrawal',
+        type: 'financial',
+        severity: 'info',
+        user: 'Mike SuperAdmin',
+        churchId: 1
+      },
+      {
+        id: 3,
+        timestamp: '2024-01-15 12:20:05',
+        action: 'System Maintenance',
+        details: 'Scheduled database optimization completed successfully',
+        type: 'system',
+        severity: 'info',
+        user: 'System',
+        churchId: null
+      },
+      {
+        id: 4,
+        timestamp: '2024-01-15 11:15:33',
+        action: 'Security Alert',
+        details: 'Multiple failed login attempts detected from IP 192.168.1.100',
+        type: 'security',
+        severity: 'warning',
+        user: 'System',
+        churchId: null
+      },
+      {
+        id: 5,
+        timestamp: '2024-01-15 10:30:18',
+        action: 'Commission Rate Updated',
+        details: 'Platform commission rate changed from 5.5% to 6.0%',
+        type: 'financial',
+        severity: 'info',
+        user: 'Mike SuperAdmin',
+        churchId: null
+      },
+      {
+        id: 6,
+        timestamp: '2024-01-15 09:45:44',
+        action: 'Church Suspended',
+        details: 'Unity Christian Center suspended due to policy violation',
+        type: 'church_management',
+        severity: 'critical',
+        user: 'Mike SuperAdmin',
+        churchId: 5
+      }
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20), // Most recent 20 activities
+    systemMetrics: {
+      cpuUsage: 45,
+      memoryUsage: 67,
+      diskUsage: 32,
+      networkTraffic: 2.3,
+      activeConnections: 1247,
+      requestsPerMinute: 3456,
+      databaseConnections: 89,
+      cacheHitRate: 94.7,
+      errorRate: 0.12,
+      responseTime: 145,
+      uptime: 99.8
+    },
+    recentTransactions: [
+      { 
+        id: 1, 
+        church: 'Grace Baptist Church', 
+        amount: 2550, 
+        type: 'Commission', 
+        date: '2024-01-15', 
+        status: 'completed',
+        transactionId: 'TXN-2024-001234'
+      },
+      { 
+        id: 2, 
+        church: 'Faith Community Church', 
+        amount: 1845, 
+        type: 'Commission', 
+        date: '2024-01-15', 
+        status: 'completed',
+        transactionId: 'TXN-2024-001235'
+      },
+      { 
+        id: 3, 
+        church: 'Hope Presbyterian', 
+        amount: 1220, 
+        type: 'Commission', 
+        date: '2024-01-14', 
+        status: 'completed',
+        transactionId: 'TXN-2024-001236'
+      },
+      { 
+        id: 4, 
+        church: 'Living Word Assembly', 
+        amount: 1650, 
+        type: 'Commission', 
+        date: '2024-01-14', 
+        status: 'pending',
+        transactionId: 'TXN-2024-001237'
+      }
+    ]
+  };
+
+  // Save commission rate to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('churpay-commission-rate', commissionRate.toString());
+  }, [commissionRate]);
+
+  const StatCard = ({ title, value, icon: Icon, trend, color, subtitle }: any) => (
+    <Card className="p-6 hover:shadow-lg transition-all duration-300" style={{ backgroundColor: theme.card }}>
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>
+            {title}
+          </p>
+          <p className="text-2xl font-bold mt-2" style={{ color: theme.text }}>
+            {value}
+          </p>
+          {subtitle && (
+            <p className="text-xs mt-1" style={{ color: theme.textSecondary }}>
+              {subtitle}
+            </p>
+          )}
+          {trend && (
+            <p className="text-sm mt-2 flex items-center" style={{ color: trend.startsWith('+') ? '#10b981' : '#ef4444' }}>
+              <TrendingUp className="w-4 h-4 mr-1" />
+              {trend}
+            </p>
+          )}
+        </div>
+        <div 
+          className="w-12 h-12 rounded-full flex items-center justify-center ml-4"
+          style={{ backgroundColor: color + '20' }}
+        >
+          <Icon className="w-6 h-6" style={{ color }} />
+        </div>
+      </div>
+    </Card>
+  );
+
+  const ChurchCard = ({ church }: any) => {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'Active': return 'bg-green-500';
+        case 'Pending': return 'bg-yellow-500';
+        case 'Under Review': return 'bg-blue-500';
+        case 'Suspended': return 'bg-red-500';
+        default: return 'bg-gray-500';
+      }
+    };
+
+    return (
+      <Card className="p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => {
+        setSelectedChurch(church);
+        setShowChurchModal(true);
+      }}>
+        <div className="flex items-center justify-between mb-3">
+          <Badge className={`${getStatusColor(church.status)} text-white`}>
+            {church.status}
+          </Badge>
+          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+            <MoreVertical className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex items-center space-x-3 mb-3">
+          {church.logo ? (
+            <ImageWithFallback
+              src={church.logo}
+              alt={`${church.name} Logo`}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-churpay-purple flex items-center justify-center">
+              <Church className="w-6 h-6 text-white" />
+            </div>
+          )}
+          <div className="flex-1">
+            <h4 className="font-medium" style={{ color: theme.text }}>{church.name}</h4>
+            <p className="text-sm" style={{ color: theme.textSecondary }}>
+              📍 {church.location} • {church.members} members
+            </p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm" style={{ color: theme.textSecondary }}>
+            👤 Admin: {church.admin}
+          </p>
+          <div className="flex justify-between items-center pt-2">
+            <span className="text-sm font-medium" style={{ color: theme.text }}>
+              R{church.revenue.toLocaleString()}
+            </span>
+            {church.monthlyGrowth !== 0 && (
+              <span className={`text-sm ${church.monthlyGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {church.monthlyGrowth > 0 ? '+' : ''}{church.monthlyGrowth}%
+              </span>
+            )}
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  const MemberCard = ({ member }: any) => {
+    const getMembershipTypeColor = (type: string) => {
+      switch (type) {
+        case 'member': return 'bg-blue-500';
+        case 'volunteer': return 'bg-green-500';
+        case 'visitor': return 'bg-orange-500';
+        default: return 'bg-gray-500';
+      }
+    };
+
+    return (
+      <Card className="p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => {
+        setSelectedMember(member);
+        setShowMemberModal(true);
+      }}>
+        <div className="flex items-center justify-between mb-3">
+          <Badge className={`${getMembershipTypeColor(member.membershipType)} text-white text-xs`}>
+            {member.membershipType}
+          </Badge>
+          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+            <MoreVertical className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex items-center space-x-3 mb-3">
+          {member.avatar ? (
+            <ImageWithFallback
+              src={member.avatar}
+              alt={`${member.firstName} ${member.lastName}`}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-churpay-purple flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
+          )}
+          <div className="flex-1">
+            <h4 className="font-medium" style={{ color: theme.text }}>
+              {member.firstName} {member.lastName}
+            </h4>
+            <p className="text-sm" style={{ color: theme.textSecondary }}>
+              ⛪ {member.churchName}
+            </p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm" style={{ color: theme.textSecondary }}>
+            📧 {member.email}
+          </p>
+          <p className="text-sm" style={{ color: theme.textSecondary }}>
+            📱 {member.phone}
+          </p>
+          <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: theme.border }}>
+            <div>
+              <p className="text-xs" style={{ color: theme.textSecondary }}>Total Donations</p>
+              <span className="text-sm font-medium text-green-600">
+                R{member.totalDonations?.toLocaleString() || '0'}
+              </span>
+            </div>
+            <div className="text-right">
+              <p className="text-xs" style={{ color: theme.textSecondary }}>Last Donation</p>
+              <span className="text-xs" style={{ color: theme.text }}>
+                {member.lastDonation || 'Never'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  const PayoutRequestCard = ({ request }: any) => {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'pending': return 'bg-yellow-500';
+        case 'approved': return 'bg-green-500';
+        case 'rejected': return 'bg-red-500';
+        default: return 'bg-gray-500';
+      }
+    };
+
+    const getCategoryIcon = (category: string) => {
+      switch (category) {
+        case 'tithes': return Receipt;
+        case 'offerings': return Heart;
+        case 'special-offerings': return DollarSign;
+        case 'project-donations': return Rocket;
+        default: return DollarSign;
+      }
+    };
+
+    const CategoryIcon = getCategoryIcon(request.category);
+
+    return (
+      <Card className="p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => {
+        setSelectedPayoutRequest(request);
+        setShowPayoutModal(true);
+      }}>
+        <div className="flex items-center justify-between mb-3">
+          <Badge className={`${getStatusColor(request.status)} text-white`}>
+            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+          </Badge>
+          <CategoryIcon className="w-5 h-5" style={{ color: theme.primary }} />
+        </div>
+        <div className="space-y-2">
+          <h4 className="font-medium" style={{ color: theme.text }}>{request.church}</h4>
+          <p className="text-sm" style={{ color: theme.textSecondary }}>
+            Admin: {request.admin}
+          </p>
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-bold text-green-600">
+              R{request.amount.toLocaleString()}
+            </span>
+            <span className="text-xs" style={{ color: theme.textSecondary }}>
+              {request.requestDate}
+            </span>
+          </div>
+          <p className="text-xs line-clamp-2" style={{ color: theme.textSecondary }}>
+            {request.description}
+          </p>
+        </div>
+      </Card>
+    );
+  };
+
+  const SystemMetricCard = ({ title, value, unit, icon: Icon, color, max = 100 }: any) => (
+    <Card className="p-4" style={{ backgroundColor: theme.card }}>
+      <div className="flex items-center justify-between mb-3">
+        <Icon className="w-5 h-5" style={{ color }} />
+        <span className="text-sm font-medium" style={{ color: theme.text }}>{value}{unit}</span>
+      </div>
+      <h4 className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>{title}</h4>
+      <Progress value={Math.min(value, max)} className="h-2" />
+    </Card>
+  );
+
+  const ActivityLogEntry = ({ entry }: any) => {
+    const getSeverityColor = (severity: string) => {
+      switch (severity) {
+        case 'critical': return 'text-red-600';
+        case 'warning': return 'text-yellow-600';
+        case 'info': return 'text-blue-600';
+        default: return theme.textSecondary;
+      }
+    };
+
+    const getTypeIcon = (type: string) => {
+      switch (type) {
+        case 'church_management': return Building2;
+        case 'financial': return DollarSign;
+        case 'security': return Shield;
+        case 'system': return Server;
+        case 'user_management': return Users;
+        default: return Activity;
+      }
+    };
+
+    const TypeIcon = getTypeIcon(entry.type);
+
+    return (
+      <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-opacity-50" style={{ backgroundColor: theme.accent + '50' }}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center mt-1 ${getSeverityColor(entry.severity).replace('text-', 'bg-').replace('-600', '-100')}`}>
+          <TypeIcon className={`w-4 h-4 ${getSeverityColor(entry.severity)}`} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium" style={{ color: theme.text }}>{entry.action}</h4>
+            <span className="text-xs" style={{ color: theme.textSecondary }}>{entry.timestamp}</span>
+          </div>
+          <p className="text-sm mt-1" style={{ color: theme.textSecondary }}>{entry.details}</p>
+          <div className="flex items-center space-x-2 mt-2">
+            <Badge variant="secondary" className="text-xs">{entry.type.replace('_', ' ')}</Badge>
+            <span className="text-xs" style={{ color: theme.textSecondary }}>by {entry.user}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handlePayoutDecision = (decision: 'approve' | 'reject') => {
+    if (!selectedPayoutRequest) return;
+
+    console.log(`${decision} payout request:`, {
+      requestId: selectedPayoutRequest.id,
+      church: selectedPayoutRequest.church,
+      amount: selectedPayoutRequest.amount,
+      decision,
+      notes: payoutNotes,
+      processedBy: user?.first_name + ' ' + user?.last_name
+    });
+
+    alert(`Payout request ${decision}d successfully!\n\nChurch: ${selectedPayoutRequest.church}\nAmount: R${selectedPayoutRequest.amount.toLocaleString()}\nDecision: ${decision.charAt(0).toUpperCase() + decision.slice(1)}`);
+    
+    setShowPayoutModal(false);
+    setSelectedPayoutRequest(null);
+    setPayoutNotes('');
+  };
+
+  const handleChurchDecision = (decision: 'approve' | 'reject' | 'suspend') => {
+    if (!selectedChurch) return;
+
+    // Update the church status in registrations if it's a new registration
+    if (selectedChurch.isNewRegistration) {
+      const updatedRegistrations = { ...registrations };
+      const churchIndex = updatedRegistrations.churches.findIndex((c: any) => 
+        c.id === selectedChurch.id || c.churchName === selectedChurch.name
+      );
+      
+      if (churchIndex !== -1) {
+        updatedRegistrations.churches[churchIndex].status = decision === 'approve' ? 'Active' : 
+                                                           decision === 'reject' ? 'Rejected' : 'Suspended';
+        updatedRegistrations.churches[churchIndex].processedAt = new Date().toISOString();
+        updatedRegistrations.churches[churchIndex].processedBy = user?.first_name + ' ' + user?.last_name;
+        updatedRegistrations.churches[churchIndex].processingNotes = churchNotes;
+        
+        localStorage.setItem('churpay-registrations', JSON.stringify(updatedRegistrations));
+        setRegistrations(updatedRegistrations);
+      }
+
+      // Add to activity log
+      const activityEntry = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        action: `Church Application ${decision.charAt(0).toUpperCase() + decision.slice(1)}d`,
+        details: `${selectedChurch.name} application ${decision}d by ${user?.first_name} ${user?.last_name}${churchNotes ? ` - Notes: ${churchNotes}` : ''}`,
+        type: 'church_management',
+        severity: decision === 'approve' ? 'info' : decision === 'reject' ? 'warning' : 'critical',
+        user: user?.first_name + ' ' + user?.last_name,
+        churchId: selectedChurch.id
+      };
+
+      // Add to activity log in localStorage
+      const currentActivity = JSON.parse(localStorage.getItem('churpay-activity-log') || '[]');
+      currentActivity.unshift(activityEntry);
+      localStorage.setItem('churpay-activity-log', JSON.stringify(currentActivity.slice(0, 100))); // Keep last 100 entries
+    }
+
+    console.log(`${decision} church:`, {
+      churchId: selectedChurch.id,
+      church: selectedChurch.name,
+      decision,
+      notes: churchNotes,
+      processedBy: user?.first_name + ' ' + user?.last_name
+    });
+
+    alert(`Church ${decision}d successfully!\n\nChurch: ${selectedChurch.name}\nDecision: ${decision.charAt(0).toUpperCase() + decision.slice(1)}\n\n${decision === 'approve' ? 'The church can now start using ChurPay services.' : decision === 'reject' ? 'The church application has been rejected.' : 'The church has been suspended from the platform.'}`);
+    
+    setShowChurchModal(false);
+    setSelectedChurch(null);
+    setChurchNotes('');
+    
+    // Refresh the page to show updated data
+    window.location.reload();
+  };
+
+  const handleCommissionUpdate = () => {
+    const newRate = parseFloat(tempCommissionRate);
+    if (newRate && newRate > 0 && newRate <= 20) {
+      setCommissionRate(newRate);
+      setShowCommissionModal(false);
+      setTempCommissionRate('');
+      alert(`Commission rate updated to ${newRate}%`);
+    }
+  };
+
+  const openCommissionModal = () => {
+    setTempCommissionRate(commissionRate.toString());
+    setShowCommissionModal(true);
+  };
+
+  const monthlyCommission = (mockPlatformStats.monthlyRevenue * commissionRate) / 100;
+  const pendingPayouts = mockPlatformStats.payoutRequests.filter(req => req.status === 'pending').length;
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: theme.bg }}>
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p style={{ color: theme.textSecondary }}>{getGreeting()},</p>
+              <h1 className="text-3xl font-bold flex items-center gap-3" style={{ color: theme.text }}>
+                <div className="w-12 h-12 rounded-lg bg-gradient-churpay flex items-center justify-center shadow-md">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <span>ChurPay Platform Command Center</span>
+                  <p className="text-sm font-normal" style={{ color: theme.textSecondary }}>
+                    Super Administrator Dashboard
+                  </p>
+                </div>
+              </h1>
+              <p className="mt-2" style={{ color: theme.textSecondary }}>
+                Global platform management and analytics • {mockPlatformStats.totalChurches} churches worldwide
+              </p>
+              <div className="flex items-center gap-4 mt-2">
+                <Badge className="bg-churpay-gold text-black font-medium">
+                  Super Administrator
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm" style={{ color: theme.textSecondary }}>
+                    System Operational • {mockPlatformStats.systemUptime}% uptime
+                  </span>
+                </div>
+                <span className="text-sm" style={{ color: theme.textSecondary }}>
+                  Last updated: {new Date().toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowActivityModal(true)}
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              >
+                <Activity className="w-4 h-4 mr-2" />
+                Activity Log
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={openCommissionModal}
+                className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Commission ({commissionRate}%)
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowSystemModal(true)}
+                className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+              >
+                <Monitor className="w-4 h-4 mr-2" />
+                System Status
+              </Button>
+              <Button className="bg-gradient-churpay text-white hover:opacity-90">
+                <Download className="w-4 h-4 mr-2" />
+                Platform Report
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Platform Revenue Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-br from-purple-600 via-purple-500 to-amber-400 rounded-3xl p-8 text-white shadow-xl mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <Crown className="w-5 h-5" />
+                <p className="text-white/90">ChurPay Platform Revenue</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <p className="text-4xl font-bold mb-1">
+                  R{mockPlatformStats.commissionEarned.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <p className="text-white/80 text-sm">
+                Total commission earned • {commissionRate}% from church transactions
+              </p>
+              
+              {/* Revenue Breakdown */}
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">This Month</p>
+                  <p className="text-white font-semibold">R{monthlyCommission.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Growth Rate</p>
+                  <p className="text-white font-semibold">+{mockPlatformStats.platformGrowthRate}%</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Transactions</p>
+                  <p className="text-white font-semibold">{mockPlatformStats.totalTransactions.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Success Rate</p>
+                  <p className="text-white font-semibold">{mockPlatformStats.successRate}%</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <Button
+                onClick={() => setShowActivityModal(true)}
+                className="bg-white text-purple-600 hover:bg-white/90 rounded-full w-14 h-14 p-0"
+                title="View Activity Log"
+              >
+                <Activity className="w-7 h-7" />
+              </Button>
+              <Button
+                onClick={() => setShowSystemModal(true)}
+                variant="ghost"
+                className="text-white hover:bg-white/20 rounded-full w-14 h-14 p-0"
+                title="System Metrics"
+              >
+                <Monitor className="w-6 h-6" />
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Key Platform Metrics */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <StatCard
+            title="Total Churches"
+            value={mockPlatformStats.totalChurches}
+            subtitle={`${mockPlatformStats.activeChurches} active • ${mockPlatformStats.pendingApprovals} pending`}
+            icon={Building2}
+            trend="+15 this month"
+            color="#7636A6"
+          />
+          <StatCard
+            title="Platform Revenue"
+            value={`R${mockPlatformStats.totalRevenue.toLocaleString()}`}
+            subtitle="Total processed"
+            icon={DollarSign}
+            trend="+12.5%"
+            color="#FFC700"
+          />
+          <StatCard
+            title="Commission Earned"
+            value={`R${mockPlatformStats.commissionEarned.toLocaleString()}`}
+            subtitle={`R${monthlyCommission.toLocaleString()} this month`}
+            icon={TrendingUp}
+            trend="+18.3%"
+            color="#10b981"
+          />
+          <StatCard
+            title="Active Users"
+            value={mockPlatformStats.activeUsers.toLocaleString()}
+            subtitle="Across all churches"
+            icon={Users}
+            trend="+8.1%"
+            color="#8b5cf6"
+          />
+        </motion.div>
+
+        {/* Pending Requests Alert */}
+        {pendingPayouts > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4 mb-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800">Pending Payout Requests</h3>
+                  <p className="text-sm text-yellow-700">
+                    {pendingPayouts} church{pendingPayouts > 1 ? 'es' : ''} waiting for payout approval
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setActiveTab('payouts')}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                size="sm"
+              >
+                Review Requests
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-7 mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="churches">Churches</TabsTrigger>
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Church Applications */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: theme.text }}>
+                    Recent Church Applications
+                  </h3>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('churches')}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    View All
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {mockPlatformStats.recentChurches.slice(0, 4).map((church) => (
+                    <div 
+                      key={church.id} 
+                      className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-opacity-70" 
+                      style={{ backgroundColor: theme.accent }}
+                      onClick={() => {
+                        setSelectedChurch(church);
+                        setShowChurchModal(true);
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          church.status === 'Active' ? 'bg-green-500' :
+                          church.status === 'Pending' ? 'bg-yellow-500' : 
+                          church.status === 'Suspended' ? 'bg-red-500' : 'bg-blue-500'
+                        }`}>
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium" style={{ color: theme.text }}>
+                            {church.name}
+                          </p>
+                          <p className="text-sm" style={{ color: theme.textSecondary }}>
+                            {church.location} • {church.members} members • Joined {church.joined}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={
+                          church.status === 'Active' ? 'bg-green-500 text-white' :
+                          church.status === 'Pending' ? 'bg-yellow-500 text-white' : 
+                          church.status === 'Suspended' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+                        }>
+                          {church.status}
+                        </Badge>
+                        {church.revenue > 0 && (
+                          <p className="text-sm mt-1 font-semibold text-green-600">
+                            R{church.revenue.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: theme.text }}>
+                    Recent Platform Activity
+                  </h3>
+                  <Button variant="outline" size="sm" onClick={() => setShowActivityModal(true)}>
+                    <Activity className="w-4 h-4 mr-2" />
+                    Full Log
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {mockPlatformStats.activityLog.slice(0, 4).map((entry) => (
+                    <ActivityLogEntry key={entry.id} entry={entry} />
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Commission Earnings */}
+            <Card className="p-6" style={{ backgroundColor: theme.card }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold" style={{ color: theme.text }}>
+                  Commission Earnings Overview
+                </h3>
+                <Button variant="outline" size="sm" onClick={openCommissionModal}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Adjust Rate
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">R{monthlyCommission.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>This Month ({commissionRate}%)</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">R{mockPlatformStats.commissionEarned.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>Year to Date</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.totalTransactions.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>Total Transactions</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold" style={{ color: theme.text }}>R{Math.round(mockPlatformStats.totalRevenue / mockPlatformStats.totalTransactions)}</p>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>Avg Transaction</p>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="churches">
+            <div className="space-y-6">
+              {/* New Registrations Alert */}
+              {registrations.churches.filter((c: any) => !c.status || c.status === 'Pending').length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <AlertCircle className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <h3 className="font-semibold text-blue-800">New Church Registrations Pending</h3>
+                        <p className="text-sm text-blue-700">
+                          {registrations.churches.filter((c: any) => !c.status || c.status === 'Pending').length} church{registrations.churches.filter((c: any) => !c.status || c.status === 'Pending').length > 1 ? 'es' : ''} awaiting your review and approval
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-blue-600 text-white">
+                      {registrations.churches.filter((c: any) => !c.status || c.status === 'Pending').length} Pending
+                    </Badge>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Church Management Header */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: theme.text }}>
+                    Church Management & Onboarding
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button 
+                      className="bg-gradient-churpay text-white" 
+                      size="sm"
+                      onClick={() => window.location.hash = 'church-signup'}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Onboard Church
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Search and Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                  <div className="md:col-span-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: theme.textSecondary }} />
+                      <input
+                        type="text"
+                        placeholder="Search churches..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                        style={{ 
+                          backgroundColor: theme.card, 
+                          borderColor: theme.border,
+                          color: theme.text
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-green-600">{mockPlatformStats.activeChurches}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Active</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-yellow-600">{mockPlatformStats.pendingApprovals}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Pending</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-red-600">{mockPlatformStats.suspendedChurches}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Suspended</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Churches Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mockPlatformStats.recentChurches.map((church) => (
+                  <div key={church.id} className="relative">
+                    {church.isNewRegistration && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <Badge className="bg-orange-500 text-white text-xs animate-pulse">
+                          NEW
+                        </Badge>
+                      </div>
+                    )}
+                    <ChurchCard church={church} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="members">
+            <div className="space-y-6">
+              {/* Member Registrations Alert */}
+              {registrations.members.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Users className="w-5 h-5 text-green-600" />
+                      <div>
+                        <h3 className="font-semibold text-green-800">New Member Registrations</h3>
+                        <p className="text-sm text-green-700">
+                          {registrations.members.length} new member{registrations.members.length > 1 ? 's' : ''} have joined churches on the platform
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-600 text-white">
+                      {registrations.members.length} New Members
+                    </Badge>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Member Management Header */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: theme.text }}>
+                    Member Management & Analytics
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Members
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Search and Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                  <div className="md:col-span-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: theme.textSecondary }} />
+                      <input
+                        type="text"
+                        placeholder="Search members..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                        style={{ 
+                          backgroundColor: theme.card, 
+                          borderColor: theme.border,
+                          color: theme.text
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-blue-600">{mockPlatformStats.recentMembers.filter(m => m.membershipType === 'member').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Members</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-green-600">{mockPlatformStats.recentMembers.filter(m => m.membershipType === 'volunteer').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Volunteers</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-orange-600">{mockPlatformStats.recentMembers.filter(m => m.membershipType === 'visitor').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Visitors</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Members Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mockPlatformStats.recentMembers.map((member) => (
+                  <div key={member.id} className="relative">
+                    {member.isNewRegistration && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <Badge className="bg-orange-500 text-white text-xs animate-pulse">
+                          NEW
+                        </Badge>
+                      </div>
+                    )}
+                    <MemberCard member={member} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payouts">
+            <div className="space-y-6">
+              {/* Payout Management Header */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: theme.text }}>
+                    Church Payout Request Management
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Payout Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-yellow-600">{mockPlatformStats.payoutRequests.filter(req => req.status === 'pending').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Pending Requests</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-green-600">{mockPlatformStats.payoutRequests.filter(req => req.status === 'approved').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Approved Today</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-red-600">{mockPlatformStats.payoutRequests.filter(req => req.status === 'rejected').length}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Rejected</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold" style={{ color: theme.text }}>
+                      R{mockPlatformStats.payoutRequests.filter(req => req.status === 'pending').reduce((sum, req) => sum + req.amount, 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Pending Amount</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Payout Requests Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mockPlatformStats.payoutRequests.map((request) => (
+                  <PayoutRequestCard key={request.id} request={request} />
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <div className="space-y-6">
+              {/* Analytics Overview */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                  <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                    Platform Growth Metrics
+                  </h3>
+                  <div className="h-64 flex items-center justify-center" style={{ color: theme.textSecondary }}>
+                    <div className="text-center">
+                      <LineChart className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p>Platform growth analytics would be displayed here</p>
+                      <p className="text-sm mt-2">Churches, users, and revenue growth over time</p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                  <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                    Revenue Distribution
+                  </h3>
+                  <div className="h-64 flex items-center justify-center" style={{ color: theme.textSecondary }}>
+                    <div className="text-center">
+                      <PieChart className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p>Revenue breakdown by church and region</p>
+                      <p className="text-sm mt-2">Geographic and performance analytics</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Performance Insights */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                  Platform Performance Insights
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <Globe className="w-8 h-8 mx-auto mb-2" style={{ color: '#7636A6' }} />
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>9</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Provinces Covered</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <CreditCard className="w-8 h-8 mx-auto mb-2" style={{ color: '#FFC700' }} />
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.successRate}%</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Payment Success</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <Users className="w-8 h-8 mx-auto mb-2" style={{ color: '#10b981' }} />
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>128</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Avg Members/Church</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2" style={{ color: '#8b5cf6' }} />
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.platformGrowthRate}%</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Monthly Growth</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="revenue">
+            <div className="space-y-6">
+              {/* Revenue Summary */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                  <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                    Commission Summary
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Commission Rate</span>
+                      <button
+                        onClick={openCommissionModal}
+                        className="font-semibold text-blue-600 hover:text-blue-700 underline"
+                      >
+                        {commissionRate}%
+                      </button>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>This Month</span>
+                      <span className="font-semibold text-green-600">
+                        R{monthlyCommission.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Year to Date</span>
+                      <span className="font-semibold text-green-600">
+                        R{mockPlatformStats.commissionEarned.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Projected Annual</span>
+                      <span className="font-semibold" style={{ color: theme.text }}>
+                        R{(monthlyCommission * 12).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="lg:col-span-2 p-6" style={{ backgroundColor: theme.card }}>
+                  <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                    Recent Commission Transactions
+                  </h3>
+                  <div className="space-y-3">
+                    {mockPlatformStats.recentTransactions.map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                            <DollarSign className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium" style={{ color: theme.text }}>
+                              {transaction.church}
+                            </p>
+                            <p className="text-sm" style={{ color: theme.textSecondary }}>
+                              {transaction.type} • {transaction.date} • {transaction.transactionId}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">
+                            R{transaction.amount}
+                          </p>
+                          <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
+                            {transaction.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <div className="space-y-6">
+              {/* Platform Settings */}
+              <Card className="p-6" style={{ backgroundColor: theme.card }}>
+                <h3 className="font-semibold mb-4" style={{ color: theme.text }}>
+                  Platform Configuration
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium" style={{ color: theme.text }}>Commission Rate</p>
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>Platform fee percentage</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={openCommissionModal}>
+                        {commissionRate}% <Edit className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium" style={{ color: theme.text }}>System Maintenance</p>
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>Schedule maintenance window</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium" style={{ color: theme.text }}>Security Settings</p>
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>Platform security configuration</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* System Health */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium" style={{ color: theme.text }}>System Health</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <SystemMetricCard
+                        title="CPU Usage"
+                        value={mockPlatformStats.systemMetrics.cpuUsage}
+                        unit="%"
+                        icon={Cpu}
+                        color="#7636A6"
+                      />
+                      <SystemMetricCard
+                        title="Memory"
+                        value={mockPlatformStats.systemMetrics.memoryUsage}
+                        unit="%"
+                        icon={Database}
+                        color="#FFC700"
+                      />
+                      <SystemMetricCard
+                        title="Disk Space"
+                        value={mockPlatformStats.systemMetrics.diskUsage}
+                        unit="%"
+                        icon={HardDrive}
+                        color="#10b981"
+                      />
+                      <SystemMetricCard
+                        title="Network"
+                        value={mockPlatformStats.systemMetrics.networkTraffic}
+                        unit="GB/s"
+                        icon={Wifi}
+                        color="#8b5cf6"
+                        max={10}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Payout Request Modal */}
+        {showPayoutModal && selectedPayoutRequest && (
+          <Dialog open={showPayoutModal} onOpenChange={setShowPayoutModal}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Receipt className="w-5 h-5" />
+                  <span>Payout Request Review</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Review and approve/reject church payout request
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Request Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Church</p>
+                    <p style={{ color: theme.text }}>{selectedPayoutRequest.church}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Administrator</p>
+                    <p style={{ color: theme.text }}>{selectedPayoutRequest.admin}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Amount Requested</p>
+                    <p className="text-xl font-bold text-green-600">R{selectedPayoutRequest.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Available Balance</p>
+                    <p style={{ color: theme.text }}>R{selectedPayoutRequest.availableBalance.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Category</p>
+                    <Badge>{selectedPayoutRequest.category.replace('-', ' ')}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Request Date</p>
+                    <p style={{ color: theme.text }}>{selectedPayoutRequest.requestDate}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Description</p>
+                  <p style={{ color: theme.text }}>{selectedPayoutRequest.description}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Bank Details</p>
+                  <p style={{ color: theme.text }}>{selectedPayoutRequest.bankDetails}</p>
+                </div>
+
+                {/* Admin Notes */}
+                <div>
+                  <label className="text-sm font-medium block mb-2" style={{ color: theme.textSecondary }}>
+                    Processing Notes (Optional)
+                  </label>
+                  <Textarea
+                    value={payoutNotes}
+                    onChange={(e) => setPayoutNotes(e.target.value)}
+                    placeholder="Add notes about this payout decision..."
+                    className="min-h-[80px]"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3">
+                  <Button variant="outline" onClick={() => setShowPayoutModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => handlePayoutDecision('reject')}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Reject Request
+                  </Button>
+                  <Button 
+                    onClick={() => handlePayoutDecision('approve')}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve Payout
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Church Management Modal */}
+        {showChurchModal && selectedChurch && (
+          <Dialog open={showChurchModal} onOpenChange={setShowChurchModal}>
+            <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto w-[96vw]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Building2 className="w-5 h-5" />
+                  <span>Church Application Review</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Complete church application details for vetting and approval
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 p-1">
+                {/* Church Header */}
+                <div className="flex items-center space-x-4 p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                  {selectedChurch.logo ? (
+                    <ImageWithFallback
+                      src={selectedChurch.logo}
+                      alt={`${selectedChurch.name} Logo`}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-churpay-purple flex items-center justify-center">
+                      <Church className="w-10 h-10 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-2xl font-bold" style={{ color: theme.text }}>{selectedChurch.name}</h3>
+                    <p className="text-lg" style={{ color: theme.textSecondary }}>{selectedChurch.location}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge className={selectedChurch.status === 'Active' ? 'bg-green-500 text-white' :
+                        selectedChurch.status === 'Pending' ? 'bg-yellow-500 text-white' : 
+                        selectedChurch.status === 'Suspended' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}>
+                        {selectedChurch.status}
+                      </Badge>
+                      {selectedChurch.isNewRegistration && (
+                        <Badge className="bg-orange-500 text-white">NEW APPLICATION</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                      <Building2 className="w-3 h-3" />
+                      Basic Information
+                    </h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Church Name</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Email</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Phone</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.phone}</p>
+                      </div>
+                      {selectedChurch.website && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Website</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.website}</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+
+                  <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                      <MapPin className="w-3 h-3" />
+                      Address Information
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedChurch.streetAddress && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Street Address</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.streetAddress}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectedChurch.city && (
+                          <div>
+                            <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>City</p>
+                            <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.city}</p>
+                          </div>
+                        )}
+                        {selectedChurch.province && (
+                          <div>
+                            <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Province</p>
+                            <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.province}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectedChurch.postalCode && (
+                          <div>
+                            <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Postal Code</p>
+                            <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.postalCode}</p>
+                          </div>
+                        )}
+                        {selectedChurch.country && (
+                          <div>
+                            <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Country</p>
+                            <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.country}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Contact Person & Church Details */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                      <User className="w-3 h-3" />
+                      Primary Contact
+                    </h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Administrator</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.admin}</p>
+                      </div>
+                      {selectedChurch.contactTitle && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Title/Position</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.contactTitle}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Contact Email</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Contact Phone</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.phone}</p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                      <Church className="w-3 h-3" />
+                      Church Details
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedChurch.denomination && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Denomination</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.denomination}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Members</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.members}</p>
+                      </div>
+                      {selectedChurch.establishedYear && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Established</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.establishedYear}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Application Date</p>
+                        <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.joined}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Banking Information */}
+                <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                    <CreditCard className="w-3 h-3" />
+                    Banking Information
+                  </h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      {selectedChurch.bankName && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Bank Name</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.bankName}</p>
+                        </div>
+                      )}
+                      {selectedChurch.accountName && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Account Name</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.accountName}</p>
+                        </div>
+                      )}
+                      {selectedChurch.accountType && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Account Type</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.accountType}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {selectedChurch.accountNumber && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Account Number</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.accountNumber}</p>
+                        </div>
+                      )}
+                      {selectedChurch.branchCode && (
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: theme.textSecondary }}>Branch Code</p>
+                          <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.branchCode}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Document Uploads & Verification */}
+                <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: theme.text }}>
+                    <FileText className="w-3 h-3" />
+                    Required Documents & Verification
+                  </h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    {/* CK Document */}
+                    <div className="border rounded-lg p-3" style={{ borderColor: theme.border }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-xs" style={{ color: theme.text }}>CK Document</h5>
+                        {selectedChurch.documentsUploaded?.ckDocument ? (
+                          <Badge className="bg-green-500 text-white text-xs px-1 py-0">
+                            <CheckCircle className="w-2 h-2 mr-1" />
+                            ✓
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-red-500 text-white text-xs px-1 py-0">
+                            <X className="w-2 h-2 mr-1" />
+                            ✗
+                          </Badge>
+                        )}
+                      </div>
+                      {selectedChurch.ckDocument ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 p-1 rounded text-xs" style={{ backgroundColor: theme.accent }}>
+                            <FileText className="w-3 h-3 text-green-600" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate" style={{ color: theme.text }}>
+                                {selectedChurch.ckDocument.name || 'CK_Document.pdf'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="w-full text-xs py-1 h-6">
+                            <ExternalLink className="w-2 h-2 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-red-600">Not provided</p>
+                      )}
+                    </div>
+
+                    {/* Bank Confirmation */}
+                    <div className="border rounded-lg p-3" style={{ borderColor: theme.border }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-xs" style={{ color: theme.text }}>Bank Confirmation</h5>
+                        {selectedChurch.documentsUploaded?.bankConfirmation ? (
+                          <Badge className="bg-green-500 text-white text-xs px-1 py-0">
+                            <CheckCircle className="w-2 h-2 mr-1" />
+                            ✓
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-red-500 text-white text-xs px-1 py-0">
+                            <X className="w-2 h-2 mr-1" />
+                            ✗
+                          </Badge>
+                        )}
+                      </div>
+                      {selectedChurch.bankConfirmation ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 p-1 rounded text-xs" style={{ backgroundColor: theme.accent }}>
+                            <FileText className="w-3 h-3 text-green-600" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate" style={{ color: theme.text }}>
+                                {selectedChurch.bankConfirmation.name || 'Bank_Confirmation.pdf'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="w-full text-xs py-1 h-6">
+                            <ExternalLink className="w-2 h-2 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-red-600">Not provided</p>
+                      )}
+                    </div>
+
+                    {/* Church Logo */}
+                    <div className="border rounded-lg p-3" style={{ borderColor: theme.border }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-xs" style={{ color: theme.text }}>Church Logo</h5>
+                        {selectedChurch.documentsUploaded?.churchLogo ? (
+                          <Badge className="bg-green-500 text-white text-xs px-1 py-0">
+                            <CheckCircle className="w-2 h-2 mr-1" />
+                            ✓
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-yellow-500 text-white text-xs px-1 py-0">
+                            <AlertTriangle className="w-2 h-2 mr-1" />
+                            Opt
+                          </Badge>
+                        )}
+                      </div>
+                      {selectedChurch.churchLogo ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 p-1 rounded text-xs" style={{ backgroundColor: theme.accent }}>
+                            <Image className="w-3 h-3 text-green-600" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate" style={{ color: theme.text }}>
+                                {selectedChurch.churchLogo.name || 'Church_Logo.png'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="w-full text-xs py-1 h-6">
+                            <ExternalLink className="w-2 h-2 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-yellow-600">Optional</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Document Verification Status */}
+                  <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: selectedChurch.documentsUploaded?.ckDocument && selectedChurch.documentsUploaded?.bankConfirmation ? theme.accent : '#fef3c7' }}>
+                    <div className="flex items-center gap-2">
+                      {selectedChurch.documentsUploaded?.ckDocument && selectedChurch.documentsUploaded?.bankConfirmation ? (
+                        <>
+                          <CheckCircle className="w-3 h-3 text-green-600" />
+                          <span className="text-xs font-medium text-green-800">All required documents uploaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="w-3 h-3 text-yellow-600" />
+                          <span className="text-xs font-medium text-yellow-800">Missing required documents</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+
+                {selectedChurch.description && (
+                  <Card className="p-3" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-2 text-sm" style={{ color: theme.text }}>Church Description</h4>
+                    <p className="text-sm" style={{ color: theme.text }}>{selectedChurch.description}</p>
+                  </Card>
+                )}
+
+                {selectedChurch.isNewRegistration && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2 text-sm">
+                      <FileText className="w-3 h-3" />
+                      📝 New Registration - Requires Vetting
+                    </h4>
+                    <p className="text-xs text-blue-700 mb-2">
+                      Review all details and documents before making approval decision.
+                    </p>
+                    
+                    {/* Vetting Checklist */}
+                    <div className="mb-3 p-2 rounded border border-blue-300 bg-blue-25">
+                      <h5 className="font-medium text-blue-800 mb-1 text-xs">Vetting Checklist</h5>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center gap-1">
+                          {selectedChurch.documentsUploaded?.ckDocument ? 
+                            <CheckCircle className="w-3 h-3 text-green-600" /> : 
+                            <X className="w-3 h-3 text-red-600" />
+                          }
+                          <span className={selectedChurch.documentsUploaded?.ckDocument ? 'text-green-700' : 'text-red-700'}>
+                            CK Document
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {selectedChurch.documentsUploaded?.bankConfirmation ? 
+                            <CheckCircle className="w-3 h-3 text-green-600" /> : 
+                            <X className="w-3 h-3 text-red-600" />
+                          }
+                          <span className={selectedChurch.documentsUploaded?.bankConfirmation ? 'text-green-700' : 'text-red-700'}>
+                            Bank Confirmation
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {selectedChurch.bankName && selectedChurch.accountNumber ? 
+                            <CheckCircle className="w-3 h-3 text-green-600" /> : 
+                            <X className="w-3 h-3 text-red-600" />
+                          }
+                          <span className={selectedChurch.bankName && selectedChurch.accountNumber ? 'text-green-700' : 'text-red-700'}>
+                            Banking Details
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {selectedChurch.admin && selectedChurch.email && selectedChurch.phone ? 
+                            <CheckCircle className="w-3 h-3 text-green-600" /> : 
+                            <X className="w-3 h-3 text-red-600" />
+                          }
+                          <span className={selectedChurch.admin && selectedChurch.email && selectedChurch.phone ? 'text-green-700' : 'text-red-700'}>
+                            Contact Info
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Admin Notes */}
+                    <div className="mt-3">
+                      <label className="text-xs font-medium block mb-1 text-blue-800">
+                        Processing Notes (Optional)
+                      </label>
+                      <Textarea
+                        value={churchNotes}
+                        onChange={(e) => setChurchNotes(e.target.value)}
+                        placeholder="Add notes about your decision..."
+                        className="min-h-[60px] border-blue-200 focus:border-blue-400 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-2 pt-3 border-t" style={{ borderColor: theme.border }}>
+                  <Button variant="outline" onClick={() => setShowChurchModal(false)}>
+                    Close
+                  </Button>
+                  {selectedChurch.status === 'Active' && (
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => handleChurchDecision('suspend')}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      <AlertTriangle className="w-4 h-4 mr-2" />
+                      Suspend
+                    </Button>
+                  )}
+                  {selectedChurch.status === 'Pending' && (
+                    <>
+                      <Button 
+                        variant="destructive" 
+                        onClick={() => handleChurchDecision('reject')}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Reject Application
+                      </Button>
+                      <Button 
+                        onClick={() => handleChurchDecision('approve')}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approve Church
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Member Details Modal */}
+        {showMemberModal && selectedMember && (
+          <Dialog open={showMemberModal} onOpenChange={setShowMemberModal}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <User className="w-5 h-5" />
+                  <span>Member Details</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Complete member information and activity
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Member Header */}
+                <div className="flex items-center space-x-4 p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                  {selectedMember.avatar ? (
+                    <ImageWithFallback
+                      src={selectedMember.avatar}
+                      alt={`${selectedMember.firstName} ${selectedMember.lastName}`}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-churpay-purple flex items-center justify-center">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-bold" style={{ color: theme.text }}>
+                      {selectedMember.firstName} {selectedMember.lastName}
+                    </h3>
+                    <p style={{ color: theme.textSecondary }}>{selectedMember.churchName}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge className={selectedMember.membershipType === 'member' ? 'bg-blue-500 text-white' :
+                        selectedMember.membershipType === 'volunteer' ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}>
+                        {selectedMember.membershipType}
+                      </Badge>
+                      {selectedMember.isNewRegistration && (
+                        <Badge className="bg-orange-500 text-white">NEW</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Member Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="p-4" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                      <Mail className="w-4 h-4" />
+                      Contact Information
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Email Address</p>
+                        <p style={{ color: theme.text }}>{selectedMember.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Phone Number</p>
+                        <p style={{ color: theme.text }}>{selectedMember.phone}</p>
+                      </div>
+                      {selectedMember.address && (
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Address</p>
+                          <p style={{ color: theme.text }}>{selectedMember.address}</p>
+                        </div>
+                      )}
+                      {selectedMember.dateOfBirth && (
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Date of Birth</p>
+                          <p style={{ color: theme.text }}>{new Date(selectedMember.dateOfBirth).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+
+                  <Card className="p-4" style={{ backgroundColor: theme.card }}>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                      <Activity className="w-4 h-4" />
+                      Membership Details
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Member Since</p>
+                        <p style={{ color: theme.text }}>{new Date(selectedMember.joinedAt).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Status</p>
+                        <Badge className="bg-green-500 text-white">{selectedMember.status}</Badge>
+                      </div>
+                      {selectedMember.registrationSource && (
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Registration Source</p>
+                          <p style={{ color: theme.text }}>{selectedMember.registrationSource}</p>
+                        </div>
+                      )}
+                      {selectedMember.verificationStatus && (
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Verification Status</p>
+                          <Badge className="bg-green-500 text-white">{selectedMember.verificationStatus}</Badge>
+                        </div>
+                      )}
+                      {selectedMember.lastLogin && (
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Last Login</p>
+                          <p style={{ color: theme.text }}>{new Date(selectedMember.lastLogin).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Donation Summary */}
+                <Card className="p-4" style={{ backgroundColor: theme.card }}>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <DollarSign className="w-4 h-4" />
+                    Giving History & Analytics
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                      <p className="text-2xl font-bold text-green-600">
+                        R{selectedMember.totalDonations?.toLocaleString() || '0'}
+                      </p>
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>Total Donations</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                      <p className="text-lg font-medium" style={{ color: theme.text }}>
+                        {selectedMember.lastDonation || 'Never'}
+                      </p>
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>Last Donation</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                      <p className="text-lg font-medium" style={{ color: theme.text }}>
+                        {selectedMember.totalGivingHistory || 0}
+                      </p>
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>Total Transactions</p>
+                    </div>
+                  </div>
+                  
+                  {selectedMember.isNewRegistration && (
+                    <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">New Member Registration</span>
+                      </div>
+                      <p className="text-xs text-blue-700 mt-1">
+                        This member recently joined through the ChurPay platform. Account is active and ready for giving.
+                      </p>
+                    </div>
+                  )}
+                </Card>
+
+                <div className="flex justify-end">
+                  <Button variant="outline" onClick={() => setShowMemberModal(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Activity Log Modal */}
+        {showActivityModal && (
+          <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
+            <DialogContent className="max-w-4xl max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5" />
+                  <span>Platform Activity Log</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Recent platform activities and system events
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {mockPlatformStats.activityLog.map((entry) => (
+                  <ActivityLogEntry key={entry.id} entry={entry} />
+                ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setShowActivityModal(false)}>
+                  Close
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Commission Rate Modal */}
+        {showCommissionModal && (
+          <Dialog open={showCommissionModal} onOpenChange={setShowCommissionModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Settings className="w-5 h-5" />
+                  <span>Update Commission Rate</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Adjust the platform commission rate (current: {commissionRate}%)
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium block mb-2" style={{ color: theme.textSecondary }}>
+                    New Commission Rate (%)
+                  </label>
+                  <Input
+                    type="number"
+                    value={tempCommissionRate}
+                    onChange={(e) => setTempCommissionRate(e.target.value)}
+                    placeholder="Enter rate (e.g., 6.0)"
+                    min="0.1"
+                    max="20"
+                    step="0.1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Rate must be between 0.1% and 20%</p>
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <Button variant="outline" onClick={() => setShowCommissionModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCommissionUpdate}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Update Rate
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* System Metrics Modal */}
+        {showSystemModal && (
+          <Dialog open={showSystemModal} onOpenChange={setShowSystemModal}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <Monitor className="w-5 h-5" />
+                  <span>System Status & Metrics</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Real-time platform performance and health metrics
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* System Health Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <SystemMetricCard
+                    title="CPU Usage"
+                    value={mockPlatformStats.systemMetrics.cpuUsage}
+                    unit="%"
+                    icon={Cpu}
+                    color="#7636A6"
+                  />
+                  <SystemMetricCard
+                    title="Memory"
+                    value={mockPlatformStats.systemMetrics.memoryUsage}
+                    unit="%"
+                    icon={Database}
+                    color="#FFC700"
+                  />
+                  <SystemMetricCard
+                    title="Disk Space"
+                    value={mockPlatformStats.systemMetrics.diskUsage}
+                    unit="%"
+                    icon={HardDrive}
+                    color="#10b981"
+                  />
+                  <SystemMetricCard
+                    title="Network"
+                    value={mockPlatformStats.systemMetrics.networkTraffic}
+                    unit="GB/s"
+                    icon={Wifi}
+                    color="#8b5cf6"
+                    max={10}
+                  />
+                </div>
+
+                {/* Additional Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.systemMetrics.activeConnections}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Active Connections</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.systemMetrics.requestsPerMinute.toLocaleString()}</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Requests/Minute</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+                    <p className="text-2xl font-bold" style={{ color: theme.text }}>{mockPlatformStats.systemMetrics.errorRate}%</p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Error Rate</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setShowSystemModal(false)}>
+                  Close
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </div>
+  );
+}
