@@ -9,6 +9,8 @@ import {
   walletTransactions,
   walletTopUpMethods,
   payfastTransactions,
+  paymentMethods,
+  donations,
   type User,
   type UpsertUser,
   type Church,
@@ -29,6 +31,10 @@ import {
   type InsertWalletTopUpMethod,
   type PayfastTransaction,
   type InsertPayfastTransaction,
+  type PaymentMethod,
+  type InsertPaymentMethod,
+  type Donation,
+  type InsertDonation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
@@ -660,6 +666,90 @@ export class DatabaseStorage implements IStorage {
       .where(eq(payfastTransactions.id, id))
       .returning();
     return transaction;
+  }
+
+  // Payment methods
+  async createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod> {
+    const [newMethod] = await db.insert(paymentMethods).values(method).returning();
+    return newMethod;
+  }
+
+  async getUserPaymentMethods(userId: string): Promise<PaymentMethod[]> {
+    return await db
+      .select()
+      .from(paymentMethods)
+      .where(and(eq(paymentMethods.userId, userId), eq(paymentMethods.isActive, true)))
+      .orderBy(desc(paymentMethods.isDefault), desc(paymentMethods.lastUsed));
+  }
+
+  async getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
+    const [method] = await db.select().from(paymentMethods).where(eq(paymentMethods.id, id));
+    return method;
+  }
+
+  async updatePaymentMethod(id: string, updates: Partial<InsertPaymentMethod>): Promise<PaymentMethod> {
+    const [method] = await db
+      .update(paymentMethods)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(paymentMethods.id, id))
+      .returning();
+    return method;
+  }
+
+  async deletePaymentMethod(id: string): Promise<void> {
+    await db.update(paymentMethods)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(paymentMethods.id, id));
+  }
+
+  async setDefaultPaymentMethod(userId: string, methodId: string): Promise<void> {
+    // First, unset all default methods for the user
+    await db.update(paymentMethods)
+      .set({ isDefault: false, updatedAt: new Date() })
+      .where(eq(paymentMethods.userId, userId));
+    
+    // Then set the selected method as default
+    await db.update(paymentMethods)
+      .set({ isDefault: true, updatedAt: new Date() })
+      .where(eq(paymentMethods.id, methodId));
+  }
+
+  // Donations
+  async createDonation(donation: InsertDonation): Promise<Donation> {
+    const [newDonation] = await db.insert(donations).values(donation).returning();
+    return newDonation;
+  }
+
+  async getDonation(id: string): Promise<Donation | undefined> {
+    const [donation] = await db.select().from(donations).where(eq(donations.id, id));
+    return donation;
+  }
+
+  async getUserDonations(userId: string, limit = 50): Promise<Donation[]> {
+    return await db
+      .select()
+      .from(donations)
+      .where(eq(donations.userId, userId))
+      .orderBy(desc(donations.createdAt))
+      .limit(limit);
+  }
+
+  async getChurchDonations(churchId: string, limit = 50): Promise<Donation[]> {
+    return await db
+      .select()
+      .from(donations)
+      .where(eq(donations.churchId, churchId))
+      .orderBy(desc(donations.createdAt))
+      .limit(limit);
+  }
+
+  async updateDonationStatus(id: string, status: string): Promise<Donation> {
+    const [donation] = await db
+      .update(donations)
+      .set({ status: status as any, updatedAt: new Date() })
+      .where(eq(donations.id, id))
+      .returning();
+    return donation;
   }
 }
 
