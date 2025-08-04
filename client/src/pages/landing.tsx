@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RegistrationModal } from "@/components/RegistrationModal";
 import DashboardModal from "@/components/DashboardModal";
+import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import { 
   Church, 
   Users, 
@@ -26,7 +27,8 @@ import {
   Facebook,
   Twitter,
   Linkedin,
-  MessageCircle
+  MessageCircle,
+  Crown
 } from "lucide-react";
 
 export default function Landing() {
@@ -34,6 +36,7 @@ export default function Landing() {
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
+  const [superAdminModalOpen, setSuperAdminModalOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -935,6 +938,19 @@ export default function Landing() {
             Church Dashboard
           </div>
         </div>
+        
+        <div className="relative group">
+          <Button 
+            size="lg"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
+            onClick={() => setSuperAdminModalOpen(true)}
+          >
+            <Crown className="h-5 w-5" />
+          </Button>
+          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            Super Admin
+          </div>
+        </div>
       </div>
 
       <RegistrationModal 
@@ -946,6 +962,11 @@ export default function Landing() {
         isOpen={dashboardModalOpen} 
         onClose={() => setDashboardModalOpen(false)} 
         userType={dashboardUserType}
+      />
+      
+      <SuperAdminDashboard 
+        isOpen={superAdminModalOpen} 
+        onClose={() => setSuperAdminModalOpen(false)} 
       />
     </div>
   );
