@@ -235,37 +235,37 @@ export default function MemberDashboard() {
 
         {/* Main Content */}
         <div className="flex-1 p-6">
-          {/* Top Section with Search and Profile */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-6">
+          {/* Top Section with Search and Profile - Mobile Optimized */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-3 md:space-x-6 w-full md:w-auto">
               {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <div className="relative flex-1 md:flex-initial">
+                <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Tap here to search"
+                  placeholder="Search churches, projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-96 pl-12 bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-400 rounded-2xl h-12"
+                  className="w-full md:w-80 pl-10 md:pl-12 bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-400 rounded-2xl h-10 md:h-12"
                 />
               </div>
               
-              {/* Notification Buttons */}
-              <div className="flex space-x-3">
-                <Button className="relative bg-gray-800/60 hover:bg-gray-700/60 text-white border-gray-700/50 rounded-2xl w-12 h-12 p-0">
-                  <Bell className="h-5 w-5" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white font-medium">5</div>
-                </Button>
-              </div>
+              {/* Notification Button */}
+              <Button className="relative bg-gray-800/60 hover:bg-gray-700/60 text-white border-gray-700/50 rounded-2xl w-10 h-10 md:w-12 md:h-12 p-0 flex-shrink-0">
+                <Bell className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-full"></div>
+              </Button>
             </div>
             
             {/* Profile Section */}
-            <div className="flex items-center space-x-6">
-              <div className="text-right">
-                <p className="text-white font-semibold">Nomsa Mthembu</p>
-                <p className="text-gray-400 text-sm">Faithful Member</p>
-              </div>
-              <div className="w-12 h-12 rounded-full overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" alt="Profile" className="w-full h-full object-cover" />
+            <div className="flex items-center justify-between w-full md:w-auto md:space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
+                  <img src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" alt="Profile" className="w-full h-full object-cover" />
+                </div>
+                <div className="text-left md:text-right">
+                  <p className="text-white font-semibold text-sm md:text-base">Nomsa Mthembu</p>
+                  <p className="text-gray-400 text-xs md:text-sm">Faithful Member</p>
+                </div>
               </div>
               <div className="flex space-x-2">
                 <Button 
@@ -276,7 +276,7 @@ export default function MemberDashboard() {
                     setShowDonationModal(true);
                   }}
                 >
-                  <Users className="h-4 w-4" />
+                  <Heart className="h-4 w-4" />
                 </Button>
                 <Button 
                   size="sm" 
@@ -286,7 +286,7 @@ export default function MemberDashboard() {
                     setShowDonationModal(true);
                   }}
                 >
-                  <Heart className="h-4 w-4" />
+                  <Church className="h-4 w-4" />
                 </Button>
                 <Button 
                   size="sm" 
@@ -296,7 +296,7 @@ export default function MemberDashboard() {
                     setShowDonationModal(true);
                   }}
                 >
-                  <Settings className="h-4 w-4" />
+                  <Wallet className="h-4 w-4" />
                 </Button>
               </div>
             </div>
