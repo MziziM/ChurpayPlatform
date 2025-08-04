@@ -1,0 +1,622 @@
+import React, { useState } from 'react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { motion } from 'motion/react';
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Calendar,
+  Edit,
+  Trash2,
+  Eye,
+  UserPlus,
+  Download,
+  Upload,
+  Star,
+  DollarSign,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock
+} from 'lucide-react';
+
+interface Member {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  join_date: string;
+  role: 'member' | 'admin' | 'pastor' | 'treasurer' | 'deacon' | 'volunteer';
+  status: 'active' | 'inactive' | 'suspended';
+  avatar_url?: string;
+  total_donations: number;
+  last_donation: string;
+  attendance_rate: number;
+  ministry_involvement: string[];
+  emergency_contact: {
+    name: string;
+    phone: string;
+    relationship: string;
+  };
+  notes: string;
+}
+
+const mockMembers: Member[] = [
+  {
+    id: '1',
+    name: 'John Smith',
+    email: 'john.smith@email.com',
+    phone: '+27 82 123 4567',
+    address: '123 Main St, Cape Town, 8001',
+    join_date: '2023-01-15',
+    role: 'member',
+    status: 'active',
+    avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    total_donations: 12500,
+    last_donation: '2024-01-10',
+    attendance_rate: 85,
+    ministry_involvement: ['Youth Ministry', 'Music Team'],
+    emergency_contact: {
+      name: 'Jane Smith',
+      phone: '+27 82 123 4568',
+      relationship: 'Spouse'
+    },
+    notes: 'Active in youth ministry. Excellent musician.'
+  },
+  {
+    id: '2',
+    name: 'Mary Johnson',
+    email: 'mary.johnson@email.com',
+    phone: '+27 83 234 5678',
+    address: '456 Oak Ave, Cape Town, 8002',
+    join_date: '2022-06-20',
+    role: 'deacon',
+    status: 'active',
+    avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b6dfae13?w=150&h=150&fit=crop&crop=face',
+    total_donations: 18750,
+    last_donation: '2024-01-12',
+    attendance_rate: 92,
+    ministry_involvement: ['Women\'s Ministry', 'Prayer Team'],
+    emergency_contact: {
+      name: 'Robert Johnson',
+      phone: '+27 83 234 5679',
+      relationship: 'Husband'
+    },
+    notes: 'Leads women\'s bible study. Very active in community outreach.'
+  },
+  {
+    id: '3',
+    name: 'David Wilson',
+    email: 'david.wilson@email.com',
+    phone: '+27 84 345 6789',
+    address: '789 Pine Rd, Cape Town, 8003',
+    join_date: '2023-09-10',
+    role: 'volunteer',
+    status: 'active',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    total_donations: 5200,
+    last_donation: '2024-01-08',
+    attendance_rate: 78,
+    ministry_involvement: ['Sound Tech', 'Ushering'],
+    emergency_contact: {
+      name: 'Sarah Wilson',
+      phone: '+27 84 345 6790',
+      relationship: 'Sister'
+    },
+    notes: 'Excellent with technology. Helps with live streaming.'
+  },
+  {
+    id: '4',
+    name: 'Sarah Brown',
+    email: 'sarah.brown@email.com',
+    phone: '+27 85 456 7890',
+    address: '321 Elm St, Cape Town, 8004',
+    join_date: '2021-03-05',
+    role: 'admin',
+    status: 'active',
+    avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    total_donations: 24000,
+    last_donation: '2024-01-13',
+    attendance_rate: 95,
+    ministry_involvement: ['Administration', 'Finance Committee'],
+    emergency_contact: {
+      name: 'Mike Brown',
+      phone: '+27 85 456 7891',
+      relationship: 'Husband'
+    },
+    notes: 'Manages church administration. Very reliable and organized.'
+  }
+];
+
+export function MemberManagement({ theme }: { theme: any }) {
+  const [members, setMembers] = useState<Member[]>(mockMembers);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<Partial<Member>>({});
+
+  const filteredMembers = members.filter(member => {
+    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || member.role === filterRole;
+    const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  const memberStats = {
+    total: members.length,
+    active: members.filter(m => m.status === 'active').length,
+    inactive: members.filter(m => m.status === 'inactive').length,
+    newThisMonth: members.filter(m => {
+      const joinDate = new Date(m.join_date);
+      const now = new Date();
+      return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
+    }).length
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'pastor': return 'bg-purple-100 text-purple-800';
+      case 'admin': return 'bg-blue-100 text-blue-800';
+      case 'treasurer': return 'bg-green-100 text-green-800';
+      case 'deacon': return 'bg-orange-100 text-orange-800';
+      case 'volunteer': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-gray-100 text-gray-800';
+      case 'suspended': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleAddMember = () => {
+    const newMember: Member = {
+      id: Date.now().toString(),
+      name: editingMember.name || '',
+      email: editingMember.email || '',
+      phone: editingMember.phone || '',
+      address: editingMember.address || '',
+      join_date: new Date().toISOString().split('T')[0],
+      role: editingMember.role || 'member',
+      status: 'active',
+      total_donations: 0,
+      last_donation: '',
+      attendance_rate: 0,
+      ministry_involvement: [],
+      emergency_contact: {
+        name: '',
+        phone: '',
+        relationship: ''
+      },
+      notes: ''
+    };
+    setMembers([...members, newMember]);
+    setShowAddModal(false);
+    setEditingMember({});
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
+            Member Management
+          </h1>
+          <p style={{ color: theme.textSecondary }}>
+            Manage church members, roles, and information
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" size="sm">
+            <Upload className="w-4 h-4 mr-2" />
+            Import Members
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Export Data
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setShowAddModal(true)}
+            style={{ backgroundColor: theme.primary }}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Add Member
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>Total Members</p>
+              <p className="text-2xl font-bold" style={{ color: theme.text }}>{memberStats.total}</p>
+            </div>
+            <Users className="w-8 h-8" style={{ color: theme.primary }} />
+          </div>
+        </Card>
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>Active Members</p>
+              <p className="text-2xl font-bold text-green-600">{memberStats.active}</p>
+            </div>
+            <CheckCircle className="w-8 h-8 text-green-500" />
+          </div>
+        </Card>
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>Inactive</p>
+              <p className="text-2xl font-bold text-gray-600">{memberStats.inactive}</p>
+            </div>
+            <XCircle className="w-8 h-8 text-gray-500" />
+          </div>
+        </Card>
+        <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>New This Month</p>
+              <p className="text-2xl font-bold" style={{ color: theme.accent }}>{memberStats.newThisMonth}</p>
+            </div>
+            <Star className="w-8 h-8" style={{ color: theme.accent }} />
+          </div>
+        </Card>
+      </div>
+
+      {/* Filters and Search */}
+      <Card className="p-6" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 absolute left-3 top-3" style={{ color: theme.textSecondary }} />
+            <Input
+              placeholder="Search members by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+              style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+            />
+          </div>
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="px-3 py-2 rounded-md border"
+            style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+          >
+            <option value="all">All Roles</option>
+            <option value="pastor">Pastor</option>
+            <option value="admin">Admin</option>
+            <option value="treasurer">Treasurer</option>
+            <option value="deacon">Deacon</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="member">Member</option>
+          </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 rounded-md border"
+            style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </Card>
+
+      {/* Members Table */}
+      <Card className="overflow-hidden" style={{ backgroundColor: theme.card, borderColor: theme.border }}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="border-b" style={{ borderColor: theme.border }}>
+              <tr>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Member</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Contact</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Role</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Status</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Donations</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Attendance</th>
+                <th className="text-left p-4" style={{ color: theme.textSecondary }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMembers.map((member, index) => (
+                <motion.tr
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border-b hover:bg-gray-50 dark:hover:bg-gray-800"
+                  style={{ borderColor: theme.border }}
+                >
+                  <td className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage src={member.avatar_url} />
+                        <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold" style={{ color: theme.text }}>{member.name}</p>
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>
+                          Joined {new Date(member.join_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4" style={{ color: theme.textSecondary }} />
+                        <span className="text-sm" style={{ color: theme.text }}>{member.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4" style={{ color: theme.textSecondary }} />
+                        <span className="text-sm" style={{ color: theme.text }}>{member.phone}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Badge className={getRoleColor(member.role)}>
+                      {member.role}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <Badge className={getStatusColor(member.status)}>
+                      {member.status}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <div>
+                      <p className="font-semibold" style={{ color: theme.text }}>
+                        R{member.total_donations.toLocaleString()}
+                      </p>
+                      {member.last_donation && (
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>
+                          Last: {new Date(member.last_donation).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-green-500"
+                          style={{ width: `${member.attendance_rate}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium" style={{ color: theme.text }}>
+                        {member.attendance_rate}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedMember(member);
+                          setShowMemberModal(true);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Member Detail Modal */}
+      <Dialog open={showMemberModal} onOpenChange={setShowMemberModal}>
+        <DialogContent className="sm:max-w-2xl" style={{ backgroundColor: theme.card }}>
+          {selectedMember && (
+            <div className="space-y-6">
+              <DialogHeader>
+                <DialogTitle style={{ color: theme.text }}>Member Details</DialogTitle>
+              </DialogHeader>
+              
+              <div className="flex items-start space-x-6">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={selectedMember.avatar_url} />
+                  <AvatarFallback className="text-lg">
+                    {selectedMember.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold" style={{ color: theme.text }}>
+                      {selectedMember.name}
+                    </h3>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Badge className={getRoleColor(selectedMember.role)}>
+                        {selectedMember.role}
+                      </Badge>
+                      <Badge className={getStatusColor(selectedMember.status)}>
+                        {selectedMember.status}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Email</p>
+                      <p style={{ color: theme.text }}>{selectedMember.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Phone</p>
+                      <p style={{ color: theme.text }}>{selectedMember.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Join Date</p>
+                      <p style={{ color: theme.text }}>
+                        {new Date(selectedMember.join_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Total Donations</p>
+                      <p style={{ color: theme.text }}>R{selectedMember.total_donations.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Address</p>
+                    <p style={{ color: theme.text }}>{selectedMember.address}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Ministry Involvement</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMember.ministry_involvement.map((ministry, index) => (
+                        <Badge key={index} variant="outline">{ministry}</Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Emergency Contact</p>
+                    <div className="space-y-1">
+                      <p style={{ color: theme.text }}>
+                        {selectedMember.emergency_contact.name} ({selectedMember.emergency_contact.relationship})
+                      </p>
+                      <p style={{ color: theme.textSecondary }}>{selectedMember.emergency_contact.phone}</p>
+                    </div>
+                  </div>
+
+                  {selectedMember.notes && (
+                    <div>
+                      <p className="text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>Notes</p>
+                      <p style={{ color: theme.text }}>{selectedMember.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setShowMemberModal(false)}>
+                  Close
+                </Button>
+                <Button style={{ backgroundColor: theme.primary }}>
+                  Edit Member
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Member Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-md" style={{ backgroundColor: theme.card }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: theme.text }}>Add New Member</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: theme.text }}>
+                Full Name
+              </label>
+              <Input
+                value={editingMember.name || ''}
+                onChange={(e) => setEditingMember(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter full name"
+                style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: theme.text }}>
+                Email
+              </label>
+              <Input
+                type="email"
+                value={editingMember.email || ''}
+                onChange={(e) => setEditingMember(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+                style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: theme.text }}>
+                Phone
+              </label>
+              <Input
+                value={editingMember.phone || ''}
+                onChange={(e) => setEditingMember(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Enter phone number"
+                style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: theme.text }}>
+                Role
+              </label>
+              <select
+                value={editingMember.role || 'member'}
+                onChange={(e) => setEditingMember(prev => ({ ...prev, role: e.target.value as any }))}
+                className="w-full px-3 py-2 rounded-md border"
+                style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+              >
+                <option value="member">Member</option>
+                <option value="volunteer">Volunteer</option>
+                <option value="deacon">Deacon</option>
+                <option value="admin">Admin</option>
+                <option value="treasurer">Treasurer</option>
+                <option value="pastor">Pastor</option>
+              </select>
+            </div>
+            <div className="flex space-x-3 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAddModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddMember}
+                className="flex-1"
+                style={{ backgroundColor: theme.primary }}
+              >
+                Add Member
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

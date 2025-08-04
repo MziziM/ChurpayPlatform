@@ -1,0 +1,757 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Input } from './ui/input';
+import { 
+  BarChart3,
+  LineChart,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  Download,
+  Calendar,
+  DollarSign,
+  Users,
+  Target,
+  Receipt,
+  Heart,
+  Rocket,
+  Filter,
+  RefreshCw,
+  ArrowUpRight,
+  ArrowDownLeft,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Printer,
+  Mail,
+  Share2,
+  X,
+  Eye,
+  Calculator,
+  Wallet,
+  Building,
+  Activity
+} from 'lucide-react';
+import { useAuth } from './AuthProvider';
+
+interface FinancialAnalyticsModalProps {
+  theme: any;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function FinancialAnalyticsModal({ theme, isOpen, onClose }: FinancialAnalyticsModalProps) {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Mock financial data - in real app, this would come from API
+  const financialData = {
+    overview: {
+      totalIncome: 156750,
+      totalExpenses: 89250,
+      netIncome: 67500,
+      monthlyGrowth: 12.5,
+      memberGiving: 134250,
+      projectDonations: 22500,
+      averagePerMember: 458,
+      activeGivers: 294
+    },
+    monthlyTrends: [
+      { month: 'Jan', income: 42500, expenses: 28500, net: 14000, tithes: 32500, offerings: 10000 },
+      { month: 'Feb', income: 38750, expenses: 25750, net: 13000, tithes: 29750, offerings: 9000 },
+      { month: 'Mar', income: 45200, expenses: 30200, net: 15000, tithes: 35200, offerings: 10000 },
+      { month: 'Apr', income: 47850, expenses: 32850, net: 15000, tithes: 37850, offerings: 10000 },
+      { month: 'May', income: 52300, expenses: 35300, net: 17000, tithes: 42300, offerings: 10000 },
+      { month: 'Jun', income: 49750, expenses: 33750, net: 16000, tithes: 39750, offerings: 10000 }
+    ],
+    categoryBreakdown: {
+      tithes: { amount: 98500, percentage: 62.8, trend: '+8.2%' },
+      offerings: { amount: 35750, percentage: 22.8, trend: '+5.1%' },
+      specialOfferings: { amount: 12800, percentage: 8.2, trend: '+15.3%' },
+      projectDonations: { amount: 9700, percentage: 6.2, trend: '+22.8%' }
+    },
+    expenses: {
+      operations: { amount: 35000, percentage: 39.2, category: 'Church Operations' },
+      salaries: { amount: 28500, percentage: 31.9, category: 'Staff Salaries' },
+      utilities: { amount: 12750, percentage: 14.3, category: 'Utilities & Maintenance' },
+      outreach: { amount: 8250, percentage: 9.2, category: 'Community Outreach' },
+      other: { amount: 4750, percentage: 5.3, category: 'Other Expenses' }
+    },
+    topGivers: [
+      { name: 'Anonymous Donor', amount: 8500, percentage: 5.4, frequency: 'Monthly' },
+      { name: 'John & Mary Smith', amount: 6750, percentage: 4.3, frequency: 'Weekly' },
+      { name: 'Robert Johnson', amount: 5200, percentage: 3.3, frequency: 'Bi-weekly' },
+      { name: 'Sarah Williams', amount: 4850, percentage: 3.1, frequency: 'Monthly' },
+      { name: 'Michael Brown', amount: 4200, percentage: 2.7, frequency: 'Weekly' }
+    ],
+    projects: [
+      { name: 'Youth Building Fund', target: 50000, raised: 32500, progress: 65, trend: '+12%' },
+      { name: 'Community Outreach', target: 25000, raised: 18750, progress: 75, trend: '+8%' },
+      { name: 'Sound System Upgrade', target: 15000, raised: 12200, progress: 81, trend: '+25%' },
+      { name: 'Mission Trip Support', target: 20000, raised: 8750, progress: 44, trend: '+18%' }
+    ],
+    recentTransactions: [
+      { id: 1, date: '2024-01-15', member: 'John Smith', type: 'Tithe', amount: 250, status: 'completed' },
+      { id: 2, date: '2024-01-15', member: 'Anonymous', type: 'Building Fund', amount: 1000, status: 'completed' },
+      { id: 3, date: '2024-01-14', member: 'Sarah Johnson', type: 'Offering', amount: 100, status: 'completed' },
+      { id: 4, date: '2024-01-14', member: 'Mike Wilson', type: 'Mission Fund', amount: 500, status: 'pending' },
+      { id: 5, date: '2024-01-13', member: 'Lisa Brown', type: 'Tithe', amount: 150, status: 'completed' }
+    ]
+  };
+
+  const handleRefreshData = async () => {
+    setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsLoading(false);
+  };
+
+  const handleExportReport = (format: 'pdf' | 'excel' | 'csv') => {
+    console.log(`Exporting financial report as ${format}`);
+    alert(`Financial report is being generated as ${format.toUpperCase()} and will be downloaded shortly.`);
+  };
+
+  const handleEmailReport = () => {
+    console.log('Emailing financial report');
+    alert('Financial report has been sent to your email address.');
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `R${amount.toLocaleString()}`;
+  };
+
+  const getGrowthColor = (trend: string) => {
+    return trend.startsWith('+') ? '#10b981' : '#ef4444';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return '#10b981';
+      case 'pending': return '#f59e0b';
+      case 'failed': return '#ef4444';
+      default: return theme.textSecondary;
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: theme.card }}>
+        <DialogHeader>
+          <DialogTitle style={{ color: theme.text }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="w-6 h-6 text-churpay-purple" />
+                <span>Financial Analytics & Reports</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshData}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  {isLoading ? 'Updating...' : 'Refresh'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportReport('pdf')}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            </div>
+          </DialogTitle>
+          <DialogDescription style={{ color: theme.textSecondary }}>
+            Comprehensive financial insights and analytics for {user?.church_name || 'your church'}.
+            Data updated as of {new Date().toLocaleDateString()}.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Period Selection */}
+        <div className="flex items-center justify-between mb-6 p-4 rounded-lg" style={{ backgroundColor: theme.accent }}>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4" style={{ color: theme.textSecondary }} />
+              <label className="text-sm font-medium" style={{ color: theme.text }}>Period:</label>
+              <select 
+                value={selectedPeriod} 
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="w-32 px-3 py-2 rounded-md border"
+                style={{ backgroundColor: theme.card, borderColor: theme.border, color: theme.text }}
+              >
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium" style={{ color: theme.text }}>Year:</label>
+              <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="w-20 px-3 py-2 rounded-md border"
+                style={{ backgroundColor: theme.card, borderColor: theme.border, color: theme.text }}
+              >
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="bg-green-100 text-green-800">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Data Verified
+            </Badge>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              <Clock className="w-3 h-3 mr-1" />
+              Real-time
+            </Badge>
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="income">Income Analysis</TabsTrigger>
+            <TabsTrigger value="expenses">Expenses</TabsTrigger>
+            <TabsTrigger value="projects">Project Funding</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Key Metrics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Total Income</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: theme.text }}>
+                      {formatCurrency(financialData.overview.totalIncome)}
+                    </p>
+                    <p className="text-sm mt-1 flex items-center" style={{ color: getGrowthColor('+12.5%') }}>
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      +{financialData.overview.monthlyGrowth}% vs last month
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <ArrowUpRight className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Total Expenses</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: theme.text }}>
+                      {formatCurrency(financialData.overview.totalExpenses)}
+                    </p>
+                    <p className="text-sm mt-1 flex items-center" style={{ color: '#f59e0b' }}>
+                      <ArrowDownLeft className="w-4 h-4 mr-1" />
+                      57% of income
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                    <ArrowDownLeft className="w-6 h-6 text-orange-600" />
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Net Income</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: theme.text }}>
+                      {formatCurrency(financialData.overview.netIncome)}
+                    </p>
+                    <p className="text-sm mt-1 flex items-center" style={{ color: getGrowthColor('+18.2%') }}>
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      Healthy surplus
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Calculator className="w-6 h-6 text-purple-600" />
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: theme.textSecondary }}>Active Givers</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: theme.text }}>
+                      {financialData.overview.activeGivers}
+                    </p>
+                    <p className="text-sm mt-1 flex items-center" style={{ color: getGrowthColor('+5.2%') }}>
+                      <Users className="w-4 h-4 mr-1" />
+                      86% of members
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Income Trends Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle className="flex items-center space-x-2" style={{ color: theme.text }}>
+                    <LineChart className="w-5 h-5" />
+                    <span>Monthly Income Trends</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-64 flex items-center justify-center" style={{ color: theme.textSecondary }}>
+                    <div className="text-center">
+                      <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p>Interactive income trend chart</p>
+                      <p className="text-sm mt-2">Showing 6-month income progression</p>
+                      <div className="mt-4 space-y-2">
+                        {financialData.monthlyTrends.slice(-3).map((month, index) => (
+                          <div key={index} className="flex justify-between text-sm">
+                            <span>{month.month}</span>
+                            <span className="font-semibold">{formatCurrency(month.income)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Giving Categories Breakdown */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle className="flex items-center space-x-2" style={{ color: theme.text }}>
+                    <PieChart className="w-5 h-5" />
+                    <span>Income Categories</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-4">
+                  {Object.entries(financialData.categoryBreakdown).map(([key, data]) => (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium capitalize" style={{ color: theme.text }}>
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-semibold" style={{ color: theme.text }}>
+                            {formatCurrency(data.amount)}
+                          </span>
+                          <Badge variant="secondary" style={{ color: getGrowthColor(data.trend) }}>
+                            {data.trend}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Progress value={data.percentage} className="h-2" />
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>
+                        {data.percentage}% of total income
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Transactions */}
+            <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="flex items-center justify-between" style={{ color: theme.text }}>
+                  <div className="flex items-center space-x-2">
+                    <Receipt className="w-5 h-5" />
+                    <span>Recent Transactions</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('reports')}>
+                    <Eye className="w-4 h-4 mr-2" />
+                    View All
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="space-y-3">
+                  {financialData.recentTransactions.map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border" style={{ borderColor: theme.border }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-churpay-purple-light/20 flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-churpay-purple" />
+                        </div>
+                        <div>
+                          <p className="font-medium" style={{ color: theme.text }}>{transaction.member}</p>
+                          <p className="text-sm" style={{ color: theme.textSecondary }}>
+                            {transaction.type} • {transaction.date}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">
+                          {formatCurrency(transaction.amount)}
+                        </p>
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs"
+                          style={{ color: getStatusColor(transaction.status) }}
+                        >
+                          {transaction.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="income" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Top Contributors */}
+              <Card className="lg:col-span-2 p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Top Contributors This Month</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-4">
+                  {financialData.topGivers.map((giver, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-churpay-purple flex items-center justify-center text-white font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium" style={{ color: theme.text }}>{giver.name}</p>
+                          <p className="text-sm" style={{ color: theme.textSecondary }}>
+                            {giver.frequency} • {giver.percentage}% of total
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">{formatCurrency(giver.amount)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Income Summary */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Income Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-4">
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: theme.card }}>
+                    <p className="text-3xl font-bold text-green-600 mb-2">
+                      {formatCurrency(financialData.overview.totalIncome)}
+                    </p>
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>Total This Month</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Average per Giver</span>
+                      <span className="font-semibold" style={{ color: theme.text }}>
+                        {formatCurrency(financialData.overview.averagePerMember)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Growth Rate</span>
+                      <span className="font-semibold text-green-600">
+                        +{financialData.overview.monthlyGrowth}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Total Givers</span>
+                      <span className="font-semibold" style={{ color: theme.text }}>
+                        {financialData.overview.activeGivers}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button className="w-full bg-churpay-purple text-white" onClick={() => handleExportReport('excel')}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Income Report
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="expenses" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Expense Breakdown */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Expense Categories</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-4">
+                  {Object.entries(financialData.expenses).map(([key, data]) => (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium" style={{ color: theme.text }}>
+                          {data.category}
+                        </span>
+                        <span className="text-sm font-semibold" style={{ color: theme.text }}>
+                          {formatCurrency(data.amount)}
+                        </span>
+                      </div>
+                      <Progress value={data.percentage} className="h-2" />
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>
+                        {data.percentage}% of total expenses
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Expense Summary */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Expense Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                      <p className="text-xl font-bold text-red-600">
+                        {formatCurrency(financialData.overview.totalExpenses)}
+                      </p>
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>Total Expenses</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                      <p className="text-xl font-bold text-orange-600">57%</p>
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>of Income</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Largest Category</span>
+                      <span className="font-semibold" style={{ color: theme.text }}>Operations</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Monthly Average</span>
+                      <span className="font-semibold" style={{ color: theme.text }}>
+                        {formatCurrency(financialData.overview.totalExpenses / 6)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: theme.textSecondary }}>Budget Status</span>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        Under Budget
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <Button className="w-full bg-orange-600 text-white" onClick={() => handleExportReport('pdf')}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Generate Expense Report
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="projects" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {financialData.projects.map((project, index) => (
+                <Card key={index} className="p-6" style={{ backgroundColor: theme.accent }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold" style={{ color: theme.text }}>{project.name}</h3>
+                    <Badge variant="secondary" style={{ color: getGrowthColor(project.trend) }}>
+                      {project.trend}
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: theme.textSecondary }}>Progress</span>
+                      <span style={{ color: theme.text }}>{project.progress}%</span>
+                    </div>
+                    <Progress value={project.progress} className="h-3" />
+                    <div className="flex justify-between">
+                      <span className="text-sm" style={{ color: theme.textSecondary }}>
+                        {formatCurrency(project.raised)}
+                      </span>
+                      <span className="text-sm" style={{ color: theme.textSecondary }}>
+                        {formatCurrency(project.target)}
+                      </span>
+                    </div>
+                    <div className="pt-2 border-t" style={{ borderColor: theme.border }}>
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>
+                        Remaining: {formatCurrency(project.target - project.raised)}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Quick Reports */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Quick Reports</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => handleExportReport('pdf')}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Monthly Financial Summary (PDF)
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => handleExportReport('excel')}
+                  >
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Detailed Transaction Report (Excel)
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => handleExportReport('pdf')}
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Member Giving Report (PDF)
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => handleExportReport('excel')}
+                  >
+                    <Target className="w-4 h-4 mr-2" />
+                    Project Funding Analysis (Excel)
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Report Actions */}
+              <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle style={{ color: theme.text }}>Report Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-3">
+                  <Button 
+                    className="w-full bg-blue-600 text-white"
+                    onClick={handleEmailReport}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email Reports to Leadership
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.print()}
+                  >
+                    <Printer className="w-4 h-4 mr-2" />
+                    Print Current View
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => console.log('Schedule report')}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule Recurring Reports
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => console.log('Share report')}
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share with Board Members
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Report Summary */}
+            <Card className="p-6" style={{ backgroundColor: theme.accent }}>
+              <CardHeader className="p-0 mb-4">
+                <CardTitle style={{ color: theme.text }}>Financial Health Score</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-100 mb-4">
+                    <span className="text-3xl font-bold text-green-600">85</span>
+                  </div>
+                  <h3 className="font-semibold text-green-600 mb-2">Excellent Financial Health</h3>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>
+                    Your church shows strong financial management with healthy income growth and controlled expenses.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <p className="text-sm font-medium" style={{ color: theme.text }}>Income Growth</p>
+                    <p className="text-xs" style={{ color: theme.textSecondary }}>Strong upward trend</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <p className="text-sm font-medium" style={{ color: theme.text }}>Expense Control</p>
+                    <p className="text-xs" style={{ color: theme.textSecondary }}>Well managed</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg" style={{ backgroundColor: theme.card }}>
+                    <AlertCircle className="w-6 h-6 text-yellow-600 mx-auto mb-2" />
+                    <p className="text-sm font-medium" style={{ color: theme.text }}>Reserve Fund</p>
+                    <p className="text-xs" style={{ color: theme.textSecondary }}>Could be improved</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Action Footer */}
+        <div className="flex items-center justify-between pt-6 border-t" style={{ borderColor: theme.border }}>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              <Activity className="w-3 h-3 mr-1" />
+              Live Data
+            </Badge>
+            <span className="text-sm" style={{ color: theme.textSecondary }}>
+              Last updated: {new Date().toLocaleTimeString()}
+            </span>
+          </div>
+          
+          <div className="flex space-x-3">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+            <Button 
+              className="bg-churpay-purple text-white"
+              onClick={() => handleExportReport('pdf')}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Full Report
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
