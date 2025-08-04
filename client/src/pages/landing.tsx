@@ -353,9 +353,7 @@ export default function Landing() {
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 
-                <div className="mt-4 text-center">
-                  <span className="text-sm text-gray-500">Always free for members</span>
-                </div>
+                
               </CardContent>
             </Card>
           </div>
