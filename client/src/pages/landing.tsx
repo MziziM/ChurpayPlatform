@@ -5,6 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { RegistrationModal } from "@/components/RegistrationModal";
 import DashboardModal from "@/components/DashboardModal";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+import { ChurchManagement } from "@/components/ChurchManagement";
+import { MemberManagement } from "@/components/MemberManagement";
+import { FinancialManagement } from "@/components/FinancialManagement";
+import { EventManagement } from "@/components/EventManagement";
+import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
+import { FinancialAnalyticsModal } from "@/components/FinancialAnalyticsModal";
 import { 
   Church, 
   Users, 
@@ -28,7 +34,14 @@ import {
   Twitter,
   Linkedin,
   MessageCircle,
-  Crown
+  Crown,
+  Building2,
+  Settings,
+  DollarSign,
+  Calendar,
+  BarChart3,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 export default function Landing() {
@@ -37,6 +50,14 @@ export default function Landing() {
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
   const [superAdminModalOpen, setSuperAdminModalOpen] = useState(false);
+  
+  // Toggle states for management components
+  const [showChurchManagement, setShowChurchManagement] = useState(false);
+  const [showMemberManagement, setShowMemberManagement] = useState(false);
+  const [showFinancialManagement, setShowFinancialManagement] = useState(false);
+  const [showEventManagement, setShowEventManagement] = useState(false);
+  const [showSuperAdminPlatform, setShowSuperAdminPlatform] = useState(false);
+  const [showFinancialAnalytics, setShowFinancialAnalytics] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -811,6 +832,234 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Management Components Toggle Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Church Management Suite
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Toggle and explore our comprehensive management components for churches. 
+              World-class administrative tools with professional enterprise-grade interfaces.
+            </p>
+          </div>
+          
+          {/* Toggle Buttons Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Church Management</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowChurchManagement(!showChurchManagement)}
+                  className={showChurchManagement ? "bg-purple-100 text-purple-700" : ""}
+                >
+                  {showChurchManagement ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Comprehensive church overview dashboard with navigation capabilities
+              </p>
+              <Button
+                onClick={() => setShowChurchManagement(!showChurchManagement)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showChurchManagement ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Member Management</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMemberManagement(!showMemberManagement)}
+                  className={showMemberManagement ? "bg-blue-100 text-blue-700" : ""}
+                >
+                  {showMemberManagement ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Member tracking, statistics, and comprehensive management tools
+              </p>
+              <Button
+                onClick={() => setShowMemberManagement(!showMemberManagement)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showMemberManagement ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Financial Management</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFinancialManagement(!showFinancialManagement)}
+                  className={showFinancialManagement ? "bg-green-100 text-green-700" : ""}
+                >
+                  {showFinancialManagement ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Transaction tracking, financial analytics, and reporting tools
+              </p>
+              <Button
+                onClick={() => setShowFinancialManagement(!showFinancialManagement)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showFinancialManagement ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Event Management</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEventManagement(!showEventManagement)}
+                  className={showEventManagement ? "bg-orange-100 text-orange-700" : ""}
+                >
+                  {showEventManagement ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Complete church event scheduling and management functionality
+              </p>
+              <Button
+                onClick={() => setShowEventManagement(!showEventManagement)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showEventManagement ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-pink-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Super Admin Platform</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSuperAdminPlatform(!showSuperAdminPlatform)}
+                  className={showSuperAdminPlatform ? "bg-pink-100 text-pink-700" : ""}
+                >
+                  {showSuperAdminPlatform ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Platform-wide oversight and reporting with administrative capabilities
+              </p>
+              <Button
+                onClick={() => setShowSuperAdminPlatform(!showSuperAdminPlatform)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showSuperAdminPlatform ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-indigo-50 to-cyan-50 border border-indigo-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Financial Analytics</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFinancialAnalytics(!showFinancialAnalytics)}
+                  className={showFinancialAnalytics ? "bg-indigo-100 text-indigo-700" : ""}
+                >
+                  {showFinancialAnalytics ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Advanced financial reporting and insights with comprehensive analytics
+              </p>
+              <Button
+                onClick={() => setShowFinancialAnalytics(!showFinancialAnalytics)}
+                className="w-full bg-churpay-gradient text-white"
+              >
+                {showFinancialAnalytics ? 'Hide Component' : 'Show Component'}
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Management Components Display */}
+      {showChurchManagement && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ChurchManagement />
+          </div>
+        </section>
+      )}
+
+      {showMemberManagement && (
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <MemberManagement />
+          </div>
+        </section>
+      )}
+
+      {showFinancialManagement && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <FinancialManagement />
+          </div>
+        </section>
+      )}
+
+      {showEventManagement && (
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <EventManagement />
+          </div>
+        </section>
+      )}
+
+      {showSuperAdminPlatform && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SuperAdminPlatformDashboard />
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
       <footer id="support" className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -967,6 +1216,11 @@ export default function Landing() {
       <SuperAdminDashboard 
         isOpen={superAdminModalOpen} 
         onClose={() => setSuperAdminModalOpen(false)} 
+      />
+      
+      <FinancialAnalyticsModal 
+        isOpen={showFinancialAnalytics} 
+        onClose={() => setShowFinancialAnalytics(false)} 
       />
     </div>
   );
