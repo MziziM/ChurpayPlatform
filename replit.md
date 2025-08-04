@@ -8,6 +8,13 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+## AuthModal Implementation (January 2025)
+- **DEPLOYMENT TODO**: Implement enhanced sign up/sign in modals before deployment
+- Created AuthModal component with choice between church and member registration
+- Temporarily removed due to accessibility issues - needs refinement
+- Modal should provide better UX while maintaining existing Replit Auth flow
+- Components ready in client/src/components/AuthModal.tsx and ui/dialog.tsx
+
 ## Pricing Model Update (January 2025)
 - Removed subscription tiers and free trial system
 - Implemented simple pay-per-transaction model: 3.9% + R3 per transaction  
