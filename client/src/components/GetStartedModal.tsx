@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Church, Users, ArrowRight, CheckCircle } from "lucide-react";
@@ -23,6 +23,8 @@ export function GetStartedModal({ isOpen, onClose }: GetStartedModalProps) {
     setLocation('/member-registration');
   };
 
+
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
@@ -30,9 +32,9 @@ export function GetStartedModal({ isOpen, onClose }: GetStartedModalProps) {
           <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
             Choose Your Path with ChurPay
           </DialogTitle>
-          <p className="text-lg text-gray-600 text-center mt-4">
+          <DialogDescription className="text-lg text-gray-600 text-center mt-4">
             Select how you'd like to get started with our secure digital giving platform
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">

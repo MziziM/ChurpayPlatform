@@ -1,645 +1,548 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Users, MapPin, Phone, Mail, Shield } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-// Removed auth dependencies since this is a public registration page
-import { 
-  ArrowLeft, 
-  Users, 
-  Search, 
-  MapPin, 
-  CheckCircle,
-  Church,
-  Mail,
-  Phone,
-  User,
-  Shield,
-  Heart
-} from "lucide-react";
-import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
 const memberRegistrationSchema = z.object({
   churchId: z.string().min(1, "Please select a church"),
-  // Personal Information
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Valid email is required"),
   phone: z.string().min(1, "Phone number is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
-  
-  // Address Information
-  address: z.string().min(1, "Street address is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  address: z.string().min(1, "Address is required"),
+  addressLine2: z.string().optional(),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
   postalCode: z.string().min(1, "Postal code is required"),
   country: z.string().default("South Africa"),
-  
-  // Emergency Contact
   emergencyContactName: z.string().min(1, "Emergency contact name is required"),
   emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
-  emergencyContactRelationship: z.string().min(1, "Relationship is required"),
-  
-  // Church-related Information
+  emergencyContactRelationship: z.string().min(1, "Emergency contact relationship is required"),
+  emergencyContactEmail: z.string().email().optional().or(z.literal("")),
+  emergencyContactAddress: z.string().min(1, "Emergency contact address is required"),
   membershipType: z.string().min(1, "Please select membership type"),
   previousChurch: z.string().optional(),
   howDidYouHear: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
 
-interface Church {
-  id: string;
-  name: string;
-  denomination?: string;
-  city: string;
-  province: string;
-  contactEmail: string;
-  contactPhone?: string;
-  memberCount: number;
-  status: string;
-}
-
-const membershipSteps = [
-  { id: 1, title: "Personal Details", icon: User },
-  { id: 2, title: "Address Information", icon: MapPin },
-  { id: 3, title: "Emergency Contact", icon: Shield },
-  { id: 4, title: "Church Selection", icon: Church },
-];
-
-// South African provinces for consistency
-const provinces = [
-  "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", 
-  "Limpopo", "Mpumalanga", "Northern Cape", "North West", "Western Cape"
-];
-
-const membershipTypes = [
-  { value: "new_member", label: "New Member" },
-  { value: "returning_member", label: "Returning Member" },
-  { value: "transfer_member", label: "Transfer from Another Church" },
-  { value: "visitor", label: "Regular Visitor" }
-];
-
-const relationships = [
-  "Parent", "Sibling", "Spouse", "Child", "Friend", "Guardian", "Other Family Member"
-];
-
 export default function MemberRegistration() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Fetch approved churches
+  const { data: churches, isLoading: churchesLoading } = useQuery({
+    queryKey: ["/api/churches/approved"],
+  });
 
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
     defaultValues: {
       country: "South Africa",
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      dateOfBirth: "",
-      address: "",
-      city: "",
-      province: "",
-      postalCode: "",
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      emergencyContactRelationship: "",
-      membershipType: "",
-      previousChurch: "",
-      howDidYouHear: "",
-      churchId: "",
     },
   });
 
-  // Use static sample churches for registration (no API call needed)
-  const sampleChurches: Church[] = [
-    {
-      id: "81afeeba-546e-4902-bf4d-691aad1f0610",
-      name: "Cape Town Methodist Church",
-      denomination: "Methodist",
-      city: "Cape Town",
-      province: "Western Cape",
-      contactEmail: "info@ctmethodist.org.za",
-      contactPhone: "+27 21 123 4567",
-      memberCount: 450,
-      status: "approved"
+  const registerMutation = useMutation({
+    mutationFn: async (data: MemberRegistrationForm) => {
+      const { confirmPassword, ...submitData } = data;
+      return apiRequest("/api/members/register", "POST", submitData);
     },
-    {
-      id: "b76e2587-7977-48b2-8d2d-132d2fceacfc",
-      name: "Johannesburg Baptist Fellowship", 
-      denomination: "Baptist",
-      city: "Johannesburg",
-      province: "Gauteng",
-      contactEmail: "connect@jbfellowship.co.za",
-      contactPhone: "+27 11 987 6543",
-      memberCount: 320,
-      status: "approved"
-    }
-  ];
-
-  const filteredChurches = sampleChurches.filter(church =>
-    church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    church.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (church.denomination && church.denomination.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const submitRegistration = async (data: MemberRegistrationForm) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch("/api/members/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Registration failed");
-      }
-
+    onSuccess: (data) => {
       toast({
-        title: "Registration Successful!",
-        description: `You've successfully registered with ${selectedChurch?.name}. Please sign in to complete your membership and start making donations.`,
-        variant: "default",
+        title: "Registration Successful",
+        description: "Welcome to ChurPay! You can now sign in to your account.",
       });
-      
-      // Redirect to login after successful registration
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 2000);
-    } catch (error: any) {
+      setLocation("/sign-in");
+    },
+    onError: (error) => {
       toast({
         title: "Registration Failed",
-        description: error.message || "There was an error with your registration. Please try again.",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+  });
 
   const onSubmit = (data: MemberRegistrationForm) => {
-    submitRegistration(data);
-  };
-
-  const handleChurchSelect = (church: Church) => {
-    setSelectedChurch(church);
-    form.setValue("churchId", church.id);
-  };
-
-  const nextStep = () => {
-    if (currentStep < membershipSteps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your first name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your last name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address *</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+27 12 345 6789" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="dateOfBirth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date of Birth *</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-6">
-            <AddressAutocomplete
-              label="Your Address"
-              placeholder="Search for your address..."
-              onAddressSelect={(addressComponents) => {
-                form.setValue('address', addressComponents.address);
-                form.setValue('city', addressComponents.city);
-                form.setValue('province', addressComponents.province);
-                form.setValue('postalCode', addressComponents.postalCode);
-                form.setValue('country', addressComponents.country);
-              }}
-              initialAddress={{
-                address: form.getValues('address') || '',
-                city: form.getValues('city') || '',
-                province: form.getValues('province') || '',
-                postalCode: form.getValues('postalCode') || '',
-                country: form.getValues('country') || 'South Africa'
-              }}
-            />
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start space-x-2">
-                <Shield className="h-5 w-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-yellow-800">Emergency Contact Information</h4>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    This information helps us reach someone on your behalf in case of emergencies during church events.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="emergencyContactName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Emergency Contact Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Contact person's full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="emergencyContactPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Emergency Contact Phone *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+27 12 345 6789" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="emergencyContactRelationship"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Relationship *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select relationship" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {relationships.map((relationship) => (
-                        <SelectItem key={relationship} value={relationship}>
-                          {relationship}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            {/* Church Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by church name, city, or denomination..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Church Selection */}
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {filteredChurches.length === 0 ? (
-                <div className="text-center py-8">
-                  <Church className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No churches found</h3>
-                  <p className="text-gray-600 mb-4">
-                    {searchQuery ? 
-                      "Try adjusting your search terms or contact us to help you find your church." :
-                      "We're still building our church directory. Contact us to add your church to ChurPay."
-                    }
-                  </p>
-                </div>
-              ) : (
-                filteredChurches.map((church) => (
-                  <Card 
-                    key={church.id} 
-                    className={`cursor-pointer transition-all duration-200 ${
-                      selectedChurch?.id === church.id 
-                        ? 'ring-2 ring-churpay-purple bg-purple-50' 
-                        : 'hover:shadow-md'
-                    }`}
-                    onClick={() => handleChurchSelect(church)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
-                            <Church className="h-5 w-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="font-semibold text-gray-900">{church.name}</h3>
-                              {church.denomination && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {church.denomination}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
-                              <div className="flex items-center space-x-1">
-                                <MapPin className="h-3 w-3" />
-                                <span>{church.city}, {church.province}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Users className="h-3 w-3" />
-                                <span>{church.memberCount} members</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        {selectedChurch?.id === church.id && (
-                          <div className="flex items-center justify-center w-6 h-6 bg-churpay-purple rounded-full">
-                            <CheckCircle className="h-4 w-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-
-            {/* Additional Information */}
-            <div className="space-y-4 pt-4 border-t">
-              <FormField
-                control={form.control}
-                name="membershipType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Membership Type *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select membership type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {membershipTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="previousChurch"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Previous Church (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="If transferring from another church" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="howDidYouHear"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>How did you hear about this church? (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Friend, website, social media, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+    registerMutation.mutate(data);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation("/")}
-              className="mr-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                <Users className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Member Registration</h1>
-                <p className="text-sm text-gray-600">Step {currentStep} of {membershipSteps.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {membershipSteps.map((step, index) => {
-              const StepIcon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-              
-              return (
-                <div key={step.id} className="flex items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                    isCompleted 
-                      ? 'bg-green-500 border-green-500 text-white' 
-                      : isActive 
-                      ? 'bg-churpay-purple border-churpay-purple text-white' 
-                      : 'bg-white border-gray-300 text-gray-400'
-                  }`}>
-                    {isCompleted ? (
-                      <CheckCircle className="h-5 w-5" />
-                    ) : (
-                      <StepIcon className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div className="ml-3 hidden sm:block">
-                    <p className={`text-sm font-medium ${
-                      isActive ? 'text-churpay-purple' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {step.title}
-                    </p>
-                  </div>
-                  {index < membershipSteps.length - 1 && (
-                    <div className="flex-1 h-0.5 mx-4 bg-gray-200">
-                      <div 
-                        className={`h-full transition-all duration-300 ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <Button
+            variant="ghost"
+            className="mb-4"
+            onClick={() => setLocation("/")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Button>
+          
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Join as Member</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Connect with your church community and support causes you care about through secure digital giving.
+            </p>
           </div>
         </div>
 
-        {/* Form */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              {React.createElement(membershipSteps[currentStep - 1].icon, { className: "h-5 w-5 text-churpay-purple" })}
-              <span>{membershipSteps[currentStep - 1].title}</span>
-            </CardTitle>
+        {/* Registration Form */}
+        <Card className="shadow-xl border-0">
+          <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b">
+            <CardTitle className="text-2xl text-center text-gray-900">Member Registration</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {renderStepContent()}
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                {/* Church Selection */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Users className="mr-2 h-5 w-5" />
+                    Church Information
+                  </h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="churchId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Your Church *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={churchesLoading}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={churchesLoading ? "Loading churches..." : "Choose your church"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {churches?.map((church: any) => (
+                              <SelectItem key={church.id} value={church.id}>
+                                {church.name} - {church.city}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between pt-6 border-t">
+                {/* Personal Information */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Mail className="mr-2 h-5 w-5" />
+                    Personal Information
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your first name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your last name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="your.email@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="+27 11 123 4567" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date of Birth *</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="membershipType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Membership Type *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select membership type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="regular">Regular Member</SelectItem>
+                              <SelectItem value="youth">Youth Member</SelectItem>
+                              <SelectItem value="senior">Senior Member</SelectItem>
+                              <SelectItem value="new">New Member</SelectItem>
+                              <SelectItem value="visitor">Visitor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Account Security */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Shield className="mr-2 h-5 w-5" />
+                    Account Security
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password *</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Create a secure password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password *</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Confirm your password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Address Information */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <MapPin className="mr-2 h-5 w-5" />
+                    Address Information
+                  </h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Street Address *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="123 Main Street" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="addressLine2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address Line 2 (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Apartment, suite, etc." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Johannesburg" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="province"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Province *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select province" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Eastern Cape">Eastern Cape</SelectItem>
+                              <SelectItem value="Free State">Free State</SelectItem>
+                              <SelectItem value="Gauteng">Gauteng</SelectItem>
+                              <SelectItem value="KwaZulu-Natal">KwaZulu-Natal</SelectItem>
+                              <SelectItem value="Limpopo">Limpopo</SelectItem>
+                              <SelectItem value="Mpumalanga">Mpumalanga</SelectItem>
+                              <SelectItem value="Northern Cape">Northern Cape</SelectItem>
+                              <SelectItem value="North West">North West</SelectItem>
+                              <SelectItem value="Western Cape">Western Cape</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="postalCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Postal Code *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="2000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Phone className="mr-2 h-5 w-5" />
+                    Emergency Contact
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Full name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Phone *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="+27 11 123 4567" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactRelationship"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Relationship *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select relationship" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="spouse">Spouse</SelectItem>
+                              <SelectItem value="parent">Parent</SelectItem>
+                              <SelectItem value="child">Child</SelectItem>
+                              <SelectItem value="sibling">Sibling</SelectItem>
+                              <SelectItem value="friend">Friend</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactEmail"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Email (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="emergency@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="emergencyContactAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Emergency Contact Address *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Full address of emergency contact" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Additional Information */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Additional Information (Optional)</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="previousChurch"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Previous Church (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Name of previous church" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="howDidYouHear"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>How did you hear about us? (Optional)</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select option" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="friend">Friend/Family</SelectItem>
+                              <SelectItem value="social-media">Social Media</SelectItem>
+                              <SelectItem value="website">Website</SelectItem>
+                              <SelectItem value="church-event">Church Event</SelectItem>
+                              <SelectItem value="pastor">Pastor/Staff</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-6 border-t">
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    disabled={currentStep === 1}
+                    type="submit"
+                    className="w-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                    size="lg"
+                    disabled={registerMutation.isPending}
                   >
-                    Previous
+                    {registerMutation.isPending ? "Creating Account..." : "Create Member Account"}
                   </Button>
-
-                  {currentStep < membershipSteps.length ? (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      className="bg-churpay-gradient text-white"
-                      disabled={currentStep === 4 && !selectedChurch}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting || !selectedChurch}
-                      className="bg-churpay-gradient text-white"
-                    >
-                      {isSubmitting ? "Registering..." : "Complete Registration"}
-                    </Button>
-                  )}
+                  
+                  <p className="text-sm text-gray-600 text-center mt-4">
+                    By creating an account, you agree to our Terms of Service and Privacy Policy.
+                    Already have an account? <Button variant="link" className="text-purple-600 p-0 h-auto" onClick={() => setLocation('/sign-in')}>Sign in here</Button>
+                  </p>
                 </div>
               </form>
             </Form>

@@ -39,6 +39,7 @@ export default function Landing() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
+
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
   const [superAdminModalOpen, setSuperAdminModalOpen] = useState(false);
