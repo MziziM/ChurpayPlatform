@@ -282,8 +282,6 @@ export default function Landing() {
         </div>
       </section>
 
-      
-
       {/* Revenue Sharing Highlight */}
       <section className="py-16 bg-gradient-to-r from-yellow-50 via-orange-50 to-yellow-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
