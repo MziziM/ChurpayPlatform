@@ -140,10 +140,10 @@ export default function MemberDashboard() {
       <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-8 py-4 rounded-t-3xl mx-8 mt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <h1 className="text-white text-xl font-bold tracking-wider">FINANCIAL DASHBOARD</h1>
+            <h1 className="text-white text-xl font-bold tracking-wider">CHURPAY MEMBER DASHBOARD</h1>
             <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span className="border-r border-gray-600 pr-6">UX/UI</span>
-              <div className="px-3 py-1 bg-blue-600 text-white text-xs rounded font-medium">WEB</div>
+              <span className="border-r border-gray-600 pr-6">CHURCH MEMBER</span>
+              <div className="px-3 py-1 bg-purple-600 text-white text-xs rounded font-medium">FAITHFUL GIVER</div>
             </div>
           </div>
         </div>
@@ -158,16 +158,20 @@ export default function MemberDashboard() {
               <span className="font-medium">Dashboard</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
-              <FileText className="h-5 w-5" />
-              <span>Documents</span>
+              <Heart className="h-5 w-5" />
+              <span>My Giving</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
-              <CreditCard className="h-5 w-5" />
-              <span>Payments</span>
+              <Church className="h-5 w-5" />
+              <span>Church Projects</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
-              <Calendar className="h-5 w-5" />
-              <span>Calendar</span>
+              <Wallet className="h-5 w-5" />
+              <span>My Wallet</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
+              <Users className="h-5 w-5" />
+              <span>Community</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
               <User className="h-5 w-5" />
@@ -309,7 +313,7 @@ export default function MemberDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm opacity-90 mb-2">Total Finance</p>
+                        <p className="text-sm opacity-90 mb-2">Total Church Giving</p>
                         <p className="text-3xl font-bold">R {(totalGiven / 1000).toFixed(1)}k</p>
                       </div>
                       <div className="relative w-16 h-16">
@@ -349,7 +353,8 @@ export default function MemberDashboard() {
               {/* Chart Section */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-white">Monday, 28 December 2021</CardTitle>
+                  <CardTitle className="text-white">Church Giving Activity</CardTitle>
+                  <p className="text-gray-400 text-sm">Your weekly donation pattern</p>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 relative">
@@ -382,18 +387,18 @@ export default function MemberDashboard() {
                         className="absolute bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold"
                         style={{left: '220px', top: '110px'}}
                       >
-                        $2057
+                        R2057
                       </div>
                     
                       {/* X-axis labels */}
                       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-gray-400 text-sm">
-                        <span>Mon</span>
-                        <span>Tue</span>
-                        <span>Wed</span>
-                        <span>Thu</span>
-                        <span>Fri</span>
-                        <span>Sat</span>
-                        <span>Sun</span>
+                        <span>Jan</span>
+                        <span>Feb</span>
+                        <span className="text-purple-400 font-semibold">Mar</span>
+                        <span>Apr</span>
+                        <span>May</span>
+                        <span>Jun</span>
+                        <span>Jul</span>
                       </div>
                     </div>
                   </div>
@@ -403,7 +408,7 @@ export default function MemberDashboard() {
               {/* Projects Finance Table */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-white">Projects Finance</CardTitle>
+                  <CardTitle className="text-white">Church Projects</CardTitle>
                   <Button variant="ghost" className="text-purple-400 hover:text-purple-300">
                     View all
                   </Button>
@@ -519,7 +524,7 @@ export default function MemberDashboard() {
               {/* Finance Target */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-white">Your Finance Target</CardTitle>
+                  <CardTitle className="text-white">Giving Goal Progress</CardTitle>
                   <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
@@ -537,14 +542,21 @@ export default function MemberDashboard() {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                      <span className="text-gray-300 text-sm">Result Achieved</span>
+                      <span className="text-gray-300 text-sm">Monthly Goal Achieved</span>
                     </div>
-                    <p className="text-gray-500 text-xs">Achieved well and smoothly</p>
+                    <p className="text-gray-500 text-xs">Faithful giving this month</p>
                     <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-                      <span className="text-gray-300 text-sm">In The Process</span>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <span className="text-gray-300 text-sm">Tithe Consistency</span>
                     </div>
-                    <p className="text-gray-500 text-xs">Waiting to target process</p>
+                    <p className="text-gray-500 text-xs">11 consecutive months</p>
+                    <div className="mt-4 p-3 bg-purple-600/20 rounded-xl">
+                      <div className="flex items-center space-x-2">
+                        <Star className="h-4 w-4 text-yellow-400" />
+                        <span className="text-yellow-400 text-sm font-medium">Faithful Giver</span>
+                      </div>
+                      <p className="text-gray-400 text-xs mt-1">Member achievement level</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -675,9 +687,19 @@ export default function MemberDashboard() {
                       </div>
                     )) : (
                       <div className="text-center py-6">
-                        <Activity className="h-8 w-8 text-gray-500 mx-auto mb-2" />
-                        <p className="text-gray-400 text-sm">No recent transactions</p>
-                        <p className="text-gray-500 text-xs">Start giving to see your activity here</p>
+                        <Church className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+                        <p className="text-gray-400 text-sm">No recent church giving</p>
+                        <p className="text-gray-500 text-xs">Start your faithful giving journey today</p>
+                        <Button 
+                          size="sm" 
+                          className="mt-3 bg-purple-600 hover:bg-purple-700 text-white"
+                          onClick={() => {
+                            setDonationType('tithe');
+                            setShowDonationModal(true);
+                          }}
+                        >
+                          Give Your First Tithe
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -715,7 +737,7 @@ export default function MemberDashboard() {
         type={donationType}
         churches={Array.isArray(churches) ? churches : []}
         projects={Array.isArray(projects) ? projects : []}
-        walletBalance={String(walletBalance)}
+        walletBalance={walletBalance.toString()}
       />
     </div>
   );
