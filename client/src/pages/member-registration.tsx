@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 // Removed auth dependencies since this is a public registration page
 import { 
   ArrowLeft, 
@@ -155,33 +153,45 @@ export default function MemberRegistration() {
     (church.denomination && church.denomination.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const memberRegistrationMutation = useMutation({
-    mutationFn: async (data: MemberRegistrationForm) => {
-      const response = await apiRequest("POST", "/api/members/register", data);
-      return response.json();
-    },
-    onSuccess: () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitRegistration = async (data: MemberRegistrationForm) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/members/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Registration failed");
+      }
+
       toast({
         title: "Registration Successful!",
         description: `You've successfully registered with ${selectedChurch?.name}. Please sign in to complete your membership and start making donations.`,
         variant: "default",
       });
+      
       // Redirect to login after successful registration
       setTimeout(() => {
         window.location.href = "/api/login";
       }, 2000);
-    },
-    onError: (error) => {
+    } catch (error: any) {
       toast({
         title: "Registration Failed",
         description: error.message || "There was an error with your registration. Please try again.",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const onSubmit = (data: MemberRegistrationForm) => {
-    memberRegistrationMutation.mutate(data);
+    submitRegistration(data);
   };
 
   const handleChurchSelect = (church: Church) => {
@@ -624,10 +634,10 @@ export default function MemberRegistration() {
                   ) : (
                     <Button
                       type="submit"
-                      disabled={memberRegistrationMutation.isPending || !selectedChurch}
+                      disabled={isSubmitting || !selectedChurch}
                       className="bg-churpay-gradient text-white"
                     >
-                      {memberRegistrationMutation.isPending ? "Joining..." : "Complete Registration"}
+                      {isSubmitting ? "Registering..." : "Complete Registration"}
                     </Button>
                   )}
                 </div>
