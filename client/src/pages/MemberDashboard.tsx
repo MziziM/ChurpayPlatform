@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
-  Wallet, Heart, Church, Target, Gift, Send, Plus, Eye, EyeOff, 
-  ArrowDown, ArrowUp, ArrowLeftRight, CheckCircle, Clock, AlertCircle, 
-  RefreshCw, Bell, Settings, TrendingUp, Calendar, Users, DollarSign,
-  PiggyBank, Star, Award, Activity, CreditCard, Building, Search,
-  MoreVertical, ChevronRight, FileText, User, Home, Moon
+  Wallet, Heart, Church, Target, Plus, 
+  ArrowDown, ArrowUp, Users, Settings, ArrowLeftRight,
+  Star, Home, User, Bell, Search, MoreVertical
 } from 'lucide-react';
 import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
 
@@ -76,7 +72,6 @@ interface DonationHistory {
 }
 
 export default function MemberDashboard() {
-  const [showBalance, setShowBalance] = useState(true);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,10 +109,7 @@ export default function MemberDashboard() {
     retry: false,
   });
 
-  const formatCurrency = (amount: string | number) => {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return `${Math.abs(numAmount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}k`;
-  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-ZA', {
@@ -129,7 +121,6 @@ export default function MemberDashboard() {
   };
 
   const totalGiven = Array.isArray(donationHistory) ? (donationHistory as DonationHistory[]).reduce((sum: number, donation: DonationHistory) => sum + parseFloat(donation.amount), 0) : 9900;
-  const totalExpense = 8240;
   
   const walletBalance = (walletData as WalletData)?.availableBalance ? parseFloat((walletData as WalletData).availableBalance) : 8240;
   const rewardPoints = (walletData as WalletData)?.rewardPoints ? parseFloat((walletData as WalletData).rewardPoints) : 1250;
