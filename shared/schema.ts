@@ -90,11 +90,14 @@ export const paymentMethodEnum = pgEnum('payment_method', [
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
-  // Authentication fields (Replit Auth)
+  // Authentication fields (Replit Auth + Local Auth)
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  
+  // Local authentication
+  passwordHash: varchar("password_hash", { length: 255 }),
   
   // Member-specific fields
   phone: varchar("phone", { length: 20 }),

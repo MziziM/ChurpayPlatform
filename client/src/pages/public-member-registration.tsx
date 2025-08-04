@@ -21,7 +21,10 @@ import {
   Phone,
   User,
   Shield,
-  Heart
+  Heart,
+  Eye,
+  EyeOff,
+  Lock
 } from "lucide-react";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 
@@ -33,6 +36,15 @@ const memberRegistrationSchema = z.object({
   email: z.string().email("Valid email is required"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
+  
+  // Authentication
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
   
   // Address Information
   address: z.string().min(5, "Complete street address is required"),
@@ -53,6 +65,9 @@ const memberRegistrationSchema = z.object({
   membershipType: z.string().min(1, "Please select membership type"),
   previousChurch: z.string().optional(),
   howDidYouHear: z.string().min(1, "Please tell us how you heard about us"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
@@ -97,8 +112,9 @@ const sampleChurches = [
 const membershipSteps = [
   { id: 1, title: "Church Selection", icon: Church },
   { id: 2, title: "Personal Information", icon: User },
-  { id: 3, title: "Address Information", icon: MapPin },
-  { id: 4, title: "Emergency Contact", icon: Shield },
+  { id: 3, title: "Account Security", icon: Lock },
+  { id: 4, title: "Address Information", icon: MapPin },
+  { id: 5, title: "Emergency Contact", icon: Shield },
 ];
 
 // South African provinces for consistency
@@ -136,6 +152,8 @@ export default function PublicMemberRegistration() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
@@ -146,6 +164,8 @@ export default function PublicMemberRegistration() {
       email: "",
       phone: "",
       dateOfBirth: "",
+      password: "",
+      confirmPassword: "",
       address: "",
       addressLine2: "",
       city: "",
@@ -479,8 +499,101 @@ export default function PublicMemberRegistration() {
                     </div>
                   )}
 
-                  {/* Step 3: Address Information */}
+                  {/* Step 3: Account Security */}
                   {currentStep === 3 && (
+                    <div className="space-y-6">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Account Security</h3>
+                        <p className="text-sm text-gray-600">Create a secure password for your ChurPay account.</p>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password *</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input 
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Enter a secure password" 
+                                  {...field} 
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4 text-gray-400" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-gray-400" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Confirm Password *</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input 
+                                  type={showConfirmPassword ? "text" : "password"}
+                                  placeholder="Confirm your password" 
+                                  {...field} 
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showConfirmPassword ? (
+                                    <EyeOff className="h-4 w-4 text-gray-400" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-gray-400" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-start space-x-3">
+                          <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+                          <div>
+                            <h4 className="text-sm font-medium text-blue-900">Secure Account</h4>
+                            <p className="text-sm text-blue-700 mt-1">
+                              Your password will be securely encrypted and stored. You'll use this to access your ChurPay member dashboard, make donations, and manage your digital wallet.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Address Information */}
+                  {currentStep === 4 && (
                     <div className="space-y-6">
                       <div className="mb-4">
                         <h3 className="text-lg font-medium text-gray-900 mb-2">Your Address</h3>
@@ -588,8 +701,8 @@ export default function PublicMemberRegistration() {
                     </div>
                   )}
 
-                  {/* Step 4: Emergency Contact */}
-                  {currentStep === 4 && (
+                  {/* Step 5: Emergency Contact */}
+                  {currentStep === 5 && (
                     <div className="space-y-6">
                       <div className="mb-4">
                         <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact</h3>
