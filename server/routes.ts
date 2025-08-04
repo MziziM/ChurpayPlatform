@@ -1045,10 +1045,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         address: '123 Church Street',
         city: 'Cape Town',
         province: 'Western Cape',
+        postalCode: '8001',
         contactEmail: 'admin@gracebaptist.co.za',
         contactPhone: '+27 21 555 0123',
+        alternatePhone: '+27 82 555 0123',
+        website: 'https://www.gracebaptist.co.za',
+        registrationNumber: 'NPO-2019-123456',
+        taxNumber: '9876543210',
+        bankName: 'Standard Bank',
+        accountNumber: '1234567890',
+        branchCode: '051001',
+        accountType: 'Current Account',
+        foundedYear: '1985',
+        description: 'A vibrant community church serving Cape Town for over 35 years.',
         status: 'approved',
-        registrationDate: '2023-01-15'
+        registrationDate: '2024-01-15T10:00:00Z',
+        profileImageUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=400&h=400&fit=crop&crop=center'
       };
       res.json(churchData);
     } catch (error) {

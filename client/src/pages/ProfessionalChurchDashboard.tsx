@@ -193,7 +193,15 @@ export default function ProfessionalChurchDashboard() {
               onClick={() => setShowProfileModal(true)}
             >
               <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                <Church className="h-4 w-4 text-purple-600" />
+                {churchData?.profileImageUrl ? (
+                  <img 
+                    src={churchData.profileImageUrl} 
+                    alt="Church profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Church className="h-4 w-4 text-purple-600" />
+                )}
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-medium text-gray-900">{churchData?.name || 'Church Admin'}</p>
@@ -346,7 +354,17 @@ export default function ProfessionalChurchDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                    <Building2 className="h-8 w-8 text-white" />
+                    {churchData?.profileImageUrl ? (
+                      <div className="w-8 h-8 rounded-lg overflow-hidden">
+                        <img 
+                          src={churchData.profileImageUrl} 
+                          alt="Church profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <Building2 className="h-8 w-8 text-white" />
+                    )}
                   </div>
                   <Button 
                     variant="ghost" 

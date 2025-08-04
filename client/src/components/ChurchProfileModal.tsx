@@ -50,6 +50,7 @@ interface ChurchProfile {
   description?: string;
   status: string;
   registrationDate: string;
+  profileImageUrl?: string;
 }
 
 export function ChurchProfileModal({
@@ -78,8 +79,12 @@ export function ChurchProfileModal({
     accountType: "",
     memberCount: 0,
     foundedYear: "",
-    description: ""
+    description: "",
+    profileImageUrl: ""
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   // Fetch church profile data
   const { data: churchProfile, isLoading } = useQuery<ChurchProfile>({
@@ -91,8 +96,52 @@ export function ChurchProfileModal({
   useEffect(() => {
     if (churchProfile) {
       setFormData(churchProfile);
+      setImagePreview(churchProfile.profileImageUrl || "");
     }
   }, [churchProfile]);
+
+  // Handle image file selection
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove image
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setFormData(prev => ({ ...prev, profileImageUrl: "" }));
+  };
 
   // Update church profile mutation
   const updateProfileMutation = useMutation({
@@ -143,7 +192,23 @@ export function ChurchProfileModal({
       return;
     }
 
-    updateProfileMutation.mutate(formData);
+    let profileData = { ...formData };
+
+    // If there's a new image file, convert to base64 for submission
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        profileData.profileImageUrl = reader.result as string;
+        updateProfileMutation.mutate(profileData);
+      };
+      reader.readAsDataURL(imageFile);
+    } else {
+      // If preview exists but no new file, keep existing URL
+      if (imagePreview && !imageFile) {
+        profileData.profileImageUrl = formData.profileImageUrl;
+      }
+      updateProfileMutation.mutate(profileData);
+    }
   };
 
   if (isLoading) {
@@ -173,6 +238,61 @@ export function ChurchProfileModal({
         </DialogHeader>
 
         <div className="space-y-8">
+          {/* Profile Picture Section */}
+          <div className="flex items-center space-x-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center border-4 border-white shadow-lg">
+                {imagePreview ? (
+                  <img 
+                    src={imagePreview} 
+                    alt="Church profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Building2 className="h-10 w-10 text-purple-600" />
+                )}
+              </div>
+              {imagePreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                  onClick={handleRemoveImage}
+                >
+                  ×
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex-1">
+              <Label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-2">
+                Church Profile Picture
+              </Label>
+              <input
+                id="profileImage"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <div className="flex space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('profileImage')?.click()}
+                  className="flex items-center space-x-2"
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span>Choose Image</span>
+                </Button>
+                <div className="text-sm text-gray-500 flex items-center">
+                  JPG, PNG or GIF (max 5MB)
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Status Badge */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
