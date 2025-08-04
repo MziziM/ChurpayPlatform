@@ -168,13 +168,13 @@ export default function PublicMemberRegistration() {
 
       toast({
         title: "Registration Successful!",
-        description: `You've successfully registered with ${selectedChurch?.name}. Please sign in to complete your membership and start making donations.`,
+        description: `You've successfully registered with ${selectedChurch?.name}. Your registration is complete!`,
         variant: "default",
       });
       
-      // Redirect to login after successful registration
+      // Redirect to home after successful registration
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/";
       }, 2000);
     } catch (error: any) {
       toast({
