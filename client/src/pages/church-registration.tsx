@@ -80,9 +80,10 @@ type ChurchRegistrationForm = z.infer<typeof churchRegistrationSchema>;
 
 const steps = [
   { id: 1, title: "Church Information", icon: Church },
-  { id: 2, title: "Contact Details", icon: Mail },
-  { id: 3, title: "Banking Information", icon: CreditCard },
-  { id: 4, title: "Documents", icon: FileText },
+  { id: 2, title: "Contact & Address", icon: Mail },
+  { id: 3, title: "Administrative Details", icon: Shield },
+  { id: 4, title: "Banking Information", icon: CreditCard },
+  { id: 5, title: "Document Verification", icon: FileText },
 ];
 
 export default function ChurchRegistration() {
@@ -95,7 +96,10 @@ export default function ChurchRegistration() {
     resolver: zodResolver(churchRegistrationSchema),
     defaultValues: {
       country: "South Africa",
-      memberCount: 0,
+      memberCount: 1,
+      hasNpoRegistration: false,
+      hasTaxClearance: false,
+      hasBankConfirmation: false,
     },
   });
 
@@ -147,6 +151,21 @@ export default function ChurchRegistration() {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  // South African provinces for consistency
+  const provinces = [
+    "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", 
+    "Limpopo", "Mpumalanga", "Northern Cape", "North West", "Western Cape"
+  ];
+
+  const bankOptions = [
+    "ABSA Bank", "Standard Bank", "First National Bank (FNB)", "Nedbank",
+    "Capitec Bank", "Discovery Bank", "TymeBank", "Bank Zero", "African Bank"
+  ];
+
+  const accountTypes = [
+    "Cheque Account", "Savings Account", "Business Account", "Church Account"
+  ];
 
   const renderStepContent = () => {
     switch (currentStep) {

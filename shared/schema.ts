@@ -11,6 +11,7 @@ import {
   integer,
   uuid,
   pgEnum,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -72,10 +73,35 @@ export const projectStatusEnum = pgEnum('project_status', ['draft', 'active', 'c
 // Users table (Required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Authentication fields (Replit Auth)
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  
+  // Member-specific fields
+  phone: varchar("phone", { length: 20 }),
+  dateOfBirth: date("date_of_birth"),
+  
+  // Address Information
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  province: varchar("province", { length: 100 }),
+  postalCode: varchar("postal_code", { length: 10 }),
+  country: varchar("country", { length: 100 }).default('South Africa'),
+  
+  // Emergency Contact
+  emergencyContactName: varchar("emergency_contact_name", { length: 255 }),
+  emergencyContactPhone: varchar("emergency_contact_phone", { length: 20 }),
+  emergencyContactRelationship: varchar("emergency_contact_relationship", { length: 100 }),
+  
+  // Church-related Information
+  membershipType: varchar("membership_type", { length: 50 }),
+  previousChurch: varchar("previous_church", { length: 255 }),
+  howDidYouHear: varchar("how_did_you_hear", { length: 255 }),
+  
+  // System fields
   role: userRoleEnum("role").default('public'),
   churchId: uuid("church_id"),
   isActive: boolean("is_active").default(true),
@@ -86,35 +112,60 @@ export const users = pgTable("users", {
 // Churches table
 export const churches = pgTable("churches", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Basic Church Information
   name: varchar("name", { length: 255 }).notNull(),
-  denomination: varchar("denomination", { length: 100 }),
-  registrationNumber: varchar("registration_number", { length: 50 }),
-  taxNumber: varchar("tax_number", { length: 50 }),
+  denomination: varchar("denomination", { length: 100 }).notNull(),
+  registrationNumber: varchar("registration_number", { length: 50 }).notNull(),
+  taxNumber: varchar("tax_number", { length: 50 }).notNull(),
+  yearEstablished: varchar("year_established", { length: 4 }).notNull(),
+  
+  // Contact Information
   contactEmail: varchar("contact_email", { length: 255 }).notNull(),
-  contactPhone: varchar("contact_phone", { length: 20 }),
-  address: text("address"),
-  city: varchar("city", { length: 100 }),
-  province: varchar("province", { length: 100 }),
-  postalCode: varchar("postal_code", { length: 10 }),
+  contactPhone: varchar("contact_phone", { length: 20 }).notNull(),
+  alternativePhone: varchar("alternative_phone", { length: 20 }),
+  website: varchar("website", { length: 255 }),
+  
+  // Physical Address
+  address: text("address").notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  province: varchar("province", { length: 100 }).notNull(),
+  postalCode: varchar("postal_code", { length: 10 }).notNull(),
   country: varchar("country", { length: 100 }).default('South Africa'),
   
-  // Banking details
-  bankName: varchar("bank_name", { length: 100 }),
-  accountNumber: varchar("account_number", { length: 50 }),
-  branchCode: varchar("branch_code", { length: 10 }),
-  accountHolder: varchar("account_holder", { length: 255 }),
+  // Banking Information
+  bankName: varchar("bank_name", { length: 100 }).notNull(),
+  accountNumber: varchar("account_number", { length: 50 }).notNull(),
+  branchCode: varchar("branch_code", { length: 10 }).notNull(),
+  accountHolder: varchar("account_holder", { length: 255 }).notNull(),
+  accountType: varchar("account_type", { length: 50 }).notNull(),
   
-  // Documents
-  cipcDocument: varchar("cipc_document"), // File path
-  bankConfirmationLetter: varchar("bank_confirmation_letter"), // File path
-  taxClearanceCertificate: varchar("tax_clearance_certificate"), // File path
+  // Church Details
+  description: text("description").notNull(),
+  memberCount: integer("member_count").notNull(),
+  servicesTimes: text("services_times").notNull(),
+  leadPastor: varchar("lead_pastor", { length: 255 }).notNull(),
+  
+  // Administrative Contact
+  adminFirstName: varchar("admin_first_name", { length: 100 }).notNull(),
+  adminLastName: varchar("admin_last_name", { length: 100 }).notNull(),
+  adminEmail: varchar("admin_email", { length: 255 }).notNull(),
+  adminPhone: varchar("admin_phone", { length: 20 }).notNull(),
+  adminPosition: varchar("admin_position", { length: 100 }).notNull(),
+  
+  // Document Verification Flags
+  hasNpoRegistration: boolean("has_npo_registration").default(false),
+  hasTaxClearance: boolean("has_tax_clearance").default(false),
+  hasBankConfirmation: boolean("has_bank_confirmation").default(false),
+  
+  // Documents (File paths)
+  cipcDocument: varchar("cipc_document"),
+  bankConfirmationLetter: varchar("bank_confirmation_letter"),
+  taxClearanceCertificate: varchar("tax_clearance_certificate"),
   
   // Status and metadata
   status: churchStatusEnum("status").default('pending'),
   adminUserId: varchar("admin_user_id"), // Foreign key to users
-  website: varchar("website"),
-  description: text("description"),
-  memberCount: integer("member_count").default(0),
   
   // Platform settings
   commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).default('10.00'), // Default 10%
