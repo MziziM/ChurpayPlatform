@@ -348,7 +348,7 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/church-registration'}
                 >
                   <span>Register Your Church</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -385,7 +385,7 @@ export default function Landing() {
                 
                 <Button 
                   className="w-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/member-registration'}
                 >
                   <span>Join as Member</span>
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
