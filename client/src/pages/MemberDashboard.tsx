@@ -128,21 +128,47 @@ export default function MemberDashboard() {
   return (
     <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
       {/* Top Navigation Bar */}
-      <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-8 py-4 rounded-t-3xl mx-8 mt-4">
+      <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-4 md:px-8 py-4 rounded-t-3xl mx-2 md:mx-8 mt-2 md:mt-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <h1 className="text-white text-xl font-bold tracking-wider">CHURPAY MEMBER DASHBOARD</h1>
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span className="border-r border-gray-600 pr-6">CHURCH MEMBER</span>
-              <div className="px-3 py-1 bg-purple-600 text-white text-xs rounded font-medium">FAITHFUL GIVER</div>
+          <div className="flex items-center space-x-2 md:space-x-8">
+            <h1 className="text-white text-sm md:text-xl font-bold tracking-wider">CHURPAY MEMBER</h1>
+            <div className="flex items-center space-x-2 md:space-x-6 text-xs md:text-sm text-gray-400">
+              <span className="hidden md:block border-r border-gray-600 pr-6">CHURCH MEMBER</span>
+              <div className="px-2 md:px-3 py-1 bg-purple-600 text-white text-xs rounded font-medium">FAITHFUL GIVER</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
-        {/* Left Sidebar */}
-        <div className="w-52 p-6 border-r border-gray-800/50">
+      <div className="flex flex-col md:flex-row mx-2 md:mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
+        {/* Mobile Bottom Navigation - Hidden on Desktop */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 z-50">
+          <nav className="flex justify-around items-center py-2">
+            <div className="flex flex-col items-center p-2 text-purple-400">
+              <Home className="h-5 w-5" />
+              <span className="text-xs mt-1">Dashboard</span>
+            </div>
+            <div className="flex flex-col items-center p-2 text-gray-400">
+              <Heart className="h-5 w-5" />
+              <span className="text-xs mt-1">Giving</span>
+            </div>
+            <div className="flex flex-col items-center p-2 text-gray-400">
+              <Church className="h-5 w-5" />
+              <span className="text-xs mt-1">Projects</span>
+            </div>
+            <div className="flex flex-col items-center p-2 text-gray-400">
+              <Wallet className="h-5 w-5" />
+              <span className="text-xs mt-1">Wallet</span>
+            </div>
+            <div className="flex flex-col items-center p-2 text-gray-400">
+              <Users className="h-5 w-5" />
+              <span className="text-xs mt-1">Community</span>
+            </div>
+          </nav>
+        </div>
+
+        {/* Left Sidebar - Hidden on Mobile */}
+        <div className="hidden md:block w-52 p-6 border-r border-gray-800/50">
           <nav className="space-y-2">
             <div className="flex items-center space-x-3 p-3 bg-purple-600 rounded-xl text-white">
               <Home className="h-5 w-5" />
@@ -280,18 +306,18 @@ export default function MemberDashboard() {
             </div>
           </div>
 
-          {/* Main Content Grid - 3 columns layout */}
-          <div className="grid grid-cols-12 gap-6">
+          {/* Main Content Grid - Mobile Optimized */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
             {/* Left Column - Stats Cards and Chart */}
-            <div className="col-span-8 space-y-6">
+            <div className="lg:col-span-8 space-y-4 md:space-y-6">
               {/* Top Stats Cards */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0 text-white rounded-2xl">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 md:p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm opacity-90 mb-2">Total Church Giving</p>
-                        <p className="text-3xl font-bold">R {(totalGiven / 1000).toFixed(1)}k</p>
+                        <p className="text-2xl md:text-3xl font-bold">R {(totalGiven / 1000).toFixed(1)}k</p>
                       </div>
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
@@ -307,11 +333,11 @@ export default function MemberDashboard() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-pink-600 to-purple-600 border-0 text-white rounded-2xl">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 md:p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm opacity-90 mb-2">Wallet Balance</p>
-                        <p className="text-3xl font-bold">R {(walletBalance / 1000).toFixed(1)}k</p>
+                        <p className="text-2xl md:text-3xl font-bold">R {(walletBalance / 1000).toFixed(1)}k</p>
                       </div>
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
@@ -497,7 +523,7 @@ export default function MemberDashboard() {
             </div>
 
             {/* Right Column */}
-            <div className="col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-4 md:space-y-6">
               {/* Finance Target */}
               <Card className="bg-gray-800/40 border-gray-700/50 rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -507,13 +533,15 @@ export default function MemberDashboard() {
                   </Button>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <div className="relative w-32 h-32 mx-auto mb-6">
-                    <svg className="w-32 h-32 transform -rotate-90">
-                      <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" className="text-gray-700" />
-                      <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" strokeDasharray={`${2 * Math.PI * 56}`} strokeDashoffset={`${2 * Math.PI * 56 * (1 - 0.78)}`} className="text-purple-500" />
+                  <div className="relative w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 md:mb-6">
+                    <svg className="w-24 h-24 md:w-32 md:h-32 transform -rotate-90">
+                      <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="6" fill="none" className="text-gray-700 md:hidden" />
+                      <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="6" fill="none" strokeDasharray={`${2 * Math.PI * 40}`} strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.78)}`} className="text-purple-500 md:hidden" />
+                      <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" className="text-gray-700 hidden md:block" />
+                      <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" strokeDasharray={`${2 * Math.PI * 56}`} strokeDashoffset={`${2 * Math.PI * 56 * (1 - 0.78)}`} className="text-purple-500 hidden md:block" />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-3xl font-bold text-white">78%</span>
+                      <span className="text-2xl md:text-3xl font-bold text-white">78%</span>
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -556,9 +584,9 @@ export default function MemberDashboard() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Button 
-                      className="bg-purple-600/80 hover:bg-purple-600 text-white rounded-xl h-12"
+                      className="bg-purple-600/80 hover:bg-purple-600 text-white rounded-xl h-10 md:h-12"
                       onClick={() => {
                         setDonationType('topup');
                         setShowDonationModal(true);
@@ -568,7 +596,7 @@ export default function MemberDashboard() {
                       Top Up
                     </Button>
                     <Button 
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl h-12"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl h-10 md:h-12"
                       onClick={() => {
                         setDonationType('donation');
                         setShowDonationModal(true);

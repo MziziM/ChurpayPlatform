@@ -182,14 +182,14 @@ export function EnhancedDonationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             {icon}
             {title}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Church Selection (for donation and tithe) */}
           {(type === 'donation' || type === 'tithe') && (
             <div>
@@ -300,11 +300,11 @@ export function EnhancedDonationModal({
           )}
 
           {/* Action Buttons */}
-          <div className="flex space-x-3">
+          <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
             <Button
               onClick={handleSubmit}
               disabled={mutation.isPending}
-              className="flex-1 bg-churpay-gradient text-white"
+              className="flex-1 bg-churpay-gradient text-white h-12"
             >
               {mutation.isPending ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -313,7 +313,7 @@ export function EnhancedDonationModal({
               )}
               {mutation.isPending ? 'Processing...' : `${type === 'donation' ? 'Give' : type === 'tithe' ? 'Tithe' : type === 'project' ? 'Sponsor' : 'Top Up'}`}
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} className="w-full md:w-auto h-12">
               Cancel
             </Button>
           </div>
