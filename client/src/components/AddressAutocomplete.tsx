@@ -57,12 +57,19 @@ export function AddressAutocomplete({
   useEffect(() => {
     if (!(window as any).google?.maps?.places && import.meta.env.VITE_GOOGLE_MAPS_API_KEY) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
       script.async = true;
       script.onload = () => {
-        autocompleteService.current = new (window as any).google.maps.places.AutocompleteService();
-        const dummyDiv = document.createElement('div');
-        placesService.current = new (window as any).google.maps.places.PlacesService(dummyDiv);
+        // Check if the API loaded successfully
+        if ((window as any).google?.maps?.places) {
+          autocompleteService.current = new (window as any).google.maps.places.AutocompleteService();
+          const dummyDiv = document.createElement('div');
+          placesService.current = new (window as any).google.maps.places.PlacesService(dummyDiv);
+        }
+      };
+      script.onerror = () => {
+        console.warn('Google Maps API failed to load, falling back to manual entry');
+        setIsManualMode(true);
       };
       document.head.appendChild(script);
     }

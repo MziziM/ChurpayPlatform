@@ -34,6 +34,7 @@ export interface IStorage {
   updateChurchStatus(id: string, status: string, processedBy?: string): Promise<Church>;
   getAllChurches(limit?: number, offset?: number): Promise<Church[]>;
   getPendingChurches(): Promise<Church[]>;
+  getApprovedChurches(): Promise<Church[]>;
   getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }>;
   
   // Project operations
@@ -138,6 +139,14 @@ export class DatabaseStorage implements IStorage {
       .from(churches)
       .where(eq(churches.status, 'pending'))
       .orderBy(asc(churches.createdAt));
+  }
+
+  async getApprovedChurches(): Promise<Church[]> {
+    return await db
+      .select()
+      .from(churches)
+      .where(eq(churches.status, 'approved'))
+      .orderBy(asc(churches.name));
   }
 
   async getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }> {
