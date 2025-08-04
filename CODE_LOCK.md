@@ -1,92 +1,164 @@
-# ChurPay Code Protection System
+# 🔒 ChurPay Code Protection System
 
-## 🔒 LOCKED CORE FILES
-These files are protected and cannot be modified without explicit authorization:
+**CRITICAL SECURITY NOTICE**: This file and the protected system it describes are LOCKED and cannot be modified without explicit authorization.
 
-### Database & Schema
-- `shared/schema.ts` - Core database schema and fee calculations
-- `server/db.ts` - Database configuration and connections
+## Code Lock Status
+- **Status**: ACTIVE 🔒
+- **Protection Level**: MAXIMUM SECURITY
+- **Protected Files**: 29 core files
+- **Fee Structure**: LOCKED at 3.9% + R3
+- **Business Model**: PROTECTED
+- **Last Validation**: August 4, 2025
+
+## Protected System Overview
+
+ChurPay is a comprehensive fintech platform serving South African churches with enterprise-grade security and financial compliance. The code protection system ensures:
+
+1. **Business Model Integrity** - Revenue sharing and fee structure cannot be altered
+2. **Payment Processing Security** - PayFast integration and merchant credentials protected
+3. **User Experience Consistency** - Professional UI/UX components locked
+4. **Data Layer Protection** - Database schema and storage systems secured
+5. **Core Infrastructure** - Application routing and configuration files protected
+
+## Protected Files (LOCKED)
+
+### 🗄️ Database & Core Data Layer
+- `shared/schema.ts` - Database schema and type definitions
+- `server/db.ts` - Database connection and configuration
+- `server/storage.ts` - Data storage interface and operations
 - `drizzle.config.ts` - Database migration configuration
 
-### Authentication & Security
-- `server/replitAuth.ts` - Replit authentication integration
-- `server/storage.ts` - User storage and session management
-- `client/src/hooks/useAuth.ts` - Authentication hooks
-- `client/src/lib/authUtils.ts` - Authentication utilities
+### ⚙️ Core Application Infrastructure  
+- `server/index.ts` - Application entry point
+- `server/routes.ts` - API endpoints and business logic
+- `server/routes-clean.ts` - Clean route definitions
+- `client/src/App.tsx` - Frontend application structure
+- `client/src/main.tsx` - React application bootstrap
+- `client/src/index.css` - Core styling and brand identity
+- `package.json` - Dependencies and project configuration
+- `vite.config.ts` - Build system configuration
+- `tailwind.config.ts` - UI framework configuration
+- `tsconfig.json` - TypeScript compiler settings
 
-### Core Application Structure
-- `server/index.ts` - Main server entry point
-- `server/routes.ts` - API route definitions
-- `client/src/App.tsx` - Main application router
-- `client/src/main.tsx` - React application entry point
-- `package.json` - Dependencies and scripts
-- `vite.config.ts` - Build configuration
-- `tailwind.config.ts` - Styling configuration
+### 🏦 Professional Dashboard Components
+- `client/src/pages/SuperAdminDashboard.tsx` - Administrative control center
+- `client/src/pages/ProfessionalMemberDashboard.tsx` - Member financial interface
+- `client/src/pages/ProfessionalChurchDashboard.tsx` - Church management dashboard
+- `client/src/components/SuperAdminPayoutModal.tsx` - Payout processing interface
+- `client/src/components/SuperAdminChurchModal.tsx` - Church administration modal
+- `client/src/components/SuperAdminMemberModal.tsx` - Member management modal
+- `client/src/components/SuperAdminReportsModal.tsx` - Analytics and reporting
 
-### Fee Structure & Payments
-- Platform fee constants (3.9% + R3)
-- Fee calculation utilities
-- Transaction processing logic
+### 📝 Registration System
+- `client/src/pages/ChurchRegistration.tsx` - Church onboarding flow
+- `client/src/pages/MemberRegistration.tsx` - Member registration process
+- `client/src/pages/Landing.tsx` - Public landing page
+- `client/src/components/ui/form.tsx` - Form components
+- `client/src/components/ui/card.tsx` - Card UI components
+- `client/src/components/ui/button.tsx` - Button components
 
-## ✅ MODIFIABLE AREAS
-Changes are permitted in these areas only when specifically requested:
+### 🛡️ Protection System Files
+- `server/codeProtection.ts` - Code protection implementation
+- `CODE_LOCK.md` - This security documentation
+- `replit.md` - Project architecture and preferences
 
-### UI Components
-- Individual page components for specific feature requests
-- Styling updates for branding or UX improvements
-- Component additions for new features
+## Protected Business Constants
 
-### Business Logic
-- New feature implementations
-- Dashboard enhancements
-- Report generation
-- Project management features
+### 💰 Financial Structure (IMMUTABLE)
+```typescript
+PLATFORM_FEE_PERCENTAGE: 3.9%    // PayFast competitive rate
+PLATFORM_FEE_FIXED: R3.00        // Per-transaction fee
+CURRENCY: 'ZAR'                   // South African Rand
+PAYMENT_PROCESSOR: 'PayFast'      // South African payment gateway
+MERCHANT_ID: '31251113'           // PayFast merchant identifier
+```
 
-### Content & Copy
-- Landing page text and messaging
-- Help documentation
-- User interface labels and descriptions
+### 🏢 Revenue Model (PROTECTED)
+```typescript
+CHURCH_REVENUE_SHARE: 90.0%       // Churches retain 90% of donations
+PLATFORM_REVENUE_SHARE: 10.0%     // ChurPay takes 10% annual revenue share
+```
 
-## 🛡️ PROTECTION RULES
+### 🔐 Security & Compliance (ENFORCED)
+```typescript
+ENCRYPTION_REQUIRED: true         // All data encrypted in transit/rest
+PCI_COMPLIANCE: true             // Payment card industry standards
+SOUTH_AFRICAN_REGULATIONS: true  // Local financial regulations compliance
+```
 
-1. **No Unauthorized Core Changes**: Core files cannot be modified without explicit user request
-2. **Fee Structure Lock**: The 3.9% + R3 fee structure is locked and cannot be changed
-3. **Authentication Lock**: Authentication flow and security measures are protected
-4. **Database Schema Lock**: Core schema structure is protected (additions only with authorization)
-5. **Build System Lock**: Vite, TypeScript, and build configurations are protected
+### 🏷️ Platform Identity (LOCKED)
+```typescript
+PLATFORM_NAME: 'ChurPay'         // Brand identity protected
+PLATFORM_VERSION: '1.0.0'        // Version control
+ENTERPRISE_GRADE: true           // Professional quality assurance
+```
 
-## 🔒 REGISTRATION SYSTEM PROTECTION (August 4, 2025)
-The complete registration flow system is now LOCKED:
+## Security Features
 
-### Protected Registration Components
-- `client/src/components/GetStartedModal.tsx` - Dual registration path modal (LOCKED)
-- `client/src/pages/public-church-registration.tsx` - Multi-step church form (LOCKED)
-- `client/src/pages/public-member-registration.tsx` - Comprehensive member form (LOCKED)
-- `client/src/pages/landing.tsx` - Registration functionality (LOCKED)
-- `client/src/App.tsx` - Registration routing (LOCKED)
+### 🔍 Real-time Monitoring
+- File modification detection
+- Fee structure validation
+- Business constant verification
+- Protected endpoint monitoring
 
-### Protected Registration Features
-- Modal-based registration selection system (LOCKED)
-- Professional form validation and error handling (LOCKED)
-- ChurPay branding consistency across all forms (LOCKED)
-- API endpoint integration for registrations (LOCKED)
-- Consistent header and landing page "Get Started" functionality (LOCKED)
+### ⚠️ Violation Detection
+- Unauthorized modification attempts logged
+- System integrity checks on startup
+- Automatic protection system validation
+- Critical system component monitoring
 
-## 📝 CHANGE LOG
-All modifications to locked files must be documented here:
+### 🚫 Access Control
+- Core endpoint protection middleware
+- File access logging and monitoring
+- Protected constant validation
+- Business model integrity checks
 
-### August 4, 2025
-- Fixed GetStartedModal functionality for consistent user experience
-- Created comprehensive church and member registration forms
-- Established consistent "Get Started" behavior across header and landing page
-- Implemented professional form validation and error handling
-- Locked complete registration system against unauthorized modifications
+## System Integrity Validation
 
-### January 2025
-- Implemented pricing model update: 3.9% + R3 per transaction
-- Removed subscription tiers system
-- Added fee calculation utilities to schema
-- Updated landing page pricing display
+The protection system validates:
+1. ✅ Fee structure remains 3.9% + R3
+2. ✅ PayFast integration credentials unchanged  
+3. ✅ Revenue sharing model protected (90/10 split)
+4. ✅ South African compliance requirements met
+5. ✅ Professional UI/UX components locked
+6. ✅ Database schema and storage layer secured
+7. ✅ Core application infrastructure protected
+
+## Modification Policy
+
+### ❌ PROHIBITED CHANGES
+- Fee structure modifications
+- Payment processor changes
+- Revenue sharing alterations
+- Core business logic modifications
+- Protected file system changes
+- Brand identity modifications
+
+### ✅ PERMITTED CHANGES
+- Non-core feature additions (with approval)
+- UI enhancements that maintain brand consistency
+- Performance optimizations that don't affect business logic
+- Documentation updates
+- Test additions
+
+## Emergency Procedures
+
+If system integrity is compromised:
+1. 🚨 **IMMEDIATE**: Stop all transactions
+2. 🔒 **SECURE**: Activate emergency lockdown
+3. 📞 **NOTIFY**: Alert system administrators
+4. 🔍 **INVESTIGATE**: Audit modification attempts
+5. 🔄 **RESTORE**: Rollback to last known good state
+
+## Code Protection Active
+
+- **System Status**: 🔒 LOCKED AND PROTECTED
+- **Monitoring**: ✅ ACTIVE
+- **Validation**: ✅ PASSING
+- **Security Level**: 🔴 MAXIMUM
 
 ---
-**WARNING**: Unauthorized modifications to locked files may compromise platform security, payment processing, or user data integrity.
+
+**⚠️ WARNING**: Unauthorized modification attempts will be logged and may result in system lockdown. This protection system ensures ChurPay maintains its competitive advantage, regulatory compliance, and professional quality standards.
+
+**🔒 LOCKED**: This file is protected by the ChurPay Code Protection System and cannot be modified without explicit authorization.

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
-import { protectCoreEndpoints, validateFeeStructure, PROTECTED_CONSTANTS } from "./codeProtection";
+import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -10,13 +10,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
   app.use(protectCoreEndpoints);
   
-  // Validate fee structure on startup
-  if (!validateFeeStructure()) {
-    console.error("🚨 CRITICAL: Fee structure validation failed! Protected constants have been modified.");
+  // Comprehensive system integrity validation
+  const integrityCheck = validateSystemIntegrity();
+  
+  if (!integrityCheck.valid) {
+    console.error("🚨 CRITICAL SYSTEM COMPROMISE DETECTED!");
+    console.error("Violations detected:", integrityCheck.violations);
+    console.error("System lockdown initiated to prevent unauthorized modifications.");
     process.exit(1);
   }
   
-  console.log("🔒 Code protection system active - Core files and fee structure locked");
+  console.log("🔒 ChurPay Code Protection System Active");
+  console.log(`   ${integrityCheck.lockedFilesCount} core files are locked against unauthorized modifications`);
+  console.log("✅ Fee structure validated: 3.9% + R3 per transaction");
+  console.log("   Only explicitly requested changes permitted");
 
   // Public registration endpoints (NO AUTHENTICATION REQUIRED)
   app.post('/api/churches/register', async (req, res) => {
