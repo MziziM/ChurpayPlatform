@@ -84,13 +84,13 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/church-registration'}
                 className="text-gray-600 hover:text-churpay-purple"
               >
                 Sign In
               </Button>
               <Button 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/church-registration'}
                 className="bg-churpay-gradient text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
               >
                 Get Started
@@ -167,7 +167,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/church-registration'}
                   className="bg-churpay-gradient text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
                 >
                   <span>Get Started</span>
@@ -709,14 +709,14 @@ export default function Landing() {
                 <div className="space-y-3">
                   <Button 
                     className="w-full bg-churpay-gradient text-white hover:shadow-lg transition-all duration-200"
-                    onClick={() => window.location.href = '/api/login'}
+                    onClick={() => window.location.href = '/church-registration'}
                   >
                     Register Your Church
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => window.location.href = '/api/login'}
+                    onClick={() => window.location.href = '/church-registration'}
                   >
                     Join as Member
                   </Button>
@@ -761,7 +761,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg"
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/church-registration'}
                 className="bg-white text-churpay-purple hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group"
               >
                 <span>Register Your Church</span>
@@ -771,7 +771,7 @@ export default function Landing() {
                 size="lg"
                 variant="outline"
                 className="bg-white/20 text-white border-2 border-white/30 hover:bg-white/30 transition-all duration-300"
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/church-registration'}
               >
                 <Bell className="mr-2 h-4 w-4" />
                 <span>Join as Member</span>
