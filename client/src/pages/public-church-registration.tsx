@@ -111,13 +111,13 @@ export default function PublicChurchRegistration() {
 
       toast({
         title: "Registration Submitted!",
-        description: "Your church registration has been submitted for review. Please sign in to track the status and complete your setup once approved.",
+        description: "Your church registration has been submitted for review. You will be contacted once approved.",
         variant: "default",
       });
       
-      // Redirect to login after successful registration
+      // Redirect to home after successful registration
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/";
       }, 3000);
     } catch (error: any) {
       toast({

@@ -9,12 +9,6 @@ export const LOCKED_FILES = [
   'server/db.ts', 
   'drizzle.config.ts',
   
-  // Authentication & Security
-  'server/replitAuth.ts',
-  'server/storage.ts',
-  'client/src/hooks/useAuth.ts',
-  'client/src/lib/authUtils.ts',
-  
   // Core Application
   'server/index.ts',
   'server/routes.ts',
