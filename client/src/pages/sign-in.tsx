@@ -11,6 +11,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Church, Users, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 // Sign-in schemas
 const memberSignInSchema = z.object({
@@ -31,8 +34,8 @@ type ChurchSignInData = z.infer<typeof churchSignInSchema>;
 export default function SignIn() {
   const [currentTab, setCurrentTab] = useState("member");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const memberForm = useForm<MemberSignInData>({
     resolver: zodResolver(memberSignInSchema),
@@ -52,52 +55,69 @@ export default function SignIn() {
     }
   });
 
-  const handleMemberSignIn = async (data: MemberSignInData) => {
-    setIsLoading(true);
-    try {
-      // Simulate sign-in process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+  const memberSignInMutation = useMutation({
+    mutationFn: async (data: MemberSignInData) => {
+      return await apiRequest('/api/auth/member/signin', 'POST', data);
+    },
+    onSuccess: (response) => {
       toast({
         title: "Welcome back!",
         description: "Successfully signed in to your member account.",
       });
       
+      // Store user data in localStorage for now
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('userRole', 'member');
+      
       // Redirect to member dashboard
-      window.location.href = '/member-dashboard';
-    } catch (error) {
+      setLocation('/member-dashboard');
+    },
+    onError: (error: any) => {
       toast({
         title: "Sign In Failed",
-        description: "Invalid email or password. Please try again.",
+        description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
-  const handleChurchSignIn = async (data: ChurchSignInData) => {
-    setIsLoading(true);
-    try {
-      // Simulate sign-in process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+  const churchSignInMutation = useMutation({
+    mutationFn: async (data: ChurchSignInData) => {
+      return await apiRequest('/api/auth/church/signin', 'POST', data);
+    },
+    onSuccess: (response) => {
       toast({
         title: "Welcome back!",
         description: "Successfully signed in to your church account.",
       });
       
-      // Redirect to church dashboard
-      window.location.href = '/church-dashboard';
-    } catch (error) {
+      // Store user data in localStorage for now
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('church', JSON.stringify(response.church));
+      localStorage.setItem('userRole', response.user.role);
+      
+      // Redirect to appropriate dashboard based on role
+      if (response.user.role === 'church_admin') {
+        setLocation('/church-dashboard');
+      } else {
+        setLocation('/church-staff-dashboard');
+      }
+    },
+    onError: (error: any) => {
       toast({
         title: "Sign In Failed",
-        description: "Invalid email or password. Please try again.",
+        description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+  });
+
+  const handleMemberSignIn = (data: MemberSignInData) => {
+    memberSignInMutation.mutate(data);
+  };
+
+  const handleChurchSignIn = (data: ChurchSignInData) => {
+    churchSignInMutation.mutate(data);
   };
 
   return (
@@ -244,10 +264,10 @@ export default function SignIn() {
 
                       <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={memberSignInMutation.isPending}
                         className="w-full h-11 bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                       >
-                        {isLoading ? (
+                        {memberSignInMutation.isPending ? (
                           <div className="flex items-center space-x-2">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                             <span>Signing In...</span>
@@ -351,10 +371,10 @@ export default function SignIn() {
 
                       <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={churchSignInMutation.isPending}
                         className="w-full h-11 bg-churpay-gradient text-white"
                       >
-                        {isLoading ? (
+                        {churchSignInMutation.isPending ? (
                           <div className="flex items-center space-x-2">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                             <span>Signing In...</span>
