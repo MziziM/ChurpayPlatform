@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "@/pages/landing";
 import PublicChurchRegistration from "@/pages/public-church-registration";
 import PublicMemberRegistration from "@/pages/public-member-registration";
-import MemberDashboard from "@/pages/member-dashboard";
+import MemberDashboard from "@/pages/MemberDashboard";
 import MemberDashboardDark from "@/pages/MemberDashboardDark";
 import WalletDashboard from "@/pages/WalletDashboard";
 import SignIn from "@/pages/sign-in";
