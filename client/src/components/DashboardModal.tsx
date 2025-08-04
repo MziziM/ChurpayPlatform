@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Switch } from "@/components/ui/switch";
 import FinancialTrendsChart from "./FinancialTrendsChart";
 import MemberGivingAnalytics from "./MemberGivingAnalytics";
@@ -37,7 +37,6 @@ interface DashboardModalProps {
 }
 
 export default function DashboardModal({ isOpen, onClose, userType }: DashboardModalProps) {
-  const [activeTab, setActiveTab] = useState('widgets');
   const [donationAmount, setDonationAmount] = useState('');
   const [donationType, setDonationType] = useState('');
 
@@ -507,97 +506,74 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0">
+        <DialogHeader className="p-6 pb-4 border-b bg-churpay-gradient text-white">
           <DialogTitle className="text-2xl font-semibold text-center">
             {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <div className="px-6 pt-4">
-              <TabsList className="grid w-full grid-cols-5 h-12">
-                <TabsTrigger 
-                  value="widgets"
-                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                >
-                  <Layout className="h-4 w-4 mr-1.5" />
-                  Widgets
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="overview"
-                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                >
-                  <Activity className="h-4 w-4 mr-1.5" />
-                  Overview
-                </TabsTrigger>
-                {userType === 'member' ? (
-                  <TabsTrigger 
-                    value="donate"
-                    className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                  >
-                    <Heart className="h-4 w-4 mr-1.5" />
-                    Donate
-                  </TabsTrigger>
-                ) : (
-                  <TabsTrigger 
-                    value="projects"
-                    className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                  >
-                    <Target className="h-4 w-4 mr-1.5" />
-                    Projects
-                  </TabsTrigger>
-                )}
-                <TabsTrigger 
-                  value="history"
-                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                >
-                  <History className="h-4 w-4 mr-1.5" />
-                  History
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics"
-                  className="data-[state=active]:bg-churpay-gradient data-[state=active]:text-white text-sm font-medium"
-                >
-                  <BarChart3 className="h-4 w-4 mr-1.5" />
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto">
-              <TabsContent value="widgets" className="mt-0 p-6 h-full">
-                <DashboardWidgets 
-                  userType={userType} 
-                  dashboardData={userType === 'member' ? memberData : churchData} 
-                />
-              </TabsContent>
-              <TabsContent value="overview" className="mt-0 p-6 h-full">
-                {renderOverview()}
-              </TabsContent>
-              {userType === 'member' && (
-                <TabsContent value="donate" className="mt-0 p-6 h-full">
-                  {renderDonationForm()}
-                </TabsContent>
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Overview Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-purple-600" />
+              Overview
+            </h2>
+            {renderOverview()}
+          </div>
+
+          {/* Analytics Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
+              Analytics
+            </h2>
+            {userType === 'member' ? (
+              <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
+            ) : (
+              <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
+            )}
+          </div>
+
+          {/* History Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <History className="h-5 w-5 mr-2 text-purple-600" />
+              {userType === 'member' ? 'Donation History' : 'Transaction History'}
+            </h2>
+            {renderHistory()}
+          </div>
+
+          {/* Projects/Donate Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              {userType === 'member' ? (
+                <>
+                  <Heart className="h-5 w-5 mr-2 text-purple-600" />
+                  Make a Donation
+                </>
+              ) : (
+                <>
+                  <Target className="h-5 w-5 mr-2 text-purple-600" />
+                  Active Projects
+                </>
               )}
-              {userType === 'church' && (
-                <TabsContent value="projects" className="mt-0 p-6 h-full">
-                  {renderProjects()}
-                </TabsContent>
-              )}
-              <TabsContent value="history" className="mt-0 p-6 h-full">
-                {renderHistory()}
-              </TabsContent>
-              <TabsContent value="analytics" className="mt-0 p-6 h-full">
-                {userType === 'member' ? (
-                  <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
-                ) : (
-                  <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
-                )}
-              </TabsContent>
-            </div>
-          </Tabs>
+            </h2>
+            {userType === 'member' ? renderDonationForm() : renderProjects()}
+          </div>
+
+          {/* Widgets Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Layout className="h-5 w-5 mr-2 text-purple-600" />
+              Dashboard Widgets
+            </h2>
+            <DashboardWidgets 
+              userType={userType} 
+              dashboardData={userType === 'member' ? memberData : churchData} 
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
