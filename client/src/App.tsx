@@ -18,7 +18,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/church-registration" component={PublicChurchRegistration} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
-      <Route path="/member-dashboard" component={MemberDashboard} />
+      <Route path="/member-dashboard" component={MemberDashboardDark} />
       <Route path="/member" component={MemberDashboardDark} />
       <Route path="/wallet" component={WalletDashboard} />
       <Route path="/sign-in" component={SignIn} />

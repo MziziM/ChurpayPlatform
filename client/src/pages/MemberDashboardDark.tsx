@@ -149,20 +149,20 @@ export default function MemberDashboardDark() {
               <span>Dashboard</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
-              <Building className="h-5 w-5" />
-              <span>Documents</span>
+              <Church className="h-5 w-5" />
+              <span>Churches</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
-              <CreditCard className="h-5 w-5" />
-              <span>Payments</span>
+              <Target className="h-5 w-5" />
+              <span>Projects</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
-              <Calendar className="h-5 w-5" />
-              <span>Calendar</span>
+              <Activity className="h-5 w-5" />
+              <span>History</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg cursor-pointer">
-              <Users className="h-5 w-5" />
-              <span>Profile</span>
+              <Wallet className="h-5 w-5" />
+              <span>Wallet</span>
             </div>
           </nav>
 
@@ -218,21 +218,42 @@ export default function MemberDashboardDark() {
             
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="font-semibold">Emmy Dansom</p>
-                <p className="text-sm text-gray-400">CEO</p>
+                <p className="font-semibold">ChurPay Member</p>
+                <p className="text-sm text-gray-400">Dashboard</p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold">ED</span>
+                <Wallet className="h-6 w-6 text-white" />
               </div>
               <div className="flex space-x-2">
-                <Button size="sm" className="bg-gray-800 hover:bg-gray-700 text-white">
-                  <Users className="h-4 w-4" />
-                </Button>
-                <Button size="sm" className="bg-gray-800 hover:bg-gray-700 text-white">
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('donation');
+                    setShowDonationModal(true);
+                  }}
+                >
                   <Heart className="h-4 w-4" />
                 </Button>
-                <Button size="sm" className="bg-gray-800 hover:bg-gray-700 text-white">
-                  <Settings className="h-4 w-4" />
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('tithe');
+                    setShowDonationModal(true);
+                  }}
+                >
+                  <Church className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-gray-800 hover:bg-gray-700 text-white"
+                  onClick={() => {
+                    setDonationType('topup');
+                    setShowDonationModal(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -323,50 +344,107 @@ export default function MemberDashboardDark() {
                 </CardContent>
               </Card>
 
-              {/* Projects Finance Table */}
+              {/* Churches */}
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-white">Projects Finance</CardTitle>
+                  <CardTitle className="text-white">Connected Churches</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-semibold">DD</span>
+                    {Array.isArray(churches) && churches.length > 0 ? (
+                      churches.slice(0, 2).map((church: any) => (
+                        <div key={church.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                              <Church className="h-4 w-4 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">{church.name}</p>
+                              <p className="text-gray-400 text-sm">{church.location}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-semibold">{formatCurrency(church.totalDonations)}</p>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-400 text-sm">{church.memberCount} members</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setDonationType('donation');
+                              setShowDonationModal(true);
+                            }}
+                            className="ml-3 bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Heart className="h-3 w-3 mr-1" />
+                            Give
+                          </Button>
                         </div>
-                        <div>
-                          <p className="text-white font-medium">Darby Day</p>
-                          <p className="text-gray-400 text-sm">Meet the target</p>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-400">
+                        <Church className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No churches connected</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-white font-semibold">$145,000</p>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-gray-400 text-sm">Financial Officer</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Projects */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Active Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Array.isArray(projects) && projects.length > 0 ? (
+                      projects.slice(0, 2).map((project: any) => (
+                        <div key={project.id} className="p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-white font-medium">{project.title}</p>
+                              <p className="text-gray-400 text-sm">{project.churchName}</p>
+                            </div>
+                            <Badge className="bg-orange-500 text-white">{project.category}</Badge>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">Progress</span>
+                              <span className="text-white">{Math.round((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-600 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">{formatCurrency(project.currentAmount)}</span>
+                              <span className="text-gray-400">Goal: {formatCurrency(project.targetAmount)}</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setDonationType('project');
+                              setShowDonationModal(true);
+                            }}
+                            className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            <Target className="h-3 w-3 mr-1" />
+                            Support
+                          </Button>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-400">
+                        <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No active projects</p>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-semibold">HD</span>
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">Holt Diven</p>
-                          <p className="text-gray-400 text-sm">On Going</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-white font-semibold">$289,000</p>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                          <span className="text-gray-400 text-sm">Project Manager</span>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -422,63 +500,65 @@ export default function MemberDashboardDark() {
                 </CardContent>
               </Card>
 
-              {/* About Section */}
+              {/* Giving History */}
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-white text-sm">About</CardTitle>
+                  <CardTitle className="text-white text-sm">Recent Giving</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Organized activities to make money and sell goods and services for a profit
-                  </p>
-                  
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">JJ</span>
+                    {Array.isArray(donationHistory) && donationHistory.length > 0 ? (
+                      (donationHistory as DonationHistory[]).slice(0, 3).map((donation: DonationHistory) => (
+                        <div key={donation.id} className="flex items-center justify-between p-2 bg-gray-700 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                              {donation.type === 'tithe' ? <Church className="h-3 w-3 text-white" /> : 
+                               donation.type === 'project' ? <Target className="h-3 w-3 text-white" /> :
+                               <Heart className="h-3 w-3 text-white" />}
+                            </div>
+                            <div>
+                              <p className="text-white text-sm font-medium">{donation.churchName}</p>
+                              <p className="text-gray-400 text-xs capitalize">{donation.type}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white text-sm font-semibold">{formatCurrency(donation.amount)}</p>
+                            <p className="text-gray-400 text-xs">{formatDate(donation.createdAt)}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-400">
+                        <Activity className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                        <p className="text-xs">No giving history</p>
                       </div>
-                      <div>
-                        <p className="text-white text-sm font-medium">Jonie Juger</p>
-                        <p className="text-gray-400 text-xs">Project Manager</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">SH</span>
-                      </div>
-                      <div>
-                        <p className="text-white text-sm font-medium">Sarah Hosten</p>
-                        <p className="text-gray-400 text-xs">Graphic Designer</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">DA</span>
-                      </div>
-                      <div>
-                        <p className="text-white text-sm font-medium">Deckard Anne</p>
-                        <p className="text-gray-400 text-xs">Financial Treasurer</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Send Money */}
-              <Card className="bg-gray-800 border-gray-700">
+              {/* Wallet Balance */}
+              <Card className="bg-gradient-to-r from-purple-600 to-pink-600 border-0 text-white">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Send Money</h3>
+                      <h3 className="text-white font-semibold mb-1">Wallet Balance</h3>
                       <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-gray-400 text-sm">Your Card</span>
+                        <div className="w-2 h-2 bg-white rounded-full opacity-75"></div>
+                        <span className="text-white/75 text-sm">Available Now</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-white">$145,000</p>
+                      <p className="text-2xl font-bold text-white">
+                        {showBalance ? (walletData && typeof walletData === 'object' && 'availableBalance' in walletData ? formatCurrency((walletData as WalletData).availableBalance) : 'R 0.00') : '****'}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowBalance(!showBalance)}
+                        className="mt-2 bg-white/20 hover:bg-white/30 text-white border-0"
+                      >
+                        {showBalance ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
