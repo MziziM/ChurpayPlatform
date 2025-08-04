@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import FinancialTrendsChart from "./FinancialTrendsChart";
 import MemberGivingAnalytics from "./MemberGivingAnalytics";
 import { 
@@ -24,8 +25,10 @@ import {
   ArrowUpRight,
   BarChart3,
   PieChart,
-  LineChart
+  LineChart,
+  Layout
 } from "lucide-react";
+import DashboardWidgets from "./DashboardWidgets";
 
 interface DashboardModalProps {
   isOpen: boolean;
@@ -34,7 +37,7 @@ interface DashboardModalProps {
 }
 
 export default function DashboardModal({ isOpen, onClose, userType }: DashboardModalProps) {
-  const [currentView, setCurrentView] = useState('overview');
+  const [currentView, setCurrentView] = useState('widgets');
   const [donationAmount, setDonationAmount] = useState('');
   const [donationType, setDonationType] = useState('');
 
@@ -514,6 +517,13 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
         ) : (
           <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
         );
+      case 'widgets':
+        return (
+          <DashboardWidgets 
+            userType={userType} 
+            dashboardData={userType === 'member' ? memberData : churchData} 
+          />
+        );
       default:
         return renderOverview();
     }
@@ -528,6 +538,15 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
               {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
             </DialogTitle>
             <div className="flex items-center space-x-2">
+              <Button
+                variant={currentView === 'widgets' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentView('widgets')}
+                className={currentView === 'widgets' ? 'bg-churpay-gradient text-white' : ''}
+              >
+                <Layout className="h-4 w-4 mr-1" />
+                Widgets
+              </Button>
               <Button
                 variant={currentView === 'overview' ? 'default' : 'ghost'}
                 size="sm"
