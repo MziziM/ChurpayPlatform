@@ -136,12 +136,9 @@ export default function ProfessionalMemberDashboard() {
               className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors"
               onClick={() => setShowProfileModal(true)}
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" 
-                  alt="Profile" 
-                  className="w-full h-full object-cover" 
-                />
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                {/* Show emoji if available, otherwise show profile image */}
+                <span className="text-lg">🙏</span>
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-medium text-gray-900">Nomsa Mthembu</p>

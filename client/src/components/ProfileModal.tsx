@@ -10,7 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   User, Mail, Phone, MapPin, Calendar, 
   Shield, Heart, Star, Award, Edit3,
-  Building2, CreditCard, Settings, Crown
+  Building2, CreditCard, Settings, Crown,
+  Camera, Upload, Smile
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,18 +20,36 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
+// Bible-based emoji options for profile pictures
+const BIBLE_EMOJIS = [
+  { emoji: '🙏', name: 'Prayer' },
+  { emoji: '✝️', name: 'Cross' },
+  { emoji: '❤️', name: 'Love' },
+  { emoji: '🕊️', name: 'Peace' },
+  { emoji: '🌟', name: 'Star' },
+  { emoji: '👑', name: 'Crown' },
+  { emoji: '🛡️', name: 'Shield' },
+  { emoji: '🕯️', name: 'Light' },
+  { emoji: '📖', name: 'Word' },
+  { emoji: '🏠', name: 'Home' },
+  { emoji: '🌺', name: 'Bloom' },
+  { emoji: '⛪', name: 'Church' }
+];
+
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@example.com',
+    firstName: 'Nomsa',
+    lastName: 'Mthembu',
+    email: 'nomsa.mthembu@example.com',
     phone: '+27 82 123 4567',
     address: 'Cape Town, South Africa',
     joinDate: '2020-01-15',
     membershipTier: 'Faithful Steward',
     churchName: 'Grace Baptist Church',
-    profileImage: null
+    profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face',
+    profileEmoji: null
   });
 
   const { toast } = useToast();
@@ -53,6 +72,67 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real app, you would upload to a server/cloud storage
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileData(prev => ({ 
+          ...prev, 
+          profileImage: e.target?.result as string,
+          profileEmoji: null // Clear emoji when uploading image
+        }));
+      };
+      reader.readAsDataURL(file);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Your profile picture has been updated.",
+      });
+    }
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setProfileData(prev => ({ 
+      ...prev, 
+      profileEmoji: emoji,
+      profileImage: null // Clear image when selecting emoji
+    }));
+    setShowEmojiPicker(false);
+    toast({
+      title: "Profile Updated",
+      description: "Your profile emoji has been updated.",
+    });
+  };
+
+  const getProfileDisplay = () => {
+    if (profileData.profileEmoji) {
+      return (
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-4xl border-4 border-white shadow-lg">
+          {profileData.profileEmoji}
+        </div>
+      );
+    } else if (profileData.profileImage) {
+      return (
+        <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+          <AvatarImage src={profileData.profileImage} alt="Profile" className="object-cover" />
+          <AvatarFallback className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white text-2xl">
+            {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+      );
+    } else {
+      return (
+        <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+          <AvatarFallback className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white text-2xl">
+            {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+      );
+    }
   };
 
   return (
@@ -95,19 +175,67 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Profile Picture */}
-                <div className="flex items-center space-x-4">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src={profileData.profileImage || ''} />
-                    <AvatarFallback className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white text-xl">
-                      {profileData.firstName[0]}{profileData.lastName[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  {isEditing && (
-                    <Button variant="outline" size="sm" className="rounded-xl">
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Change Photo
-                    </Button>
+                {/* Enhanced Profile Picture Section */}
+                <div className="flex flex-col items-center space-y-4 p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-100">
+                  <div className="relative">
+                    {getProfileDisplay()}
+                    {isEditing && (
+                      <div className="absolute -bottom-2 -right-2 flex space-x-1">
+                        <label htmlFor="profile-upload" className="cursor-pointer">
+                          <div className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg transition-colors">
+                            <Camera className="h-4 w-4 text-white" />
+                          </div>
+                        </label>
+                        <input
+                          id="profile-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="w-8 h-8 bg-purple-600 hover:bg-purple-700 rounded-full p-0"
+                        >
+                          <Smile className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {profileData.firstName} {profileData.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-600">{profileData.membershipTier}</p>
+                  </div>
+
+                  {/* Bible Emoji Picker */}
+                  {showEmojiPicker && isEditing && (
+                    <div className="w-full p-4 bg-white rounded-xl border border-gray-200 shadow-lg">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                        <Smile className="h-4 w-4 mr-2" />
+                        Choose a Bible-inspired emoji
+                      </h4>
+                      <div className="grid grid-cols-6 gap-2">
+                        {BIBLE_EMOJIS.map((item) => (
+                          <Button
+                            key={item.emoji}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEmojiSelect(item.emoji)}
+                            className="h-12 w-12 text-2xl hover:bg-purple-50 rounded-xl border border-transparent hover:border-purple-200"
+                            title={item.name}
+                          >
+                            {item.emoji}
+                          </Button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-3 text-center">
+                        Select an emoji that represents your faith journey
+                      </p>
+                    </div>
                   )}
                 </div>
 
