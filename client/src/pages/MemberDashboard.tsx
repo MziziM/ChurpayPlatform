@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
-  Wallet, Heart, Church, Target, Plus, 
-  ArrowDown, ArrowUp, Users, Settings, ArrowLeftRight,
-  Star, Home, User, Bell, Search, MoreVertical
+  Wallet, Heart, Building2, Target, Plus, 
+  ArrowDown, ArrowUp, Users, ArrowLeftRight,
+  Home, User, Bell, Search, ChevronRight,
+  Activity, CreditCard, HandHeart, Banknote,
+  Receipt, Shield, Clock
 } from 'lucide-react';
 import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
 
