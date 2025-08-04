@@ -356,6 +356,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Authentication Endpoints
+  app.post('/api/admin/signup', async (req, res) => {
+    try {
+      const bcrypt = await import('bcryptjs');
+      const { firstName, lastName, email, password, adminCode, acceptTerms } = req.body;
+      
+      // Validate admin authorization code
+      const ADMIN_CODE = process.env.ADMIN_AUTH_CODE || 'CHURPAY_ADMIN_2025';
+      if (adminCode !== ADMIN_CODE) {
+        return res.status(400).json({ message: "Invalid admin authorization code" });
+      }
+      
+      if (!acceptTerms) {
+        return res.status(400).json({ message: "Terms and conditions must be accepted" });
+      }
+      
+      // Check if admin already exists
+      const existingAdmin = await storage.getAdminByEmail(email);
+      if (existingAdmin) {
+        return res.status(400).json({ message: "Admin account already exists with this email" });
+      }
+      
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      // Create admin account
+      const adminData = {
+        firstName,
+        lastName,
+        email,
+        passwordHash,
+        role: 'admin' as const,
+        isActive: true
+      };
+      
+      const admin = await storage.createAdmin(adminData);
+      
+      // Return admin data (without password hash)
+      const { passwordHash: _, ...adminResponse } = admin;
+      res.json(adminResponse);
+      
+    } catch (error: any) {
+      console.error("Error creating admin account:", error);
+      res.status(500).json({ message: "Failed to create admin account", error: error.message });
+    }
+  });
+  
+  app.post('/api/admin/signin', async (req, res) => {
+    try {
+      const bcrypt = await import('bcryptjs');
+      const { email, password, rememberMe } = req.body;
+      
+      // Get admin by email
+      const admin = await storage.getAdminByEmail(email);
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Check if account is locked
+      if (admin.accountLockedUntil && admin.accountLockedUntil > new Date()) {
+        return res.status(423).json({ message: "Account is temporarily locked. Please try again later." });
+      }
+      
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+      if (!isValidPassword) {
+        // Increment failed login attempts
+        await storage.incrementFailedLoginAttempts(admin.id);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Reset failed login attempts and update last login
+      await storage.updateAdminLogin(admin.id);
+      
+      // Create session token (simplified for demo)
+      const sessionToken = Buffer.from(`${admin.id}:${Date.now()}`).toString('base64');
+      
+      const { passwordHash: _, ...adminResponse } = admin;
+      res.json({
+        admin: adminResponse,
+        token: sessionToken,
+        expiresIn: rememberMe ? '30d' : '24h'
+      });
+      
+    } catch (error: any) {
+      console.error("Error signing in admin:", error);
+      res.status(500).json({ message: "Failed to sign in", error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

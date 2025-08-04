@@ -14,6 +14,8 @@ import ProfessionalChurchDashboard from "@/pages/ProfessionalChurchDashboard";
 import MemberDashboardDark from "@/pages/MemberDashboardDark";
 import WalletDashboard from "@/pages/WalletDashboard";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import AdminSignUp from "@/pages/AdminSignUp";
+import AdminSignIn from "@/pages/AdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 
@@ -35,6 +37,8 @@ function Router() {
       <Route path="/wallet" component={WalletDashboard} />
       <Route path="/super-admin" component={SuperAdminDashboard} />
       <Route path="/admin" component={SuperAdminDashboard} />
+      <Route path="/admin/signup" component={AdminSignUp} />
+      <Route path="/admin/signin" component={AdminSignIn} />
       <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
     </Switch>
