@@ -12,6 +12,10 @@ import {
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
 import { ProfessionalWalletModal } from '@/components/ProfessionalWalletModal';
+import { ProfileModal } from '@/components/ProfileModal';
+import { ChurchModal } from '@/components/ChurchModal';
+import { NotificationModal } from '@/components/NotificationModal';
+import { ActivitiesModal } from '@/components/ActivitiesModal';
 
 interface WalletData {
   id: string;
@@ -39,6 +43,10 @@ interface DonationHistory {
 export default function ProfessionalMemberDashboard() {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showChurchModal, setShowChurchModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -69,9 +77,33 @@ export default function ProfessionalMemberDashboard() {
             
             <nav className="hidden md:flex items-center space-x-6">
               <Button variant="ghost" className="text-purple-600 font-medium">Dashboard</Button>
-              <Button variant="ghost" className="text-gray-600">Giving</Button>
-              <Button variant="ghost" className="text-gray-600">Churches</Button>
-              <Button variant="ghost" className="text-gray-600">Projects</Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => {
+                  setDonationType('donation');
+                  setShowDonationModal(true);
+                }}
+              >
+                Giving
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => setShowChurchModal(true)}
+              >
+                Churches
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-purple-600"
+                onClick={() => {
+                  setDonationType('project');
+                  setShowDonationModal(true);
+                }}
+              >
+                Projects
+              </Button>
             </nav>
           </div>
           
@@ -86,12 +118,20 @@ export default function ProfessionalMemberDashboard() {
               />
             </div>
             
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative hover:bg-purple-50"
+              onClick={() => setShowNotificationModal(true)}
+            >
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
             
-            <div className="flex items-center space-x-3">
+            <div 
+              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors"
+              onClick={() => setShowProfileModal(true)}
+            >
               <div className="w-8 h-8 rounded-full overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" 
@@ -387,7 +427,12 @@ export default function ProfessionalMemberDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full border-green-200 text-green-700 hover:bg-green-50" size="sm">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-green-200 text-green-700 hover:bg-green-50" 
+                    size="sm"
+                    onClick={() => setShowChurchModal(true)}
+                  >
                     <ChevronRight className="h-4 w-4 mr-2" />
                     View Church Profile
                   </Button>
@@ -437,23 +482,51 @@ export default function ProfessionalMemberDashboard() {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
         <div className="flex justify-around">
-          <Button variant="ghost" size="sm" className="flex flex-col items-center space-y-1 text-purple-600">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center space-y-1 text-purple-600"
+            onClick={() => setShowActivitiesModal(true)}
+          >
             <Activity className="h-5 w-5" />
             <span className="text-xs">Dashboard</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center space-y-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center space-y-1"
+            onClick={() => setShowWalletModal(true)}
+          >
             <Wallet className="h-5 w-5" />
             <span className="text-xs">Wallet</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center space-y-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center space-y-1"
+            onClick={() => {
+              setDonationType('donation');
+              setShowDonationModal(true);
+            }}
+          >
             <HandHeart className="h-5 w-5" />
             <span className="text-xs">Give</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center space-y-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center space-y-1"
+            onClick={() => setShowActivitiesModal(true)}
+          >
             <Receipt className="h-5 w-5" />
             <span className="text-xs">History</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center space-y-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center space-y-1"
+            onClick={() => setShowProfileModal(true)}
+          >
             <User className="h-5 w-5" />
             <span className="text-xs">Profile</span>
           </Button>
@@ -482,6 +555,26 @@ export default function ProfessionalMemberDashboard() {
         onSend={() => {
           setShowWalletModal(false);
         }}
+      />
+
+      <ProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
+
+      <ChurchModal
+        isOpen={showChurchModal}
+        onClose={() => setShowChurchModal(false)}
+      />
+
+      <NotificationModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+      />
+
+      <ActivitiesModal
+        isOpen={showActivitiesModal}
+        onClose={() => setShowActivitiesModal(false)}
       />
     </div>
   );
