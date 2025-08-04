@@ -10,8 +10,8 @@ import {
   Search, Bell, User, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus
 } from 'lucide-react';
-import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
-import { WalletModal } from '@/components/WalletModal';
+import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
+import { ProfessionalWalletModal } from '@/components/ProfessionalWalletModal';
 
 interface WalletData {
   id: string;
@@ -461,12 +461,14 @@ export default function ProfessionalMemberDashboard() {
       </div>
 
       {/* Modals */}
-      <EnhancedDonationModal
+      <ProfessionalDonationModal
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
+        type={donationType}
+        walletBalance={walletBalance.toString()}
       />
 
-      <WalletModal
+      <ProfessionalWalletModal
         isOpen={showWalletModal}
         onClose={() => setShowWalletModal(false)}
         walletBalance={walletBalance}

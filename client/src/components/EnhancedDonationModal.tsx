@@ -43,10 +43,10 @@ interface EnhancedDonationModalProps {
 export function EnhancedDonationModal({ 
   isOpen, 
   onClose, 
-  type, 
-  churches, 
+  type = 'donation', 
+  churches = [], 
   projects = [],
-  walletBalance 
+  walletBalance = "0" 
 }: EnhancedDonationModalProps) {
   const [selectedChurch, setSelectedChurch] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<string>("");
@@ -54,6 +54,8 @@ export function EnhancedDonationModal({
   const [note, setNote] = useState<string>("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("wallet");
   const [paymentMethodType, setPaymentMethodType] = useState<'wallet' | 'card'>('wallet');
+  const [step, setStep] = useState<'amount' | 'details' | 'payment' | 'confirm'>('amount');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
