@@ -154,53 +154,53 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
       {/* Enhanced Quick Actions with Professional Design */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Quick Give</p>
+                <p className="text-sm text-gray-600">Quick Give</p>
                 <p className="text-lg font-bold text-gray-900">Donate Now</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <Heart className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Projects</p>
+                <p className="text-sm text-gray-600">Projects</p>
                 <p className="text-lg font-bold text-gray-900">{memberData.projects.length} Active</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <Target className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">History</p>
+                <p className="text-sm text-gray-600">History</p>
                 <p className="text-lg font-bold text-gray-900">View All</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <History className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
+                <p className="text-sm text-gray-600">Analytics</p>
                 <p className="text-lg font-bold text-gray-900">My Trends</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-white" />
               </div>
             </div>
@@ -327,53 +327,53 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Donations</p>
+                <p className="text-sm text-gray-600">Donations</p>
                 <p className="text-lg font-bold text-gray-900">Manage</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <Heart className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Projects</p>
+                <p className="text-sm text-gray-600">Projects</p>
                 <p className="text-lg font-bold text-gray-900">{churchData.activeProjects.length} Active</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <Target className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Transactions</p>
+                <p className="text-sm text-gray-600">Transactions</p>
                 <p className="text-lg font-bold text-gray-900">View All</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <History className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="shadow-sm border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
+                <p className="text-sm text-gray-600">Analytics</p>
                 <p className="text-lg font-bold text-gray-900">Trends</p>
               </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-white" />
               </div>
             </div>
