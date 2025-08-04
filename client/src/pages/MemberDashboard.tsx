@@ -253,10 +253,6 @@ export default function MemberDashboard() {
               <div className="flex space-x-3">
                 <Button className="relative bg-gray-800/60 hover:bg-gray-700/60 text-white border-gray-700/50 rounded-2xl w-12 h-12 p-0">
                   <Bell className="h-5 w-5" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white font-medium">3</div>
-                </Button>
-                <Button className="relative bg-gray-800/60 hover:bg-gray-700/60 text-white border-gray-700/50 rounded-2xl w-12 h-12 p-0">
-                  <Bell className="h-5 w-5" />
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white font-medium">5</div>
                 </Button>
               </div>
