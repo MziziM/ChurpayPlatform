@@ -1,10 +1,24 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { protectCoreEndpoints, validateFeeStructure } from "./codeProtection";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Initialize code protection system
+console.log("\n🔒 ChurPay Code Protection System Active");
+console.log("   Core files are locked against unauthorized modifications");
+if (!validateFeeStructure()) {
+  console.error("❌ CRITICAL: Fee structure has been tampered with!");
+  process.exit(1);
+}
+console.log("✅ Fee structure validated: 3.9% + R3 per transaction");
+console.log("   Only explicitly requested changes permitted\n");
+
+// Apply core endpoint protection
+app.use(protectCoreEndpoints);
 
 app.use((req, res, next) => {
   const start = Date.now();
