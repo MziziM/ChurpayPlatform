@@ -37,7 +37,7 @@ interface EnhancedDonationModalProps {
   type: 'donation' | 'tithe' | 'project' | 'topup';
   churches: Church[];
   projects?: Project[];
-  walletBalance: number;
+  walletBalance: string;
 }
 
 export function EnhancedDonationModal({ 
@@ -261,13 +261,13 @@ export function EnhancedDonationModal({
 
           {/* Payment Method Selection */}
           <PaymentMethodSelector
-            paymentMethods={paymentMethods}
+            paymentMethods={paymentMethods || []}
             selectedMethod={selectedPaymentMethod}
             onMethodSelect={(methodId, type) => {
               setSelectedPaymentMethod(methodId);
               setPaymentMethodType(type);
             }}
-            walletBalance={walletBalance}
+            walletBalance={parseFloat(walletBalance)}
             showAddCard={true}
             onAddCard={() => {
               toast({

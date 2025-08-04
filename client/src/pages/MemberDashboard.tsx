@@ -248,8 +248,8 @@ export default function MemberDashboard() {
             {/* Profile Section */}
             <div className="flex items-center space-x-6">
               <div className="text-right">
-                <p className="text-white font-semibold">Emmy Dansom</p>
-                <p className="text-gray-400 text-sm">CEO</p>
+                <p className="text-white font-semibold">Nomsa Mthembu</p>
+                <p className="text-gray-400 text-sm">Faithful Member</p>
               </div>
               <div className="w-12 h-12 rounded-full overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" alt="Profile" className="w-full h-full object-cover" />
@@ -554,7 +554,7 @@ export default function MemberDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-400 text-sm mb-6">
-                    Organised activities to make money and sell goods and services for a profit
+                    Connect with church leadership and fellow members in our ChurPay community
                   </p>
                   
                   <div className="space-y-4">
@@ -563,8 +563,8 @@ export default function MemberDashboard() {
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" alt="Jonie Juger" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">Jonie Juger</p>
-                        <p className="text-gray-400 text-sm">Project Manager</p>
+                        <p className="text-white font-medium">Pastor John Smith</p>
+                        <p className="text-gray-400 text-sm">Senior Pastor</p>
                       </div>
                     </div>
                     
@@ -573,8 +573,8 @@ export default function MemberDashboard() {
                         <img src="https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face" alt="Sarah Hosten" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">Sarah Hosten</p>
-                        <p className="text-gray-400 text-sm">Graphic Designer</p>
+                        <p className="text-white font-medium">Sarah Williams</p>
+                        <p className="text-gray-400 text-sm">Worship Leader</p>
                       </div>
                     </div>
                     
@@ -583,7 +583,7 @@ export default function MemberDashboard() {
                         <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="Deckard Anne" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">Deckard Anne</p>
+                        <p className="text-white font-medium">David Johnson</p>
                         <p className="text-gray-400 text-sm">Financial Treasurer</p>
                       </div>
                     </div>
