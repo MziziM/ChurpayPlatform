@@ -123,13 +123,31 @@ export default function MemberRegistration() {
     },
   });
 
-  // Fetch churches from API
-  const { data: churches = [] } = useQuery({
-    queryKey: ["/api/churches/approved"],
-    retry: false,
-  });
-
-  const sampleChurches: Church[] = churches;
+  // Use static sample churches for registration (no API call needed)
+  const sampleChurches: Church[] = [
+    {
+      id: "81afeeba-546e-4902-bf4d-691aad1f0610",
+      name: "Cape Town Methodist Church",
+      denomination: "Methodist",
+      city: "Cape Town",
+      province: "Western Cape",
+      contactEmail: "info@ctmethodist.org.za",
+      contactPhone: "+27 21 123 4567",
+      memberCount: 450,
+      status: "approved"
+    },
+    {
+      id: "b76e2587-7977-48b2-8d2d-132d2fceacfc",
+      name: "Johannesburg Baptist Fellowship", 
+      denomination: "Baptist",
+      city: "Johannesburg",
+      province: "Gauteng",
+      contactEmail: "connect@jbfellowship.co.za",
+      contactPhone: "+27 11 987 6543",
+      memberCount: 320,
+      status: "approved"
+    }
+  ];
 
   const filteredChurches = sampleChurches.filter(church =>
     church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
