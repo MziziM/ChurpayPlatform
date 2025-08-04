@@ -104,10 +104,10 @@ export default function MemberDashboard() {
       }
     ],
     quickActions: [
-      { id: 'donate', label: 'Make Donation', icon: Heart, color: 'from-green-400 to-green-600' },
-      { id: 'projects', label: 'Support Projects', icon: Target, color: 'from-blue-400 to-blue-600' },
-      { id: 'history', label: 'View History', icon: History, color: 'from-purple-400 to-purple-600' },
-      { id: 'settings', label: 'Settings', icon: Settings, color: 'from-gray-400 to-gray-600' }
+      { id: 'donate', label: 'Make Donation', icon: Heart, color: 'bg-churpay-gradient' },
+      { id: 'projects', label: 'Support Projects', icon: Target, color: 'bg-churpay-gradient' },
+      { id: 'history', label: 'View History', icon: History, color: 'bg-churpay-gradient' },
+      { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-churpay-gradient' }
     ]
   };
 
@@ -115,8 +115,10 @@ export default function MemberDashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-yellow-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-churpay-gradient mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your giving dashboard...</p>
+          <div className="w-16 h-16 bg-churpay-gradient rounded-full flex items-center justify-center animate-pulse mb-4 mx-auto">
+            <span className="text-white font-bold text-xl">C</span>
+          </div>
+          <p className="text-gray-600">Loading your ChurPay dashboard...</p>
         </div>
       </div>
     );
@@ -149,11 +151,11 @@ export default function MemberDashboard() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center shadow-lg">
-                  <Heart className="h-5 w-5 text-white" />
+                  <span className="text-white font-bold text-lg">C</span>
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-2xl font-bold text-gray-900">Chur</span>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Pay</span>
+                  <span className="text-2xl font-bold text-churpay-yellow">Pay</span>
                 </div>
               </div>
               <div className="hidden lg:block pl-4 border-l border-gray-200">

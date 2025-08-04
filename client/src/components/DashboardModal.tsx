@@ -122,10 +122,10 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
   const renderMemberOverview = () => (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-6 text-white">
+      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <Heart className="h-5 w-5 text-white" />
+            <span className="text-white font-bold text-lg">C</span>
           </div>
           <div>
             <h2 className="text-xl font-bold">Welcome back, {memberData.member.firstName}</h2>
@@ -200,7 +200,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
   const renderChurchOverview = () => (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-6 text-white">
+      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <Church className="h-5 w-5 text-white" />
@@ -277,9 +277,16 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   const renderDonationForm = () => (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold mb-2">Make a Donation</h2>
-        <p className="text-green-100">Support your church and make a difference</p>
+      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">C</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">Make a Donation</h2>
+            <p className="text-purple-100">Support your church and make a difference</p>
+          </div>
+        </div>
       </div>
 
       <Card>
@@ -339,7 +346,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </div>
 
-          <Button className="w-full bg-churpay-gradient text-white h-11">
+          <Button className="w-full bg-churpay-gradient text-white h-11 hover:shadow-lg transition-all duration-300">
             <Heart className="h-4 w-4 mr-2" />
             Donate R{donationAmount || '0'}
           </Button>
@@ -374,7 +381,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" 
+                        className="bg-churpay-gradient h-2 rounded-full" 
                         style={{ width: `${(project.currentAmount / project.targetAmount) * 100}%` }}
                       ></div>
                     </div>
@@ -419,9 +426,13 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
-                {userType === 'member' ? <Heart className="h-5 w-5 text-white" /> : <Church className="h-5 w-5 text-white" />}
+                <span className="text-white font-bold text-lg">C</span>
               </div>
-              <span>{userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}</span>
+              <div>
+                <span className="text-xl font-bold text-gray-900">Chur</span>
+                <span className="text-xl font-bold text-churpay-yellow">Pay</span>
+                <span className="text-gray-600 ml-2 text-lg font-medium">{userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}</span>
+              </div>
             </DialogTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
@@ -432,24 +443,36 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
         <div className="flex-1 overflow-hidden">
           <Tabs value={currentView} onValueChange={setCurrentView} className="h-full flex flex-col">
             <div className="px-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="flex items-center space-x-2">
+              <TabsList className="grid w-full grid-cols-4 bg-purple-50 border border-purple-100 p-1 rounded-xl">
+                <TabsTrigger 
+                  value="overview" 
+                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+                >
                   <TrendingUp className="h-4 w-4" />
-                  <span>Overview</span>
+                  <span className="hidden sm:inline">Overview</span>
                 </TabsTrigger>
                 {userType === 'member' && (
-                  <TabsTrigger value="donate" className="flex items-center space-x-2">
+                  <TabsTrigger 
+                    value="donate" 
+                    className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+                  >
                     <Heart className="h-4 w-4" />
-                    <span>Donate</span>
+                    <span className="hidden sm:inline">Donate</span>
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="projects" className="flex items-center space-x-2">
+                <TabsTrigger 
+                  value="projects" 
+                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+                >
                   <Target className="h-4 w-4" />
-                  <span>Projects</span>
+                  <span className="hidden sm:inline">Projects</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center space-x-2">
+                <TabsTrigger 
+                  value="history" 
+                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+                >
                   <History className="h-4 w-4" />
-                  <span>History</span>
+                  <span className="hidden sm:inline">History</span>
                 </TabsTrigger>
               </TabsList>
             </div>
