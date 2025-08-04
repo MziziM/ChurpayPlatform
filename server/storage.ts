@@ -5,6 +5,10 @@ import {
   transactions,
   payouts,
   activityLogs,
+  wallets,
+  walletTransactions,
+  walletTopUpMethods,
+  payfastTransactions,
   type User,
   type UpsertUser,
   type Church,
@@ -17,6 +21,14 @@ import {
   type InsertPayout,
   type ActivityLog,
   type InsertActivityLog,
+  type Wallet,
+  type InsertWallet,
+  type WalletTransaction,
+  type InsertWalletTransaction,
+  type WalletTopUpMethod,
+  type InsertWalletTopUpMethod,
+  type PayfastTransaction,
+  type InsertPayfastTransaction,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
@@ -66,6 +78,27 @@ export interface IStorage {
   getPlatformStats(): Promise<any>;
   getChurchDashboardData(churchId: string): Promise<any>;
   getMemberDashboardData(userId: string): Promise<any>;
+  
+  // Wallet operations
+  createWallet(wallet: InsertWallet): Promise<Wallet>;
+  getWallet(id: string): Promise<Wallet | undefined>;
+  getUserWallet(userId: string): Promise<Wallet | undefined>;
+  updateWalletBalance(walletId: string, availableBalance: number, pendingBalance?: number): Promise<Wallet>;
+  
+  // Wallet transactions
+  createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction>;
+  getWalletTransaction(id: string): Promise<WalletTransaction | undefined>;
+  getWalletTransactions(walletId: string, limit?: number, offset?: number): Promise<WalletTransaction[]>;
+  getUserWalletTransactions(userId: string, limit?: number, offset?: number): Promise<WalletTransaction[]>;
+  updateWalletTransactionStatus(id: string, status: string, failureReason?: string): Promise<WalletTransaction>;
+  
+  // Member search and transfers
+  searchMembers(query: string, excludeUserId?: string): Promise<User[]>;
+  processWalletTransfer(fromUserId: string, toUserId: string, amount: number, description?: string): Promise<{ success: boolean; transactionId?: string; error?: string }>;
+  
+  // PayFast integration
+  createPayfastTransaction(transaction: InsertPayfastTransaction): Promise<PayfastTransaction>;
+  updatePayfastTransaction(id: string, updates: Partial<PayfastTransaction>): Promise<PayfastTransaction>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -419,6 +452,214 @@ export class DatabaseStorage implements IStorage {
       recentTransactions: transactions,
       publicProjects,
     };
+  }
+
+  // Wallet operations
+  async createWallet(wallet: InsertWallet): Promise<Wallet> {
+    const [newWallet] = await db.insert(wallets).values(wallet).returning();
+    return newWallet;
+  }
+
+  async getWallet(id: string): Promise<Wallet | undefined> {
+    const [wallet] = await db.select().from(wallets).where(eq(wallets.id, id));
+    return wallet;
+  }
+
+  async getUserWallet(userId: string): Promise<Wallet | undefined> {
+    const [wallet] = await db.select().from(wallets).where(eq(wallets.userId, userId));
+    return wallet;
+  }
+
+  async updateWalletBalance(walletId: string, availableBalance: number, pendingBalance?: number): Promise<Wallet> {
+    const updateData: any = { availableBalance, updatedAt: new Date() };
+    if (pendingBalance !== undefined) {
+      updateData.pendingBalance = pendingBalance;
+    }
+    
+    const [wallet] = await db
+      .update(wallets)
+      .set(updateData)
+      .where(eq(wallets.id, walletId))
+      .returning();
+    return wallet;
+  }
+
+  // Wallet transactions
+  async createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction> {
+    const [newTransaction] = await db.insert(walletTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async getWalletTransaction(id: string): Promise<WalletTransaction | undefined> {
+    const [transaction] = await db.select().from(walletTransactions).where(eq(walletTransactions.id, id));
+    return transaction;
+  }
+
+  async getWalletTransactions(walletId: string, limit = 50, offset = 0): Promise<WalletTransaction[]> {
+    return await db
+      .select()
+      .from(walletTransactions)
+      .where(eq(walletTransactions.walletId, walletId))
+      .orderBy(desc(walletTransactions.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getUserWalletTransactions(userId: string, limit = 50, offset = 0): Promise<WalletTransaction[]> {
+    return await db
+      .select({
+        id: walletTransactions.id,
+        walletId: walletTransactions.walletId,
+        type: walletTransactions.type,
+        amount: walletTransactions.amount,
+        currency: walletTransactions.currency,
+        description: walletTransactions.description,
+        fromWalletId: walletTransactions.fromWalletId,
+        toWalletId: walletTransactions.toWalletId,
+        transactionId: walletTransactions.transactionId,
+        churchId: walletTransactions.churchId,
+        paymentMethod: walletTransactions.paymentMethod,
+        paymentReference: walletTransactions.paymentReference,
+        processingFee: walletTransactions.processingFee,
+        status: walletTransactions.status,
+        failureReason: walletTransactions.failureReason,
+        balanceBefore: walletTransactions.balanceBefore,
+        balanceAfter: walletTransactions.balanceAfter,
+        createdAt: walletTransactions.createdAt,
+        updatedAt: walletTransactions.updatedAt,
+      })
+      .from(walletTransactions)
+      .leftJoin(wallets, eq(walletTransactions.walletId, wallets.id))
+      .where(eq(wallets.userId, userId))
+      .orderBy(desc(walletTransactions.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async updateWalletTransactionStatus(id: string, status: string, failureReason?: string): Promise<WalletTransaction> {
+    const updateData: any = { status: status as any, updatedAt: new Date() };
+    if (failureReason) {
+      updateData.failureReason = failureReason;
+    }
+    
+    const [transaction] = await db
+      .update(walletTransactions)
+      .set(updateData)
+      .where(eq(walletTransactions.id, id))
+      .returning();
+    return transaction;
+  }
+
+  // Member search and transfers
+  async searchMembers(query: string, excludeUserId?: string): Promise<User[]> {
+    const searchQuery = `%${query.toLowerCase()}%`;
+    let whereClause = or(
+      ilike(users.firstName, searchQuery),
+      ilike(users.lastName, searchQuery),
+      ilike(users.email, searchQuery),
+      ilike(users.profileImageUrl, searchQuery)
+    );
+
+    if (excludeUserId) {
+      whereClause = and(whereClause, sql`${users.id} != ${excludeUserId}`);
+    }
+
+    return await db
+      .select()
+      .from(users)
+      .where(whereClause)
+      .limit(10);
+  }
+
+  async processWalletTransfer(fromUserId: string, toUserId: string, amount: number, description?: string): Promise<{ success: boolean; transactionId?: string; error?: string }> {
+    try {
+      // Start transaction
+      return await db.transaction(async (tx) => {
+        // Get sender's wallet
+        const [senderWallet] = await tx.select().from(wallets).where(eq(wallets.userId, fromUserId));
+        if (!senderWallet) {
+          return { success: false, error: 'Sender wallet not found' };
+        }
+
+        // Get receiver's wallet
+        const [receiverWallet] = await tx.select().from(wallets).where(eq(wallets.userId, toUserId));
+        if (!receiverWallet) {
+          return { success: false, error: 'Receiver wallet not found' };
+        }
+
+        // Check if sender has sufficient balance
+        if (senderWallet.availableBalance < amount) {
+          return { success: false, error: 'Insufficient balance' };
+        }
+
+        // Update sender's balance
+        await tx
+          .update(wallets)
+          .set({ 
+            availableBalance: senderWallet.availableBalance - amount,
+            updatedAt: new Date()
+          })
+          .where(eq(wallets.id, senderWallet.id));
+
+        // Update receiver's balance
+        await tx
+          .update(wallets)
+          .set({ 
+            availableBalance: receiverWallet.availableBalance + amount,
+            updatedAt: new Date()
+          })
+          .where(eq(wallets.id, receiverWallet.id));
+
+        // Create sender transaction record
+        const [senderTransaction] = await tx
+          .insert(walletTransactions)
+          .values({
+            walletId: senderWallet.id,
+            type: 'transfer_sent',
+            amount: -amount,
+            description: description || `Transfer to ${toUserId}`,
+            toWalletId: receiverWallet.id,
+            status: 'completed',
+            balanceBefore: senderWallet.availableBalance,
+            balanceAfter: senderWallet.availableBalance - amount,
+          })
+          .returning();
+
+        // Create receiver transaction record
+        await tx
+          .insert(walletTransactions)
+          .values({
+            walletId: receiverWallet.id,
+            type: 'transfer_received',
+            amount: amount,
+            description: description || `Transfer from ${fromUserId}`,
+            fromWalletId: senderWallet.id,
+            status: 'completed',
+            balanceBefore: receiverWallet.availableBalance,
+            balanceAfter: receiverWallet.availableBalance + amount,
+          });
+
+        return { success: true, transactionId: senderTransaction.id };
+      });
+    } catch (error) {
+      console.error('Transfer error:', error);
+      return { success: false, error: 'Transfer failed' };
+    }
+  }
+
+  // PayFast integration
+  async createPayfastTransaction(transaction: InsertPayfastTransaction): Promise<PayfastTransaction> {
+    const [newTransaction] = await db.insert(payfastTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async updatePayfastTransaction(id: string, updates: Partial<PayfastTransaction>): Promise<PayfastTransaction> {
+    const [transaction] = await db
+      .update(payfastTransactions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(payfastTransactions.id, id))
+      .returning();
+    return transaction;
   }
 }
 
