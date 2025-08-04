@@ -12,8 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
-import { isUnauthorizedError } from "@/lib/authUtils";
+// Removed auth dependencies since this is a public registration page
 import { 
   ArrowLeft, 
   Users, 
@@ -100,15 +99,14 @@ export default function MemberRegistration() {
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
     defaultValues: {
       country: "South Africa",
-      firstName: (user as any)?.firstName || "",
-      lastName: (user as any)?.lastName || "",
-      email: (user as any)?.email || "",
+      firstName: "",
+      lastName: "",
+      email: "",
       phone: "",
       dateOfBirth: "",
       address: "",
@@ -141,32 +139,24 @@ export default function MemberRegistration() {
 
   const memberRegistrationMutation = useMutation({
     mutationFn: async (data: MemberRegistrationForm) => {
-      const response = await apiRequest("POST", "/api/members/join", data);
+      const response = await apiRequest("POST", "/api/members/register", data);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Welcome to the Community!",
-        description: `You've successfully joined ${selectedChurch?.name}. You can now start making donations and supporting church projects.`,
+        title: "Registration Successful!",
+        description: `You've successfully registered with ${selectedChurch?.name}. Please sign in to complete your membership and start making donations.`,
         variant: "default",
       });
-      setLocation("/");
+      // Redirect to login after successful registration
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 2000);
     },
     onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Session Expired",
-          description: "Please sign in again to continue.",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 1000);
-        return;
-      }
       toast({
         title: "Registration Failed",
-        description: error.message || "There was an error joining the church. Please try again.",
+        description: error.message || "There was an error with your registration. Please try again.",
         variant: "destructive",
       });
     },
