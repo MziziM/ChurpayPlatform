@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FinancialTrendsChart from "./FinancialTrendsChart";
+import MemberGivingAnalytics from "./MemberGivingAnalytics";
 import { 
   Heart, 
   DollarSign, 
@@ -18,7 +21,10 @@ import {
   CheckCircle,
   Settings,
   Activity,
-  ArrowUpRight
+  ArrowUpRight,
+  BarChart3,
+  PieChart,
+  LineChart
 } from "lucide-react";
 
 interface DashboardModalProps {
@@ -184,15 +190,15 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('analytics')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Wallet</p>
-                <p className="text-lg font-bold text-gray-900">R 1,247</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
+                <p className="text-lg font-bold text-gray-900">My Trends</p>
               </div>
               <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Wallet className="h-5 w-5 text-white" />
+                <BarChart3 className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
@@ -357,15 +363,15 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('analytics')}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Members</p>
-                <p className="text-lg font-bold text-gray-900">{churchData.stats.activeMembers}</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
+                <p className="text-lg font-bold text-gray-900">Trends</p>
               </div>
               <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users className="h-5 w-5 text-white" />
+                <BarChart3 className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
@@ -502,6 +508,12 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             ))}
           </div>
         );
+      case 'analytics':
+        return userType === 'member' ? (
+          <MemberGivingAnalytics memberName={`${memberData.member.firstName} ${memberData.member.lastName}`} />
+        ) : (
+          <FinancialTrendsChart churchName={churchData.church.name} userType={userType} />
+        );
       default:
         return renderOverview();
     }
@@ -549,6 +561,15 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
                 className={currentView === 'history' ? 'bg-churpay-gradient text-white' : ''}
               >
                 History
+              </Button>
+              <Button
+                variant={currentView === 'analytics' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentView('analytics')}
+                className={currentView === 'analytics' ? 'bg-churpay-gradient text-white' : ''}
+              >
+                <BarChart3 className="h-4 w-4 mr-1" />
+                Analytics
               </Button>
             </div>
           </div>
