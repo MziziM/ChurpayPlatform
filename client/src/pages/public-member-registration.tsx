@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
+  ArrowRight,
   Users, 
   Search, 
   MapPin, 
@@ -245,7 +246,12 @@ export default function PublicMemberRegistration() {
   const handleChurchSelect = (church: typeof sampleChurches[0]) => {
     setSelectedChurch(church);
     form.setValue("churchId", church.id);
-    setCurrentStep(currentStep + 1);
+    
+    toast({
+      title: "Church Selected",
+      description: `You've selected ${church.name} in ${church.city}. Click continue to proceed to the next step.`,
+      variant: "default",
+    });
   };
 
   const nextStep = async () => {
@@ -363,7 +369,7 @@ export default function PublicMemberRegistration() {
         </div>
 
         {/* Registration Content */}
-        {currentStep === 4 ? (
+        {currentStep === 1 ? (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -383,11 +389,40 @@ export default function PublicMemberRegistration() {
                   />
                 </div>
 
+                {selectedChurch && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-green-900">Church Selected</h4>
+                        <p className="text-green-700">{selectedChurch.name}, {selectedChurch.city}</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedChurch(null);
+                          form.setValue("churchId", "");
+                        }}
+                        className="ml-auto"
+                      >
+                        Change Church
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid gap-4 max-h-96 overflow-y-auto">
                   {filteredChurches.map((church) => (
                     <Card 
                       key={church.id} 
-                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      className={`cursor-pointer hover:shadow-md transition-all duration-200 ${
+                        selectedChurch?.id === church.id 
+                          ? 'ring-2 ring-purple-500 bg-purple-50' 
+                          : 'hover:shadow-md'
+                      }`}
                       onClick={() => handleChurchSelect(church)}
                     >
                       <CardContent className="p-4">
@@ -416,8 +451,15 @@ export default function PublicMemberRegistration() {
                               </div>
                             </div>
                           </div>
-                          <Button size="sm" className="ml-4">
-                            Join Church
+                          <Button 
+                            size="sm" 
+                            className={`ml-4 ${
+                              selectedChurch?.id === church.id 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'bg-purple-600 hover:bg-purple-700'
+                            }`}
+                          >
+                            {selectedChurch?.id === church.id ? 'Selected' : 'Select Church'}
                           </Button>
                         </div>
                       </CardContent>
@@ -430,6 +472,18 @@ export default function PublicMemberRegistration() {
                     <Church className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No churches found matching your search.</p>
                     <p className="text-sm mt-1">Try adjusting your search terms.</p>
+                  </div>
+                )}
+
+                {selectedChurch && (
+                  <div className="mt-6 flex justify-center">
+                    <Button 
+                      onClick={() => setCurrentStep(2)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg"
+                    >
+                      Continue with {selectedChurch.name}
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
                   </div>
                 )}
               </div>
@@ -448,6 +502,8 @@ export default function PublicMemberRegistration() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  
+                  {/* Step 1: Church Selection - Skip since it's already handled above */}
                   
                   {/* Step 2: Personal Information */}
                   {currentStep === 2 && (
