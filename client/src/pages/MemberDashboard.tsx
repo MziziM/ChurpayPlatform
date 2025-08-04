@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { 
   Wallet, Heart, Church, Target, Gift, Send, Plus, Eye, EyeOff, 
   ArrowDown, ArrowUp, ArrowLeftRight, CheckCircle, Clock, AlertCircle, 
@@ -222,21 +222,21 @@ export default function MemberDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-yellow-500/5"></div>
             <div className="relative">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-              <p className="text-gray-600">Manage your giving, tithe, and support church projects seamlessly.</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Overview</h2>
+              <p className="text-gray-600">Your wallet and giving activity</p>
             </div>
           </motion.div>
         </div>
 
         {/* Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium opacity-90 flex items-center">
@@ -250,7 +250,7 @@ export default function MemberDashboard() {
                     <p className="text-3xl font-bold">
                       {showBalance ? (walletData ? formatCurrency((walletData as WalletData).availableBalance) : 'R 0.00') : '****'}
                     </p>
-                    <p className="text-sm opacity-75 mt-1">Ready to give</p>
+                    <p className="text-sm opacity-75 mt-1">Available now</p>
                   </div>
                   <Button
                     variant="secondary"
@@ -266,7 +266,7 @@ export default function MemberDashboard() {
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white border-0 shadow-xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium opacity-90 flex items-center">
@@ -280,7 +280,7 @@ export default function MemberDashboard() {
                     <p className="text-3xl font-bold">
                       {showBalance ? (walletData ? formatCurrency((walletData as WalletData).rewardPoints) : 'R 0.00') : '****'}
                     </p>
-                    <p className="text-sm opacity-75 mt-1">Earn with giving</p>
+                    <p className="text-sm opacity-75 mt-1">Points earned</p>
                   </div>
                   <Star className="h-8 w-8 opacity-50" />
                 </div>
@@ -288,7 +288,7 @@ export default function MemberDashboard() {
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium opacity-90 flex items-center">
@@ -299,7 +299,14 @@ export default function MemberDashboard() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">R 2,450</p>
+                    <p className="text-3xl font-bold">
+                      {donationHistory.reduce((sum, donation) => {
+                        const donationDate = new Date(donation.createdAt);
+                        const now = new Date();
+                        const isThisMonth = donationDate.getMonth() === now.getMonth() && donationDate.getFullYear() === now.getFullYear();
+                        return isThisMonth ? sum + parseFloat(donation.amount) : sum;
+                      }, 0).toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR' })}
+                    </p>
                     <p className="text-sm opacity-75 mt-1">This month</p>
                   </div>
                   <Award className="h-8 w-8 opacity-50" />
@@ -311,7 +318,7 @@ export default function MemberDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button 
               onClick={() => {
@@ -359,16 +366,8 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        {/* Tabs Content */}
-        <Tabs defaultValue="activity" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/60 backdrop-blur-sm">
-            <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-            <TabsTrigger value="churches">Churches</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="history">Giving History</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="activity" className="space-y-4">
+        {/* Recent Activity */}
+        <div className="space-y-6">
             <Card className="bg-white/60 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -379,9 +378,8 @@ export default function MemberDashboard() {
               <CardContent>
                 {(transactions as WalletTransaction[]).length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <Wallet className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>No transactions yet</p>
-                    <p className="text-sm">Start by making your first donation</p>
+                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                    <p>No recent activity</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -408,9 +406,8 @@ export default function MemberDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="churches" className="space-y-4">
+          {/* Churches */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(churches as Church[]).map((church: Church) => (
                 <Card key={church.id} className="bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
@@ -443,16 +440,15 @@ export default function MemberDashboard() {
                         className="w-full bg-churpay-gradient text-white"
                       >
                         <Heart className="h-4 w-4 mr-2" />
-                        Give Now
+                        Donate
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </TabsContent>
 
-          <TabsContent value="projects" className="space-y-4">
+          {/* Projects */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(projects as Project[]).map((project: Project) => (
                 <Card key={project.id} className="bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
@@ -492,16 +488,15 @@ export default function MemberDashboard() {
                         className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white"
                       >
                         <Target className="h-4 w-4 mr-2" />
-                        Sponsor Project
+                        Support
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </TabsContent>
 
-          <TabsContent value="history" className="space-y-4">
+          {/* Giving History */}
             <Card className="bg-white/60 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -541,8 +536,7 @@ export default function MemberDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+        </div>
 
         {/* Enhanced Donation Modal (unified for all types) */}
         <EnhancedDonationModal
