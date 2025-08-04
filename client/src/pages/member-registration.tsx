@@ -106,9 +106,9 @@ export default function MemberRegistration() {
     resolver: zodResolver(memberRegistrationSchema),
     defaultValues: {
       country: "South Africa",
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
+      firstName: (user as any)?.firstName || "",
+      lastName: (user as any)?.lastName || "",
+      email: (user as any)?.email || "",
       phone: "",
       dateOfBirth: "",
       address: "",
