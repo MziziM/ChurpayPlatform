@@ -701,6 +701,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User stats endpoint with detailed breakdown
+  app.get('/api/user/stats', async (req, res) => {
+    try {
+      const transactions = await storage.getTransactions();
+      const userTransactions = transactions.filter(t => t.status === 'completed');
+      
+      const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      const thisYearTransactions = userTransactions.filter(t => 
+        new Date(t.createdAt || new Date()).getFullYear() === new Date().getFullYear()
+      );
+      const thisYearGiven = thisYearTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      
+      // Calculate member since date (using first transaction or default)
+      const firstTransaction = userTransactions.sort((a, b) => 
+        new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+      )[0];
+      const memberSince = firstTransaction?.createdAt ? 
+        new Date(firstTransaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) :
+        'January 2022';
+      
+      // Goal progress calculation (example: R25,000 annual goal)
+      const annualGoal = 25000;
+      const goalProgress = Math.min((thisYearGiven / annualGoal) * 100, 100);
+      
+      const stats = {
+        memberSince,
+        totalGiven: totalGiven.toFixed(2),
+        thisYearGiven: thisYearGiven.toFixed(2),
+        goalProgress: Math.round(goalProgress),
+        annualGoal: annualGoal.toFixed(2),
+        transactionCount: userTransactions.length,
+        averageGift: userTransactions.length > 0 ? (totalGiven / userTransactions.length).toFixed(2) : '0.00'
+      };
+      
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats", error: error.message });
+    }
+  });
+
+  // Recent activity endpoint
+  app.get('/api/user/recent-activity', async (req, res) => {
+    try {
+      const transactions = await storage.getTransactions();
+      const recentTransactions = transactions
+        .filter(t => t.status === 'completed')
+        .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+        .slice(0, 8) // Get 8 most recent
+        .map(transaction => {
+          const timeAgo = getTimeAgo(new Date(transaction.createdAt || new Date()));
+          return {
+            id: transaction.id,
+            type: transaction.type,
+            amount: `R ${parseFloat(transaction.amount).toLocaleString()}`,
+            description: getActivityDescription(transaction),
+            timeAgo,
+            status: transaction.status,
+            icon: getActivityIcon(transaction.type)
+          };
+        });
+      
+      res.json(recentTransactions);
+    } catch (error: any) {
+      console.error("Error fetching recent activity:", error);
+      res.status(500).json({ message: "Failed to fetch recent activity", error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper functions for activity formatting
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return date.toLocaleDateString();
+}
+
+function getActivityDescription(transaction: any): string {
+  switch (transaction.type) {
+    case 'donation':
+      return `Donation to ${transaction.churchName || 'Church'}`;
+    case 'tithe':
+      return `Tithe offering to ${transaction.churchName || 'Church'}`;
+    case 'project':
+      return `Project sponsorship: ${transaction.projectTitle || 'Church Project'}`;
+    case 'topup':
+      return 'Wallet top-up';
+    default:
+      return 'Transaction';
+  }
+}
+
+function getActivityIcon(type: string): string {
+  switch (type) {
+    case 'donation':
+      return 'heart';
+    case 'tithe':
+      return 'church';
+    case 'project':
+      return 'target';
+    case 'topup':
+      return 'wallet';
+    default:
+      return 'activity';
+  }
 }
