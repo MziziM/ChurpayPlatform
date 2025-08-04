@@ -1,31 +1,24 @@
-import { useState } from "react";
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { 
   Heart, 
-  TrendingUp, 
-  Calendar, 
+  DollarSign, 
+  Users, 
   Target, 
-  CreditCard,
-  Users,
+  TrendingUp, 
   Church,
-  Settings,
-  History,
+  Calendar,
   Wallet,
-  Star,
-  ArrowUpRight,
-  X,
-  DollarSign,
+  History,
+  CheckCircle,
+  Settings,
   Activity,
-  Receipt,
-  BarChart3,
-  CheckCircle
+  ArrowUpRight
 } from "lucide-react";
 
 interface DashboardModalProps {
@@ -39,96 +32,63 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
   const [donationAmount, setDonationAmount] = useState('');
   const [donationType, setDonationType] = useState('');
 
-  // Mock data - would come from API in real app
+  // Sample data that matches the professional inspiration
   const memberData = {
     member: {
-      firstName: "Sarah",
-      lastName: "Johnson",
-      email: "sarah.johnson@example.com",
-      churchName: "Grace Community Church",
-      memberSince: "2023-03-15"
+      firstName: 'John',
+      lastName: 'Smith',
+      churchName: 'Hope Community Church',
+      memberSince: '2020-01-15'
     },
     stats: {
-      totalDonated: 15750,
-      donationsThisYear: 8400,
-      donationsThisMonth: 1200,
-      totalDonations: 24,
+      totalDonated: 14250,
+      totalDonations: 47,
+      donationsThisYear: 8450,
+      donationsThisMonth: 650,
       consecutiveMonths: 8,
-      impactScore: 85
+      impactScore: 95
     },
     recentDonations: [
-      { id: "1", amount: 500, type: "Tithe", date: "2025-01-03", status: "completed" },
-      { id: "2", amount: 200, type: "Building Fund", date: "2025-01-01", status: "completed" },
-      { id: "3", amount: 100, type: "Mission Support", date: "2024-12-28", status: "completed" }
+      { id: 1, amount: 500, type: 'Tithe', date: '2025-01-03', status: 'Completed' },
+      { id: 2, amount: 250, type: 'Offering', date: '2025-01-01', status: 'Completed' },
+      { id: 3, amount: 100, type: 'Mission Support', date: '2024-12-29', status: 'Completed' }
     ],
     projects: [
-      {
-        id: "1",
-        name: "New Youth Center",
-        description: "Building a safe space for our youth programs",
-        targetAmount: 250000,
-        currentAmount: 145000,
-        myContribution: 1500
-      },
-      {
-        id: "2",
-        name: "Community Outreach Program",
-        description: "Supporting local families in need",
-        targetAmount: 50000,
-        currentAmount: 32000,
-        myContribution: 500
-      }
+      { id: 1, name: 'New Sanctuary', description: 'Building expansion project', currentAmount: 125000, targetAmount: 250000 },
+      { id: 2, name: 'Youth Camp', description: 'Annual youth ministry camp', currentAmount: 8500, targetAmount: 15000 }
     ]
   };
 
   const churchData = {
     church: {
-      name: "Grace Community Church",
-      admin: "Pastor Michael Roberts",
-      email: "admin@gracechurch.org",
-      members: 342,
-      establishedDate: "2020-08-15"
+      name: 'Hope Community Church',
+      admin: 'Pastor Michael Johnson'
     },
     stats: {
-      totalReceived: 128450,
-      thisMonth: 45680,
-      activeMembers: 342,
-      projectsFunded: 8,
-      avgDonation: 375
+      totalReceived: 245000,
+      thisMonth: 18500,
+      activeMembers: 156,
+      activeProjects: 3
     },
-    recentTransactions: [
-      { id: "1", member: "Sarah Johnson", amount: 500, type: "Tithe", date: "2025-01-03" },
-      { id: "2", member: "Michael Smith", amount: 1000, type: "Building Fund", date: "2025-01-03" },
-      { id: "3", member: "Lisa Brown", amount: 200, type: "Offering", date: "2025-01-02" }
-    ],
     activeProjects: [
-      {
-        id: "1",
-        name: "New Youth Center",
-        targetAmount: 250000,
-        currentAmount: 145000,
-        contributors: 85
-      },
-      {
-        id: "2",
-        name: "Community Outreach Program",
-        targetAmount: 50000,
-        currentAmount: 32000,
-        contributors: 43
-      }
+      { id: 1, name: 'New Sanctuary', description: 'Building expansion project', currentAmount: 125000, targetAmount: 250000 },
+      { id: 2, name: 'Youth Camp', description: 'Annual youth ministry camp', currentAmount: 8500, targetAmount: 15000 },
+      { id: 3, name: 'Community Outreach', description: 'Local community support program', currentAmount: 3200, targetAmount: 10000 }
+    ],
+    recentTransactions: [
+      { id: 1, member: 'John Smith', amount: 500, type: 'Tithe', date: '2025-01-03' },
+      { id: 2, member: 'Sarah Johnson', amount: 250, type: 'Offering', date: '2025-01-03' },
+      { id: 3, member: 'Mike Wilson', amount: 100, type: 'Mission Support', date: '2025-01-02' }
     ]
   };
-
-  const data = userType === 'member' ? memberData : churchData;
 
   const predefinedAmounts = [50, 100, 250, 500, 1000, 2500];
   const donationTypes = ['Tithe', 'Offering', 'Building Fund', 'Mission Support', 'Youth Ministry', 'Other'];
 
   const renderMemberOverview = () => (
     <div className="space-y-6">
-      {/* Enhanced Welcome Section with Professional Design */}
+      {/* Professional Welcome Section with ChurPay Branding */}
       <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
         
@@ -136,7 +96,9 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <span className="text-white font-bold text-xl">C</span>
+                <span className="text-white font-bold text-xl">
+                  {memberData.member.firstName[0]}{memberData.member.lastName[0]}
+                </span>
               </div>
               <div>
                 <h2 className="text-2xl font-bold">Welcome back, {memberData.member.firstName}</h2>
@@ -181,7 +143,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
         </div>
       </div>
 
-      {/* Enhanced Quick Actions */}
+      {/* Enhanced Quick Actions with Professional Design */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('donate')}>
           <CardContent className="p-4">
@@ -237,24 +199,23 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
         </Card>
       </div>
 
-      {/* Enhanced Recent Activity */}
+      {/* Professional Recent Activity Section */}
       <Card className="shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center">
+            <h3 className="text-lg font-semibold flex items-center">
               <Activity className="h-5 w-5 mr-2 text-purple-600" />
               Recent Activity
-            </CardTitle>
+            </h3>
             <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
-              View All
-              <ArrowUpRight className="h-4 w-4 ml-1" />
+              <ArrowUpRight className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {memberData.recentDonations.slice(0, 3).map((donation) => (
-              <div key={donation.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border border-purple-100 hover:border-purple-200 transition-colors">
+              <div key={donation.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border border-purple-100">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
                     <Heart className="h-5 w-5 text-white" />
@@ -264,17 +225,14 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
                     <p className="text-sm text-gray-600">{donation.type} • {donation.date}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge className="bg-green-100 text-green-800 border-green-200">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    {donation.status}
-                  </Badge>
-                </div>
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  {donation.status}
+                </Badge>
               </div>
             ))}
           </div>
           
-          {/* Summary Stats */}
           <div className="mt-6 pt-4 border-t border-gray-100">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
@@ -298,9 +256,7 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
 
   const renderChurchOverview = () => (
     <div className="space-y-6">
-      {/* Enhanced Church Welcome Section */}
       <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl relative overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
         
@@ -346,32 +302,31 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
                 <Target className="h-4 w-4 text-purple-100" />
                 <p className="text-purple-100 text-sm">Projects</p>
               </div>
-              <p className="text-xl font-bold">{churchData.stats.projectsFunded}</p>
-              <p className="text-purple-200 text-xs">funded projects</p>
+              <p className="text-xl font-bold">{churchData.stats.activeProjects}</p>
+              <p className="text-purple-200 text-xs">Active projects</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-purple-100" />
-                <p className="text-purple-100 text-sm">Avg Donation</p>
+                <p className="text-purple-100 text-sm">Revenue Share</p>
               </div>
-              <p className="text-xl font-bold">R {churchData.stats.avgDonation}</p>
-              <p className="text-purple-200 text-xs">per member</p>
+              <p className="text-xl font-bold">R 1,225</p>
+              <p className="text-purple-200 text-xs">This year</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Church Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Transactions</p>
-                <p className="text-lg font-bold text-gray-900">View All</p>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Donations</p>
+                <p className="text-lg font-bold text-gray-900">Manage</p>
               </div>
               <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Receipt className="h-5 w-5 text-white" />
+                <Heart className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
@@ -389,6 +344,19 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
+        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group" onClick={() => setCurrentView('history')}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Transactions</p>
+                <p className="text-lg font-bold text-gray-900">View All</p>
+              </div>
+              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <History className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -402,125 +370,43 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
             </div>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Analytics</p>
-                <p className="text-lg font-bold text-gray-900">Reports</p>
-              </div>
-              <div className="w-10 h-10 bg-churpay-gradient rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                <BarChart3 className="h-5 w-5 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Enhanced Recent Transactions */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center">
-              <Activity className="h-5 w-5 mr-2 text-purple-600" />
-              Recent Transactions
-            </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
-              View All
-              <ArrowUpRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {churchData.recentTransactions.slice(0, 3).map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border border-purple-100 hover:border-purple-200 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
-                    <Users className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{transaction.member}</p>
-                    <p className="text-sm text-gray-600">R {transaction.amount.toLocaleString()} • {transaction.type}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</p>
-                  <Badge className="bg-green-100 text-green-800 border-green-200 mt-1">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Completed
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Church Summary Stats */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">R {churchData.stats.thisMonth.toLocaleString()}</p>
-                <p className="text-xs text-gray-600">This Month</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{churchData.stats.activeMembers}</p>
-                <p className="text-xs text-gray-600">Active Members</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">R {churchData.stats.avgDonation}</p>
-                <p className="text-xs text-gray-600">Avg Donation</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 
   const renderDonationForm = () => (
     <div className="space-y-6">
-      <div className="bg-churpay-gradient rounded-xl p-6 text-white shadow-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">C</span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">Make a Donation</h2>
-            <p className="text-purple-100">Support your church and make a difference</p>
-          </div>
-        </div>
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Donation Details</CardTitle>
+          <h3 className="text-lg font-semibold">Make a Donation</h3>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-3 gap-2">
+            {predefinedAmounts.map((amount) => (
+              <Button
+                key={amount}
+                variant={donationAmount === amount.toString() ? "default" : "outline"}
+                className={donationAmount === amount.toString() ? "bg-churpay-gradient text-white" : ""}
+                onClick={() => setDonationAmount(amount.toString())}
+              >
+                R{amount}
+              </Button>
+            ))}
+          </div>
+
           <div>
-            <Label className="text-base font-medium mb-3 block">Select Amount</Label>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {predefinedAmounts.map((amount) => (
-                <Button
-                  key={amount}
-                  variant={donationAmount === amount.toString() ? "default" : "outline"}
-                  onClick={() => setDonationAmount(amount.toString())}
-                  className={donationAmount === amount.toString() ? "bg-churpay-gradient text-white" : ""}
-                  size="sm"
-                >
-                  R{amount}
-                </Button>
-              ))}
-            </div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Custom Amount</label>
             <Input
-              placeholder="Custom amount"
+              type="number"
+              placeholder="Enter amount"
               value={donationAmount}
               onChange={(e) => setDonationAmount(e.target.value)}
-              type="number"
+              className="text-lg"
             />
           </div>
 
           <div>
-            <Label className="text-base font-medium mb-3 block">Donation Type</Label>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Donation Type</label>
             <Select value={donationType} onValueChange={setDonationType}>
               <SelectTrigger>
                 <SelectValue placeholder="Select donation type" />
@@ -626,65 +512,50 @@ export default function DashboardModal({ isOpen, onClose, userType }: DashboardM
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-churpay-gradient rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <div>
-                <span className="text-xl font-bold text-gray-900">Chur</span>
-                <span className="text-xl font-bold text-churpay-yellow">Pay</span>
-                <span className="text-gray-600 ml-2 text-lg font-medium">{userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}</span>
-              </div>
+            <DialogTitle className="text-xl font-semibold">
+              {userType === 'member' ? 'Member Dashboard' : 'Church Dashboard'}
             </DialogTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={currentView === 'overview' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentView('overview')}
+                className={currentView === 'overview' ? 'bg-churpay-gradient text-white' : ''}
+              >
+                Overview
+              </Button>
+              {userType === 'member' && (
+                <Button
+                  variant={currentView === 'donate' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setCurrentView('donate')}
+                  className={currentView === 'donate' ? 'bg-churpay-gradient text-white' : ''}
+                >
+                  Donate
+                </Button>
+              )}
+              <Button
+                variant={currentView === 'projects' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentView('projects')}
+                className={currentView === 'projects' ? 'bg-churpay-gradient text-white' : ''}
+              >
+                Projects
+              </Button>
+              <Button
+                variant={currentView === 'history' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentView('history')}
+                className={currentView === 'history' ? 'bg-churpay-gradient text-white' : ''}
+              >
+                History
+              </Button>
+            </div>
           </div>
         </DialogHeader>
-
-        <div className="flex-1 overflow-hidden">
-          <Tabs value={currentView} onValueChange={setCurrentView} className="h-full flex flex-col">
-            <div className="px-6">
-              <TabsList className="grid w-full grid-cols-4 bg-purple-50 border border-purple-100 p-1 rounded-xl">
-                <TabsTrigger 
-                  value="overview" 
-                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
-                </TabsTrigger>
-                {userType === 'member' && (
-                  <TabsTrigger 
-                    value="donate" 
-                    className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
-                  >
-                    <Heart className="h-4 w-4" />
-                    <span className="hidden sm:inline">Donate</span>
-                  </TabsTrigger>
-                )}
-                <TabsTrigger 
-                  value="projects" 
-                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
-                >
-                  <Target className="h-4 w-4" />
-                  <span className="hidden sm:inline">Projects</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="history" 
-                  className="flex items-center justify-center space-x-2 data-[state=active]:bg-churpay-gradient data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
-                >
-                  <History className="h-4 w-4" />
-                  <span className="hidden sm:inline">History</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 pt-4">
-              <TabsContent value={currentView} className="mt-0">
-                {renderContent()}
-              </TabsContent>
-            </div>
-          </Tabs>
+        
+        <div className="flex-1 overflow-y-auto p-6 pt-4">
+          {renderContent()}
         </div>
       </DialogContent>
     </Dialog>
