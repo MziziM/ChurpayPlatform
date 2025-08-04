@@ -1,0 +1,498 @@
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { PaymentMethodSelector } from "./PaymentMethodSelector";
+import { 
+  Heart, Calculator, RefreshCw, Target, Plus, Wallet,
+  ArrowRight, ArrowLeft, Check, Building2, CreditCard,
+  Shield, ChevronRight, Sparkles
+} from "lucide-react";
+
+interface Church {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+}
+
+interface Project {
+  id: string;
+  churchId: string;
+  churchName: string;
+  title: string;
+  description: string;
+  targetAmount: string;
+  currentAmount: string;
+  deadline: string;
+  category: string;
+  status: string;
+}
+
+interface ProfessionalDonationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  type?: 'donation' | 'tithe' | 'project' | 'topup';
+  churches?: Church[];
+  projects?: Project[];
+  walletBalance?: string;
+}
+
+export function ProfessionalDonationModal({ 
+  isOpen, 
+  onClose, 
+  type = 'donation', 
+  churches = [], 
+  projects = [],
+  walletBalance = "0" 
+}: ProfessionalDonationModalProps) {
+  const [selectedChurch, setSelectedChurch] = useState<string>("Grace Chapel");
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("wallet");
+  const [paymentMethodType, setPaymentMethodType] = useState<'wallet' | 'card'>('wallet');
+  const [step, setStep] = useState<'amount' | 'details' | 'payment' | 'confirm'>('amount');
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Quick amount presets
+  const quickAmounts = type === 'tithe' 
+    ? ['500', '1000', '1500', '2000']
+    : ['100', '250', '500', '1000'];
+
+  // Fetch user's saved payment methods
+  const { data: paymentMethods = [] } = useQuery({
+    queryKey: ['/api/payment-methods'],
+    enabled: isOpen,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (data: any) => {
+      let endpoint = '/api/donations/give';
+      if (type === 'donation') endpoint = '/api/donations/give';
+      else if (type === 'tithe') endpoint = '/api/donations/tithe';
+      else if (type === 'project') endpoint = '/api/projects/sponsor';
+      else if (type === 'topup') endpoint = '/api/wallet/topup';
+      
+      return await apiRequest(endpoint, 'POST', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success!",
+        description: `Your ${type} has been processed successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
+      handleClose();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    },
+  });
+
+  const getModalTitle = () => {
+    switch (type) {
+      case 'donation': return 'Make a Donation';
+      case 'tithe': return 'Give Tithe';
+      case 'project': return 'Support Project';
+      case 'topup': return 'Top Up Wallet';
+      default: return 'Make a Donation';
+    }
+  };
+
+  const getModalIcon = () => {
+    switch (type) {
+      case 'donation': return <Heart className="h-7 w-7 text-white" />;
+      case 'tithe': return <Building2 className="h-7 w-7 text-white" />;
+      case 'project': return <Target className="h-7 w-7 text-white" />;
+      case 'topup': return <Wallet className="h-7 w-7 text-white" />;
+      default: return <Heart className="h-7 w-7 text-white" />;
+    }
+  };
+
+  const getGradientColors = () => {
+    switch (type) {
+      case 'donation': return 'from-red-500 to-pink-600';
+      case 'tithe': return 'from-purple-600 to-indigo-700';
+      case 'project': return 'from-blue-500 to-cyan-600';
+      case 'topup': return 'from-green-500 to-emerald-600';
+      default: return 'from-purple-600 to-indigo-700';
+    }
+  };
+
+  const getStepProgress = () => {
+    const steps = ['amount', 'details', 'payment', 'confirm'];
+    const currentIndex = steps.indexOf(step);
+    return ((currentIndex + 1) / steps.length) * 100;
+  };
+
+  const resetModal = () => {
+    setStep('amount');
+    setAmount('');
+    setNote('');
+    setSelectedProject('');
+    setIsProcessing(false);
+  };
+
+  const handleClose = () => {
+    resetModal();
+    onClose();
+  };
+
+  const handleNext = () => {
+    if (step === 'amount' && amount) setStep('details');
+    else if (step === 'details') setStep('payment');
+    else if (step === 'payment') setStep('confirm');
+  };
+
+  const handleBack = () => {
+    if (step === 'details') setStep('amount');
+    else if (step === 'payment') setStep('details');
+    else if (step === 'confirm') setStep('payment');
+  };
+
+  const handleSubmit = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    const submitData = {
+      amount: parseFloat(amount),
+      churchId: selectedChurch || "grace-chapel-jburg",
+      projectId: selectedProject || undefined,
+      note: note || undefined,
+      paymentMethodId: selectedPaymentMethod,
+      paymentType: paymentMethodType,
+    };
+
+    mutation.mutate(submitData);
+  };
+
+  const canProceed = () => {
+    if (step === 'amount') return amount && parseFloat(amount) > 0;
+    if (step === 'details') return true;
+    if (step === 'payment') return selectedPaymentMethod;
+    return true;
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[700px] max-w-[95vw] mx-2 p-0 overflow-hidden rounded-3xl border-0 shadow-2xl">
+        {/* Enhanced Header with Gradient */}
+        <div className={`bg-gradient-to-br ${getGradientColors()} text-white p-8 relative overflow-hidden`}>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
+          <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          
+          <DialogHeader className="relative z-10">
+            <DialogTitle className="flex items-center space-x-4 text-3xl font-bold mb-2">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                {getModalIcon()}
+              </div>
+              <div>
+                <span>{getModalTitle()}</span>
+                <p className="text-lg font-normal text-white/90 mt-1">
+                  {step === 'amount' && 'Choose your gift amount'}
+                  {step === 'details' && 'Add a personal message'}
+                  {step === 'payment' && 'Select payment method'}
+                  {step === 'confirm' && 'Review your gift'}
+                </p>
+              </div>
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Make a {type} through ChurPay
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* Enhanced Progress Bar */}
+          <div className="mt-8 bg-white/20 rounded-full h-3 overflow-hidden backdrop-blur-sm">
+            <div 
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full rounded-full transition-all duration-700 ease-out shadow-lg"
+              style={{ width: `${getStepProgress()}%` }}
+            />
+          </div>
+          
+          {/* Step Indicators */}
+          <div className="flex justify-between mt-4 text-sm text-white/80">
+            <span className={step === 'amount' ? 'text-white font-semibold' : ''}>Amount</span>
+            <span className={step === 'details' ? 'text-white font-semibold' : ''}>Details</span>
+            <span className={step === 'payment' ? 'text-white font-semibold' : ''}>Payment</span>
+            <span className={step === 'confirm' ? 'text-white font-semibold' : ''}>Confirm</span>
+          </div>
+        </div>
+
+        {/* Enhanced Content Area */}
+        <div className="p-8 space-y-6 bg-white">
+          {/* Step 1: Amount Selection */}
+          {step === 'amount' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">How much would you like to give?</h3>
+                <p className="text-gray-600">Choose from quick amounts or enter a custom amount</p>
+              </div>
+              
+              {/* Quick Amount Buttons */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {quickAmounts.map((quickAmount) => (
+                  <Button
+                    key={quickAmount}
+                    variant={amount === quickAmount ? "default" : "outline"}
+                    onClick={() => setAmount(quickAmount)}
+                    className={`h-14 text-lg font-semibold transition-all duration-200 ${
+                      amount === quickAmount 
+                        ? `bg-gradient-to-r ${getGradientColors()} text-white shadow-lg scale-105` 
+                        : 'hover:scale-105 hover:shadow-md'
+                    }`}
+                  >
+                    R {quickAmount}
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Custom Amount Input */}
+              <div className="space-y-3">
+                <Label htmlFor="amount" className="text-lg font-semibold text-gray-900">
+                  Or enter custom amount
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-600">R</span>
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="pl-12 h-16 text-2xl font-bold text-center border-2 border-gray-200 focus:border-purple-500 rounded-xl"
+                  />
+                </div>
+              </div>
+              
+              {/* Wallet Balance Display */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">Available wallet balance:</span>
+                  <span className="text-xl font-bold text-gray-900">R {parseFloat(walletBalance).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Details */}
+          {step === 'details' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Add details to your gift</h3>
+                <p className="text-gray-600">Make your gift more meaningful with a personal touch</p>
+              </div>
+              
+              {type !== 'topup' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="church" className="text-lg font-semibold text-gray-900">
+                      Church *
+                    </Label>
+                    <Select value={selectedChurch} onValueChange={setSelectedChurch}>
+                      <SelectTrigger className="h-14 border-2 border-gray-200 rounded-xl">
+                        <SelectValue placeholder="Select your church" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Grace Chapel">Grace Chapel - Johannesburg</SelectItem>
+                        {churches.map((church) => (
+                          <SelectItem key={church.id} value={church.id}>
+                            {church.name} - {church.location}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {type === 'project' && (
+                    <div>
+                      <Label htmlFor="project" className="text-lg font-semibold text-gray-900">
+                        Project
+                      </Label>
+                      <Select value={selectedProject} onValueChange={setSelectedProject}>
+                        <SelectTrigger className="h-14 border-2 border-gray-200 rounded-xl">
+                          <SelectValue placeholder="Select a project (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              {project.title} - {project.churchName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div>
+                <Label htmlFor="note" className="text-lg font-semibold text-gray-900">
+                  Personal Message (Optional)
+                </Label>
+                <Textarea
+                  id="note"
+                  placeholder={`Add a note with your ${type}...`}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="min-h-[120px] border-2 border-gray-200 rounded-xl resize-none"
+                  maxLength={500}
+                />
+                <p className="text-sm text-gray-500 mt-2">{note.length}/500 characters</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Payment Method */}
+          {step === 'payment' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Choose payment method</h3>
+                <p className="text-gray-600">How would you like to complete this transaction?</p>
+              </div>
+              
+              <PaymentMethodSelector
+                selectedMethod={selectedPaymentMethod}
+                onMethodChange={setSelectedPaymentMethod}
+                onTypeChange={setPaymentMethodType}
+                walletBalance={parseFloat(walletBalance)}
+                paymentMethods={paymentMethods || []}
+                requiredAmount={parseFloat(amount) || 0}
+              />
+            </div>
+          )}
+
+          {/* Step 4: Confirmation */}
+          {step === 'confirm' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Review your gift</h3>
+                <p className="text-gray-600">Please confirm the details below</p>
+              </div>
+              
+              {/* Summary Card */}
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 space-y-4">
+                <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                  <span className="text-gray-600 font-medium">Amount</span>
+                  <span className="text-3xl font-bold text-gray-900">R {parseFloat(amount).toLocaleString()}</span>
+                </div>
+                
+                {type !== 'topup' && (
+                  <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Church</span>
+                    <span className="font-semibold text-gray-900">{selectedChurch}</span>
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                  <span className="text-gray-600 font-medium">Type</span>
+                  <span className="font-semibold text-gray-900 capitalize">{type}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-gray-600 font-medium">Payment Method</span>
+                  <div className="flex items-center space-x-2">
+                    {paymentMethodType === 'wallet' ? (
+                      <Wallet className="h-5 w-5 text-purple-600" />
+                    ) : (
+                      <CreditCard className="h-5 w-5 text-blue-600" />
+                    )}
+                    <span className="font-semibold text-gray-900 capitalize">{paymentMethodType}</span>
+                  </div>
+                </div>
+                
+                {note && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <span className="text-gray-600 font-medium block mb-2">Message</span>
+                    <p className="text-gray-900 bg-white p-3 rounded-lg border border-gray-200">{note}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+            {step !== 'amount' && (
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="h-12 px-6 rounded-xl border-2"
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back
+              </Button>
+            )}
+            
+            {step === 'amount' && <div />}
+            
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="h-12 px-6 rounded-xl border-2"
+              >
+                Cancel
+              </Button>
+              
+              {step !== 'confirm' ? (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className={`h-12 px-8 rounded-xl bg-gradient-to-r ${getGradientColors()} text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  Continue
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isProcessing}
+                  className={`h-12 px-8 rounded-xl bg-gradient-to-r ${getGradientColors()} text-white font-semibold`}
+                >
+                  {isProcessing ? (
+                    <>
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Complete Gift
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
