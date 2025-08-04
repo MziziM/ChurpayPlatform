@@ -10,6 +10,7 @@ import PublicChurchRegistration from "@/pages/public-church-registration";
 import PublicMemberRegistration from "@/pages/public-member-registration";
 import MemberDashboard from "@/pages/MemberDashboard";
 import ProfessionalMemberDashboard from "@/pages/ProfessionalMemberDashboard";
+import ProfessionalChurchDashboard from "@/pages/ProfessionalChurchDashboard";
 import MemberDashboardDark from "@/pages/MemberDashboardDark";
 import WalletDashboard from "@/pages/WalletDashboard";
 import SignIn from "@/pages/sign-in";
@@ -28,6 +29,8 @@ function Router() {
       <Route path="/member-dashboard" component={ProfessionalMemberDashboard} />
       <Route path="/member" component={ProfessionalMemberDashboard} />
       <Route path="/member-old" component={MemberDashboard} />
+      <Route path="/church-dashboard" component={ProfessionalChurchDashboard} />
+      <Route path="/church" component={ProfessionalChurchDashboard} />
       <Route path="/wallet" component={WalletDashboard} />
       <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
