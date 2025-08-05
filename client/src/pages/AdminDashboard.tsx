@@ -107,10 +107,10 @@ export default function AdminDashboard() {
       <div className="flex justify-between items-center p-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {admin?.firstName || 'Admin'}</h1>
-          <p className="text-gray-300 flex items-center">
+          <div className="text-gray-300 flex items-center">
             Here's your church management overview and activity
             <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
-          </p>
+          </div>
         </div>
         <div className="text-sm text-gray-300">
           Last active<br />
@@ -133,124 +133,102 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="px-6 space-y-8">
-        {/* Main Action Cards */}
+      {/* Main Content */}
+      <div className="px-6 space-y-6">
+        {/* Action Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0 text-white rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Manage Churches</h3>
-              <p className="text-sm opacity-90 mb-4">Oversee church operations</p>
-              <Button className="bg-white/20 hover:bg-white/30 text-white border-0 w-full">
-                View Churches
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Give Now Card */}
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Manage Churches</h3>
+            <p className="text-sm opacity-90 mb-4">Oversee church operations</p>
+            <button className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+              Manage Now
+            </button>
+          </div>
 
-          <Card className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-white rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-6 h-6 text-purple-400" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">My Church</h3>
-              <p className="text-sm text-gray-300 mb-2">R 0</p>
-              <p className="text-xs text-gray-400">Support your church</p>
-            </CardContent>
-          </Card>
+          {/* My Wallet Card */}
+          <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-6 h-6 text-blue-400" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">My Church</h3>
+            <p className="text-xl font-bold text-blue-400">R 0</p>
+            <p className="text-xs text-gray-400">Support your church</p>
+          </div>
 
-          <Card className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-white rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BarChart3 className="w-6 h-6 text-yellow-400" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Reports</h3>
-              <p className="text-sm text-gray-300 mb-2">Analytics</p>
-              <p className="text-xs text-gray-400">View detailed reports</p>
-            </CardContent>
-          </Card>
+          {/* Tithe Card */}
+          <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-6 h-6 text-green-400" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Reports</h3>
+            <p className="text-xl font-bold text-green-400">Analytics</p>
+            <p className="text-xs text-gray-400">View detailed reports</p>
+          </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-0 text-white rounded-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90 mb-2">This Month</p>
-                  <p className="text-sm opacity-75">Church activity summary</p>
+          {/* This Month Card */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="flex items-center mb-4">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              <h3 className="text-lg font-semibold">This Month</h3>
+            </div>
+            <p className="text-sm opacity-90 mb-6">Your church activity summary</p>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                  <span className="text-sm">Total Given</span>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">R {stats.monthlyDonations || '0'}</div>
-                  <div className="text-sm opacity-75">Total Revenue</div>
-                </div>
+                <span className="font-semibold">R {stats.monthlyDonations || '2,400'}</span>
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
+                  <span className="text-sm">Tithes</span>
+                </div>
+                <span className="font-semibold">R {stats.monthlyTithes || '1,800'}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                  <span className="text-sm">Donations</span>
+                </div>
+                <span className="font-semibold">R {stats.monthlyDonations || '600'}</span>
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 text-white rounded-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90 mb-2">Active Churches</p>
-                  <p className="text-sm opacity-75">Your available network</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">{stats.totalChurches || '0'}</div>
-                  <div className="text-sm opacity-75">Available churches</div>
-                  <div className="flex items-center justify-end mt-2">
-                    <span className="text-xs bg-white/20 px-2 py-1 rounded">Active & Secured</span>
-                  </div>
-                </div>
+          {/* Wallet Balance Card */}
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Church Balance</h3>
+              <button className="text-sm opacity-75 hover:opacity-100">Manage →</button>
+            </div>
+            <p className="text-sm opacity-90 mb-6">Your available funds</p>
+            
+            <div className="text-center">
+              <p className="text-4xl font-bold mb-2">R {stats.totalBalance || '0'}</p>
+              <p className="text-sm opacity-75 mb-4">Available balance</p>
+              
+              <div className="flex items-center justify-center text-sm">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                <span>Active & Secured</span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Additional Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-green-600 to-emerald-600 border-0 text-white rounded-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90 mb-2">Total Members</p>
-                  <p className="text-2xl font-bold">{stats.totalMembers || '0'}</p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <UserCheck className="w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 border-0 text-white rounded-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90 mb-2">System Health</p>
-                  <p className="text-2xl font-bold">99.9%</p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-red-500 to-pink-500 border-0 text-white rounded-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90 mb-2">Platform Revenue</p>
-                  <p className="text-2xl font-bold">R{(stats.totalRevenue || 0).toLocaleString()}</p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <DollarSign className="w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              
+              <button className="mt-4 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-sm font-medium transition-colors w-full">
+                + Add Funds
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
