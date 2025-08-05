@@ -64,10 +64,12 @@ export default function AdminDashboard() {
 
   if (isLoading || dataLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
+      <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-white">Loading admin dashboard...</p>
+          </div>
         </div>
       </div>
     );
@@ -79,17 +81,19 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Dashboard Error</h2>
-            <p className="text-gray-600 mb-4">Failed to load dashboard data.</p>
-            <Button onClick={() => window.location.reload()} variant="outline">
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
+        <div className="flex items-center justify-center h-screen">
+          <Card className="max-w-md bg-gray-800/60 backdrop-blur-sm border border-gray-700/50">
+            <CardContent className="p-6 text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2 text-white">Dashboard Error</h2>
+              <p className="text-gray-300 mb-4">Failed to load dashboard data.</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -99,256 +103,154 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
-      {/* Top Navigation Bar */}
-      <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-4 md:px-8 py-4 rounded-t-3xl mx-2 md:mx-8 mt-2 md:mt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 md:space-x-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-white text-sm md:text-xl font-bold tracking-wider">CHURPAY ADMIN</h1>
-            </div>
-            <div className="flex items-center space-x-2 md:space-x-6 text-xs md:text-sm text-gray-400">
-              <span className="hidden md:block border-r border-gray-600 pr-6">Welcome, {admin.firstName} {admin.lastName}</span>
-              <div className="px-2 md:px-3 py-1 bg-purple-600 text-white text-xs rounded font-medium">ADMIN ACCESS</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-            <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+      {/* Header */}
+      <div className="flex justify-between items-center p-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {admin?.firstName || 'Admin'}</h1>
+          <p className="text-gray-300 flex items-center">
+            Here's your church management overview and activity
+            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+          </p>
+        </div>
+        <div className="text-sm text-gray-300">
+          Last active<br />
+          <span className="text-white font-medium">2 minutes ago</span>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row mx-2 md:mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
-        <div className="flex-1 p-6">
-        {/* System Health Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">System Status: Operational</h3>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Code Protection: {systemHealth.codeProtectionActive ? 'Active' : 'Inactive'} • 
-                    Fee Structure: {systemHealth.feeStructureValid ? 'Valid' : 'Compromised'}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">
-                    {systemHealth.platformFees?.percentage}% + R{systemHealth.platformFees?.fixed}
-                  </div>
-                  <div className="text-xs text-gray-500">Platform Fees</div>
-                </div>
+      {/* Navigation */}
+      <div className="flex items-center space-x-6 px-6 mb-8">
+        <div className="text-white border-b-2 border-purple-400 pb-2">Dashboard</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Churches</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Members</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Reports</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Settings</div>
+        <div className="ml-auto">
+          <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+
+      <div className="px-6 space-y-8">
+        {/* Main Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0 text-white rounded-2xl">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6" />
               </div>
+              <h3 className="text-lg font-semibold mb-2">Manage Churches</h3>
+              <p className="text-sm opacity-90 mb-4">Oversee church operations</p>
+              <Button className="bg-white/20 hover:bg-white/30 text-white border-0 w-full">
+                View Churches
+              </Button>
             </CardContent>
           </Card>
-        </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Churches</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.totalChurches || 0}</p>
-                  </div>
-                  <Building2 className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="mt-2 flex items-center text-sm">
-                  <span className="text-green-600">{stats.activeChurches || 0} active</span>
-                  <span className="text-gray-500 ml-2">• {stats.pendingChurches || 0} pending</span>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-white rounded-2xl">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-6 h-6 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">My Church</h3>
+              <p className="text-sm text-gray-300 mb-2">R 0</p>
+              <p className="text-xs text-gray-400">Support your church</p>
+            </CardContent>
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Members</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.totalMembers || 0}</p>
-                  </div>
-                  <UserCheck className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-gray-500">
-                  Across all churches
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-3xl font-bold text-gray-900">R{(stats.totalRevenue || 0).toLocaleString()}</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-yellow-600" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-gray-500">
-                  Platform earnings
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Pending Payouts</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.pendingPayouts || 0}</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-orange-600" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-gray-500">
-                  Require review
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 text-white rounded-2xl">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Reports</h3>
+              <p className="text-sm text-gray-300 mb-2">Analytics</p>
+              <p className="text-xs text-gray-400">View detailed reports</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-20 flex-col space-y-2"
-                  onClick={() => navigate('/super-admin')}
-                >
-                  <BarChart3 className="h-6 w-6" />
-                  <span>Super Admin Panel</span>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  className="h-20 flex-col space-y-2"
-                  onClick={() => navigate('/admin/churches')}
-                >
-                  <Building2 className="h-6 w-6" />
-                  <span>Manage Churches</span>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  className="h-20 flex-col space-y-2"
-                  onClick={() => navigate('/admin/payouts')}
-                >
-                  <DollarSign className="h-6 w-6" />
-                  <span>Review Payouts</span>
-                </Button>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-0 text-white rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-2">This Month</p>
+                  <p className="text-sm opacity-75">Church activity summary</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">R {stats.monthlyDonations || '0'}</div>
+                  <div className="text-sm opacity-75">Total Revenue</div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
 
-        {/* Admin Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 text-white rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Account Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Name:</span>
-                      <span className="ml-2 font-medium">{admin.firstName} {admin.lastName}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Email:</span>
-                      <span className="ml-2 font-medium">{admin.email}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Role:</span>
-                      <span className="ml-2 font-medium capitalize">{admin.role}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Last Login:</span>
-                      <span className="ml-2 font-medium">
-                        {admin.lastLoginAt ? new Date(admin.lastLoginAt).toLocaleString() : 'Never'}
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-sm opacity-90 mb-2">Active Churches</p>
+                  <p className="text-sm opacity-75">Your available network</p>
                 </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Security Status</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Account Active</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Two-Factor Ready</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Secure Session</span>
-                    </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{stats.totalChurches || '0'}</div>
+                  <div className="text-sm opacity-75">Available churches</div>
+                  <div className="flex items-center justify-end mt-2">
+                    <span className="text-xs bg-white/20 px-2 py-1 rounded">Active & Secured</span>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
+
+        {/* Additional Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-br from-green-600 to-emerald-600 border-0 text-white rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-2">Total Members</p>
+                  <p className="text-2xl font-bold">{stats.totalMembers || '0'}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 border-0 text-white rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-2">System Health</p>
+                  <p className="text-2xl font-bold">99.9%</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-500 to-pink-500 border-0 text-white rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-2">Platform Revenue</p>
+                  <p className="text-2xl font-bold">R{(stats.totalRevenue || 0).toLocaleString()}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <DollarSign className="w-6 h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
