@@ -97,10 +97,10 @@ export default function SignIn() {
       localStorage.setItem('userRole', response.user.role);
       
       // Redirect to appropriate dashboard based on role
-      if (response.user.role === 'church_admin') {
+      if (response.user.role === 'church_admin' || response.user.role === 'church_staff') {
         setLocation('/church-dashboard');
       } else {
-        setLocation('/church-staff-dashboard');
+        setLocation('/church');
       }
     },
     onError: (error: any) => {

@@ -107,6 +107,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Authentication endpoint for checking current user
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      // Check super admin session first
+      if (req.session.superAdminId) {
+        const superAdmin = await storage.getSuperAdminById(req.session.superAdminId);
+        if (superAdmin && superAdmin.isActive) {
+          return res.json({
+            id: superAdmin.id,
+            email: superAdmin.email,
+            role: 'superadmin',
+            firstName: superAdmin.firstName,
+            lastName: superAdmin.lastName,
+            authenticated: true
+          });
+        }
+      }
+
+      // Check for user data in session (member/church)
+      if (req.session.userId) {
+        const user = await storage.getUserById(req.session.userId);
+        if (user) {
+          return res.json({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            churchId: user.churchId,
+            authenticated: true
+          });
+        }
+      }
+
+      // No authenticated user found
+      res.status(401).json({ authenticated: false, message: 'Not authenticated' });
+    } catch (error) {
+      console.error('Auth check error:', error);
+      res.status(500).json({ authenticated: false, message: 'Authentication check failed' });
+    }
+  });
+
+  // Member authentication endpoints
+  app.post('/api/auth/member/signin', async (req, res) => {
+    try {
+      const { email, password, rememberMe } = req.body;
+      
+      // Mock authentication - in production, verify password hash
+      const mockUser = {
+        id: randomUUID(),
+        email,
+        role: 'member',
+        firstName: 'John',
+        lastName: 'Doe',
+        churchId: 'mock-church-id'
+      };
+
+      // Set session
+      (req as any).session.userId = mockUser.id;
+      if (rememberMe) {
+        (req as any).session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+      }
+
+      res.json({
+        success: true,
+        user: mockUser,
+        message: 'Successfully signed in'
+      });
+    } catch (error) {
+      console.error('Member signin error:', error);
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  });
+
+  // Church authentication endpoints
+  app.post('/api/auth/church/signin', async (req, res) => {
+    try {
+      const { email, password, rememberMe } = req.body;
+      
+      // Mock authentication - in production, verify password hash
+      const mockUser = {
+        id: randomUUID(),
+        email,
+        role: 'church_admin',
+        firstName: 'Pastor',
+        lastName: 'Smith',
+        churchId: 'mock-church-id'
+      };
+
+      // Set session
+      (req as any).session.userId = mockUser.id;
+      if (rememberMe) {
+        (req as any).session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+      }
+
+      res.json({
+        success: true,
+        user: mockUser,
+        church: {
+          id: 'mock-church-id',
+          name: 'Grace Baptist Church'
+        },
+        message: 'Successfully signed in'
+      });
+    } catch (error) {
+      console.error('Church signin error:', error);
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  });
+
+  // Sign out endpoint
+  app.post('/api/auth/signout', async (req: any, res) => {
+    try {
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error('Session destroy error:', err);
+          return res.status(500).json({ message: 'Failed to sign out' });
+        }
+        res.json({ success: true, message: 'Successfully signed out' });
+      });
+    } catch (error) {
+      console.error('Signout error:', error);
+      res.status(500).json({ message: 'Sign out failed' });
+    }
+  });
+
   // System protection status endpoint
   app.get('/api/system/protection-status', async (req, res) => {
     res.json({
