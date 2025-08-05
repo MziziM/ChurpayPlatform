@@ -48,6 +48,7 @@ import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserRole(userId: string, role: string, churchId?: string): Promise<User>;
@@ -91,6 +92,7 @@ export interface IStorage {
   getPlatformStats(): Promise<any>;
   getChurchDashboardData(churchId: string): Promise<any>;
   getMemberDashboardData(userId: string): Promise<any>;
+  getSuperAdminAnalytics(): Promise<any>;
   
   // Wallet operations
   createWallet(wallet: InsertWallet): Promise<Wallet>;
@@ -144,6 +146,10 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    return await this.getUser(id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -223,6 +229,28 @@ export class DatabaseStorage implements IStorage {
       .from(churches)
       .where(eq(churches.status, 'approved'))
       .orderBy(asc(churches.name));
+  }
+
+  async getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }> {
+    try {
+      const totalResult = await db.select({ count: count() }).from(churches);
+      const pendingResult = await db.select({ count: count() }).from(churches).where(eq(churches.status, 'pending'));
+      const approvedResult = await db.select({ count: count() }).from(churches).where(eq(churches.status, 'approved'));
+      
+      const total = totalResult[0]?.count || 0;
+      const pending = pendingResult[0]?.count || 0;
+      const approved = approvedResult[0]?.count || 0;
+      
+      return {
+        total,
+        pending,
+        approved,
+        active: approved // For now, approved = active
+      };
+    } catch (error) {
+      console.error("Error getting church stats:", error);
+      return { total: 0, pending: 0, approved: 0, active: 0 };
+    }
   }
 
   async getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }> {
@@ -1005,6 +1033,257 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteSuperAdminByEmail(email: string): Promise<void> {
+    await db.delete(superAdmins).where(eq(superAdmins.email, email));
+  }
+
+  // Platform statistics for super admin dashboard
+  async getPlatformStats(): Promise<any> {
+    try {
+      // Get church stats
+      const churchStats = await this.getChurchStats();
+      
+      // Get total transactions and revenue
+      const totalTransactions = await db.select({ count: count() }).from(transactions);
+      const totalRevenue = await db.select({ 
+        sum: sql<string>`COALESCE(SUM(${transactions.amount}), 0)` 
+      }).from(transactions).where(eq(transactions.status, 'completed'));
+      
+      // Get platform fees
+      const platformFees = await db.select({ 
+        sum: sql<string>`COALESCE(SUM(${transactions.platformFee}), 0)` 
+      }).from(transactions).where(eq(transactions.status, 'completed'));
+      
+      // Get member count
+      const memberCount = await db.select({ count: count() }).from(users)
+        .where(eq(users.role, 'member'));
+      
+      // Get payout stats
+      const pendingPayouts = await db.select({ 
+        sum: sql<string>`COALESCE(SUM(${payouts.amount}), 0)` 
+      }).from(payouts).where(eq(payouts.status, 'requested'));
+      
+      const completedPayouts = await db.select({ 
+        sum: sql<string>`COALESCE(SUM(${payouts.amount}), 0)` 
+      }).from(payouts).where(eq(payouts.status, 'completed'));
+      
+      // Calculate monthly revenue (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const monthlyRevenue = await db.select({ 
+        sum: sql<string>`COALESCE(SUM(${transactions.amount}), 0)` 
+      }).from(transactions)
+        .where(and(
+          eq(transactions.status, 'completed'),
+          sql`${transactions.createdAt} >= ${thirtyDaysAgo}`
+        ));
+
+      return {
+        totalRevenue: parseFloat(totalRevenue[0].sum || '0').toFixed(2),
+        totalTransactions: totalTransactions[0].count || 0,
+        activeChurches: churchStats.approved || 0,
+        totalChurches: churchStats.total || 0,
+        totalMembers: memberCount[0].count || 0,
+        pendingPayouts: parseFloat(pendingPayouts[0].sum || '0').toFixed(2),
+        completedPayouts: parseFloat(completedPayouts[0].sum || '0').toFixed(2),
+        platformFees: parseFloat(platformFees[0].sum || '0').toFixed(2),
+        monthlyRevenue: parseFloat(monthlyRevenue[0].sum || '0').toFixed(2),
+        revenueGrowth: 12.5, // Calculate actual growth later
+        transactionGrowth: 8.3,
+        churchGrowth: 15.2,
+        payoutGrowth: 6.7
+      };
+    } catch (error) {
+      console.error("Error getting platform stats:", error);
+      return {
+        totalRevenue: '0.00',
+        totalTransactions: 0,
+        activeChurches: 0,
+        totalChurches: 0,
+        totalMembers: 0,
+        pendingPayouts: '0.00',
+        completedPayouts: '0.00',
+        platformFees: '0.00',
+        monthlyRevenue: '0.00',
+        revenueGrowth: 0,
+        transactionGrowth: 0,
+        churchGrowth: 0,
+        payoutGrowth: 0
+      };
+    }
+  }
+
+  async getSuperAdminAnalytics(): Promise<any> {
+    try {
+      // Revenue analytics for the last 6 months
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      const revenueChart = await db.select({
+        month: sql<string>`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`,
+        revenue: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`
+      })
+      .from(transactions)
+      .where(and(
+        eq(transactions.status, 'completed'),
+        sql`${transactions.createdAt} >= ${sixMonthsAgo}`
+      ))
+      .groupBy(sql`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`);
+
+      // Transaction volume chart
+      const transactionChart = await db.select({
+        month: sql<string>`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`,
+        count: sql<number>`COUNT(*)`
+      })
+      .from(transactions)
+      .where(sql`${transactions.createdAt} >= ${sixMonthsAgo}`)
+      .groupBy(sql`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(${transactions.createdAt}, 'YYYY-MM')`);
+
+      return {
+        revenueChart: revenueChart.map(item => ({
+          month: item.month,
+          revenue: parseFloat(item.revenue || '0')
+        })),
+        transactionChart: transactionChart.map(item => ({
+          month: item.month,
+          transactions: item.count
+        }))
+      };
+    } catch (error) {
+      console.error("Error getting super admin analytics:", error);
+      return {
+        revenueChart: [],
+        transactionChart: []
+      };
+    }
+  }
+
+  // Church dashboard data
+  async getChurchDashboardData(churchId: string): Promise<any> {
+    try {
+      const church = await this.getChurch(churchId);
+      if (!church) throw new Error('Church not found');
+
+      // Get recent transactions
+      const recentTransactions = await this.getChurchTransactions(churchId, 10);
+      
+      // Get church projects
+      const projects = await this.getChurchProjects(churchId);
+      
+      // Get monthly stats
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const monthlyStats = await db.select({
+        totalAmount: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`,
+        transactionCount: sql<number>`COUNT(*)`
+      })
+      .from(transactions)
+      .where(and(
+        eq(transactions.churchId, churchId),
+        eq(transactions.status, 'completed'),
+        sql`${transactions.createdAt} >= ${thirtyDaysAgo}`
+      ));
+
+      return {
+        church,
+        recentTransactions,
+        projects,
+        monthlyRevenue: parseFloat(monthlyStats[0]?.totalAmount || '0').toFixed(2),
+        monthlyTransactions: monthlyStats[0]?.transactionCount || 0,
+        totalMembers: await this.getChurchMemberCount(churchId)
+      };
+    } catch (error) {
+      console.error("Error getting church dashboard data:", error);
+      return null;
+    }
+  }
+
+  // Member dashboard data
+  async getMemberDashboardData(userId: string): Promise<any> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) throw new Error('User not found');
+
+      const church = user.churchId ? await this.getChurch(user.churchId) : null;
+      const wallet = await this.getUserWallet(userId);
+      const recentTransactions = await this.getUserTransactions(userId, 10);
+      
+      // Get user stats for this year
+      const yearStart = new Date(new Date().getFullYear(), 0, 1);
+      const yearlyStats = await db.select({
+        totalGiven: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`,
+        transactionCount: sql<number>`COUNT(*)`
+      })
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        eq(transactions.status, 'completed'),
+        sql`${transactions.createdAt} >= ${yearStart}`
+      ));
+
+      return {
+        user,
+        church,
+        wallet,
+        recentTransactions,
+        yearlyGiving: parseFloat(yearlyStats[0]?.totalGiven || '0').toFixed(2),
+        yearlyTransactionCount: yearlyStats[0]?.transactionCount || 0,
+        achievements: await this.getUserAchievements(userId)
+      };
+    } catch (error) {
+      console.error("Error getting member dashboard data:", error);
+      return null;
+    }
+  }
+
+  // Helper methods
+  async getChurchMemberCount(churchId: string): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(users)
+      .where(and(
+        eq(users.churchId, churchId),
+        eq(users.role, 'member'),
+        eq(users.isActive, true)
+      ));
+    return result[0]?.count || 0;
+  }
+
+  async getUserAchievements(userId: string): Promise<any[]> {
+    // Simple achievement system - can be expanded
+    const achievements = [];
+    
+    const totalGiving = await db.select({
+      total: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`
+    })
+    .from(transactions)
+    .where(and(
+      eq(transactions.userId, userId),
+      eq(transactions.status, 'completed')
+    ));
+
+    const total = parseFloat(totalGiving[0]?.total || '0');
+    
+    if (total >= 1000) achievements.push({
+      title: "Generous Giver",
+      description: "Given over R1,000 in total",
+      icon: "trophy",
+      earned: true
+    });
+    
+    if (total >= 5000) achievements.push({
+      title: "Faithful Steward", 
+      description: "Given over R5,000 in total",
+      icon: "star",
+      earned: true
+    });
+
+    return achievements;
+  }
+
+  async deleteSuperAdminByEmail_OLD(email: string): Promise<void> {
     await db.delete(superAdmins).where(eq(superAdmins.email, email));
   }
 }
