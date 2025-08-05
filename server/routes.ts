@@ -489,6 +489,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify 2FA code during signup (no auth required)
+  app.post('/api/admin/verify-signup-2fa', async (req, res) => {
+    try {
+      const { email, verificationCode } = req.body;
+      
+      // Get admin by email
+      const admin = await storage.getAdminByEmail(email);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin account not found" });
+      }
+      
+      if (!admin.twoFactorSecret) {
+        return res.status(400).json({ message: "2FA not set up for this account" });
+      }
+      
+      // Verify the code
+      const validation = validateTwoFactorToken(admin.twoFactorSecret, verificationCode, admin.twoFactorBackupCodes || []);
+      if (!validation.isValid) {
+        return res.status(400).json({ message: "Invalid verification code. Please try again." });
+      }
+      
+      // Enable 2FA for the account
+      await storage.enableTwoFactor(admin.id);
+      
+      console.log(`🔐 2FA enabled during signup for: ${admin.email} at ${new Date().toISOString()}`);
+      
+      res.json({ 
+        message: "Two-factor authentication setup completed successfully",
+        twoFactorEnabled: true
+      });
+    } catch (error: any) {
+      console.error("Error verifying signup 2FA:", error);
+      res.status(500).json({ message: "Failed to verify 2FA code", error: error.message });
+    }
+  });
+
   // Enable 2FA for admin
   app.post('/api/admin/enable-2fa', requireAdminAuth, async (req: any, res) => {
     try {

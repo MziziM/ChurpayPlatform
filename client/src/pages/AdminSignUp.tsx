@@ -85,7 +85,8 @@ export default function AdminSignUp() {
 
   const handleVerifyTwoFactor = async (code: string): Promise<boolean> => {
     try {
-      const response = await apiRequest('POST', '/api/admin/enable-2fa', {
+      const response = await apiRequest('POST', '/api/admin/verify-signup-2fa', {
+        email: twoFactorData?.admin?.email,
         verificationCode: code
       });
       
@@ -94,6 +95,7 @@ export default function AdminSignUp() {
       }
       return false;
     } catch (error) {
+      console.error('2FA verification error:', error);
       return false;
     }
   };
