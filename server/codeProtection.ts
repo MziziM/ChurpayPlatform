@@ -132,14 +132,80 @@ export function logProtectedFileAccess(filePath: string, action: string): void {
 }
 
 /**
+ * Admin authentication middleware - requires valid admin session
+ */
+export async function requireAdminAuth(req: any, res: any, next: any): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: "Admin authentication required",
+        message: "Valid admin token must be provided"
+      });
+    }
+    
+    const token = authHeader.substring(7);
+    const decoded = Buffer.from(token, 'base64').toString('utf-8');
+    const [adminId, timestamp] = decoded.split(':');
+    
+    // Check token age (24 hours max)
+    const tokenAge = Date.now() - parseInt(timestamp);
+    if (tokenAge > 24 * 60 * 60 * 1000) {
+      return res.status(401).json({ 
+        error: "Admin session expired",
+        message: "Please sign in again"
+      });
+    }
+    
+    // Verify admin exists and is active
+    const { DatabaseStorage } = await import('./storage');
+    const storage = new DatabaseStorage();
+    const admin = await storage.getAdminById(adminId);
+    
+    if (!admin || !admin.isActive) {
+      return res.status(401).json({ 
+        error: "Invalid admin session",
+        message: "Admin account not found or inactive"
+      });
+    }
+    
+    // Log admin access for security monitoring
+    console.log(`🔐 Admin access: ${admin.email} accessing ${req.path} at ${new Date().toISOString()}`);
+    
+    req.admin = admin;
+    next();
+  } catch (error) {
+    console.error('Admin authentication error:', error);
+    return res.status(401).json({ 
+      error: "Invalid admin authentication",
+      message: "Token validation failed"
+    });
+  }
+}
+
+/**
  * Security middleware to protect core endpoints
  */
 export function protectCoreEndpoints(req: any, res: any, next: any): void {
   const protectedPaths = ['/api/admin', '/api/system', '/api/config'];
+  const criticalEndpoints = ['/api/platform/stats', '/api/payouts', '/api/transactions'];
   
+  // Monitor access to protected admin paths
   if (protectedPaths.some(path => req.path.startsWith(path))) {
-    // Additional security checks for core system endpoints
-    console.log(`🔒 Core endpoint access: ${req.path} by user ${req.user?.claims?.sub || 'anonymous'}`);
+    console.log(`🔒 Protected path access: ${req.path} by ${req.admin?.email || req.user?.claims?.sub || 'anonymous'}`);
+  }
+  
+  // Validate system integrity for critical operations
+  if (criticalEndpoints.some(endpoint => req.path.startsWith(endpoint))) {
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+      if (!validateFeeStructure()) {
+        console.error('🚨 CRITICAL: Fee structure validation failed during API request');
+        return res.status(423).json({
+          error: "System integrity compromised",
+          message: "Core business constants have been modified. System locked for security."
+        });
+      }
+    }
   }
   
   next();
@@ -149,7 +215,9 @@ export default {
   LOCKED_FILES,
   PROTECTED_CONSTANTS,
   validateFeeStructure,
+  validateSystemIntegrity,
   isFileProtected,
   logProtectedFileAccess,
-  protectCoreEndpoints
+  protectCoreEndpoints,
+  requireAdminAuth
 };

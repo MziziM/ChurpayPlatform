@@ -10,6 +10,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { z } from 'zod';
 import { Eye, EyeOff, Shield, Lock, Mail, LogIn, ArrowRight } from 'lucide-react';
 
@@ -25,6 +26,7 @@ export default function AdminSignIn() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const { signIn } = useAdminAuth();
 
   const form = useForm<AdminSignInForm>({
     resolver: zodResolver(adminSignInSchema),
@@ -37,20 +39,22 @@ export default function AdminSignIn() {
 
   const signInMutation = useMutation({
     mutationFn: async (data: AdminSignInForm) => {
-      return apiRequest('POST', '/api/admin/signin', data);
+      const result = await signIn(data.email, data.password, data.rememberMe);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
         title: "Welcome Back",
         description: "Successfully signed in to ChurPay Admin Dashboard.",
       });
-      // Store admin session and redirect to dashboard
-      localStorage.setItem('adminAuth', JSON.stringify(data));
       navigate('/admin/dashboard');
     },
     onError: (error: any) => {
       toast({
-        title: "Sign In Failed",
+        title: "Sign In Failed", 
         description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
