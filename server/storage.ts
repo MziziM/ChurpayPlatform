@@ -116,6 +116,10 @@ export interface IStorage {
   // Additional methods for API endpoints
   getAllTransactions(): Promise<Transaction[]>;
   
+  // Church branding and member personalization
+  getUserChurch(userId: string): Promise<Church | undefined>;
+  getUserStats(userId: string): Promise<any>;
+  
   // Admin operations
   createAdmin(admin: InsertAdmin): Promise<Admin>;
   getAdminByEmail(email: string): Promise<Admin | undefined>;
@@ -788,6 +792,55 @@ export class DatabaseStorage implements IStorage {
   // Additional methods for API endpoints
   async getAllTransactions(): Promise<Transaction[]> {
     return await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+  }
+
+  // Church branding and member personalization
+  async getUserChurch(userId: string): Promise<Church | undefined> {
+    // First get the user to find their church membership
+    const user = await this.getUser(userId);
+    if (!user || !user.churchId) {
+      return undefined;
+    }
+    
+    return await this.getChurch(user.churchId);
+  }
+
+  async getUserStats(userId: string): Promise<any> {
+    // Get user's donation history and calculate stats
+    const userDonations = await this.getUserDonations(userId);
+    
+    const currentYear = new Date().getFullYear();
+    const thisYearDonations = userDonations.filter(d => new Date(d.createdAt).getFullYear() === currentYear);
+    
+    const totalGiven = userDonations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+    const thisYearGiven = thisYearDonations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+    
+    // Mock data for achievements and events - in a real app this would come from proper tables
+    const annualGoal = 25000; // This could be stored in user preferences
+    const goalProgress = Math.min((thisYearGiven / annualGoal) * 100, 100);
+    
+    const achievements = [];
+    if (thisYearGiven > 10000) achievements.push('Faithful Giver 2025');
+    if (userDonations.length > 50) achievements.push('Consistent Supporter');
+    if (totalGiven > 50000) achievements.push('Generous Heart');
+    
+    const user = await this.getUser(userId);
+    const memberSince = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' }) : 'Jan 2022';
+    
+    return {
+      memberSince,
+      totalGiven: totalGiven.toFixed(2),
+      thisYearGiven: thisYearGiven.toFixed(2),
+      goalProgress: Math.round(goalProgress),
+      annualGoal: annualGoal.toString(),
+      transactionCount: userDonations.length,
+      averageGift: userDonations.length > 0 ? (totalGiven / userDonations.length).toFixed(2) : '0',
+      recentAchievements: achievements,
+      upcomingEvents: [
+        { id: '1', title: 'Sunday Service', date: 'This Sunday', type: 'Weekly Service' },
+        { id: '2', title: 'Community Outreach', date: 'Next Weekend', type: 'Community Event' }
+      ]
+    };
   }
   
   // Admin operations

@@ -18,6 +18,7 @@ import { ProfileModal } from '@/components/ProfileModal';
 import { ChurchModal } from '@/components/ChurchModal';
 import { NotificationModal } from '@/components/NotificationModal';
 import { ActivitiesModal } from '@/components/ActivitiesModal';
+import { PersonalizedWelcomeScreen } from '@/components/PersonalizedWelcomeScreen';
 
 interface WalletData {
   id: string;
@@ -52,6 +53,7 @@ export default function ProfessionalMemberDashboard() {
   const [showProjectsModal, setShowProjectsModal] = useState(false);
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentView, setCurrentView] = useState<'welcome' | 'dashboard'>('welcome');
 
   // Data queries
   const { data: walletData } = useQuery<WalletData>({
@@ -95,6 +97,30 @@ export default function ProfessionalMemberDashboard() {
   const walletBalance = parseFloat(walletData?.availableBalance || '0');
   const rewardPoints = parseInt(walletData?.rewardPoints || '0');
 
+  // Handle quick actions from welcome screen
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'tithe':
+        setDonationType('tithe');
+        setShowDonationModal(true);
+        break;
+      case 'donation':
+        setDonationType('donation');
+        setShowDonationModal(true);
+        break;
+      case 'project':
+        setDonationType('project');
+        setShowDonationModal(true);
+        break;
+      case 'topup':
+        setDonationType('topup');
+        setShowDonationModal(true);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
@@ -109,7 +135,20 @@ export default function ProfessionalMemberDashboard() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <Button variant="ghost" className="text-purple-600 font-medium">Dashboard</Button>
+              <Button 
+                variant="ghost" 
+                className={currentView === 'welcome' ? 'text-purple-600 font-medium' : 'text-gray-600 hover:text-purple-600'}
+                onClick={() => setCurrentView('welcome')}
+              >
+                Welcome
+              </Button>
+              <Button 
+                variant="ghost" 
+                className={currentView === 'dashboard' ? 'text-purple-600 font-medium' : 'text-gray-600 hover:text-purple-600'}
+                onClick={() => setCurrentView('dashboard')}
+              >
+                Dashboard
+              </Button>
               <Button 
                 variant="ghost" 
                 className="text-gray-600 hover:text-purple-600"
@@ -177,21 +216,25 @@ export default function ProfessionalMemberDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Good afternoon, Nomsa</h1>
-              <div className="flex items-center space-x-2 text-gray-600">
-                <span>Here's your giving overview and church activity</span>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        {currentView === 'welcome' ? (
+          <PersonalizedWelcomeScreen onQuickAction={handleQuickAction} />
+        ) : (
+          <>
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Good afternoon, Nomsa</h1>
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <span>Here's your giving overview and church activity</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Last active</p>
+                  <p className="text-sm font-medium text-gray-900">2 minutes ago</p>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Last active</p>
-              <p className="text-sm font-medium text-gray-900">2 minutes ago</p>
-            </div>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content Area */}
@@ -556,6 +599,8 @@ export default function ProfessionalMemberDashboard() {
             </Card>
           </div>
         </div>
+          </>
+        )}
       </main>
 
       {/* Mobile Bottom Navigation */}
