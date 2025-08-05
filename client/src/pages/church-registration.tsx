@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Church, Users, MapPin, Phone, Mail, User, CreditCard, FileText, Shield, Upload } from "lucide-react";
+import { ArrowLeft, Church, Users, MapPin, Phone, Mail, User, CreditCard, FileText, Shield, Upload, Eye, EyeOff, Lock } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +44,8 @@ const churchRegistrationSchema = z.object({
   adminEmail: z.string().email("Valid admin email is required"),
   adminPhone: z.string().min(1, "Admin phone is required"),
   adminPosition: z.string().min(1, "Admin position is required"),
+  adminPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
   
   // Legal Information
   registrationNumber: z.string().optional(),
@@ -60,6 +62,9 @@ const churchRegistrationSchema = z.object({
   hasNpoRegistration: z.boolean().default(false),
   hasTaxClearance: z.boolean().default(false),
   hasBankConfirmation: z.boolean().default(false),
+}).refine((data) => data.adminPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type ChurchRegistrationForm = z.infer<typeof churchRegistrationSchema>;
@@ -67,6 +72,8 @@ type ChurchRegistrationForm = z.infer<typeof churchRegistrationSchema>;
 export default function ChurchRegistration() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
@@ -470,6 +477,92 @@ export default function ChurchRegistration() {
                           <FormLabel>Position/Role *</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Pastor, Administrator, Treasurer" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {/* Password Section */}
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-start space-x-3">
+                      <Lock className="h-5 w-5 text-purple-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-purple-900">Account Security</h4>
+                        <p className="text-sm text-purple-700 mt-1">
+                          Create a secure password for the administrative account. This will be used to access your church dashboard.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="adminPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password *</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                {...field}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter a secure password"
+                                className="pr-10"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Must be at least 8 characters long
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password *</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                {...field}
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                className="pr-10"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
