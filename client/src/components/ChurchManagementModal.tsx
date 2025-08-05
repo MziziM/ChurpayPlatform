@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, MapPin, Phone, Mail, Calendar, Shield, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { Building2, Users, MapPin, Phone, Mail, Calendar, Shield, CheckCircle, XCircle, Clock, FileText, Globe, User, UserCheck } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,19 +10,45 @@ import { useToast } from "@/hooks/use-toast";
 interface Church {
   id: string;
   name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  province?: string;
-  postalCode?: string;
-  denomination?: string;
-  memberCount?: number;
-  status: 'pending' | 'approved' | 'rejected';
-  registrationDate?: string;
-  adminFirstName?: string;
-  adminLastName?: string;
-  description?: string;
+  denomination: string;
+  registrationNumber: string;
+  taxNumber: string;
+  yearEstablished: string;
+  contactEmail: string;
+  contactPhone: string;
+  alternativePhone?: string;
+  website?: string;
+  address: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country?: string;
+  bankName: string;
+  accountNumber: string;
+  branchCode: string;
+  accountHolder: string;
+  accountType: string;
+  description: string;
+  memberCount: number;
+  servicesTimes: string;
+  leadPastor: string;
+  logoUrl?: string;
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+  adminPhone: string;
+  adminPosition: string;
+  hasNpoRegistration?: boolean;
+  hasTaxClearance?: boolean;
+  hasBankConfirmation?: boolean;
+  cipcDocument?: string;
+  bankConfirmationLetter?: string;
+  taxClearanceCertificate?: string;
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'suspended';
+  commissionRate?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface ChurchManagementModalProps {
@@ -200,50 +226,132 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                                 {getStatusBadge(church.status)}
                               </div>
                               
-                              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                              <div className="grid md:grid-cols-3 gap-4 text-sm">
                                 <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Contact Information</h5>
                                   <div className="flex items-center">
                                     <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                                    {church.email}
+                                    {church.contactEmail}
                                   </div>
-                                  {church.phone && (
+                                  <div className="flex items-center">
+                                    <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.contactPhone}
+                                  </div>
+                                  {church.alternativePhone && (
                                     <div className="flex items-center">
                                       <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                                      {church.phone}
+                                      Alt: {church.alternativePhone}
                                     </div>
                                   )}
-                                  {church.address && (
+                                  {church.website && (
                                     <div className="flex items-center">
-                                      <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                                      {church.address}, {church.city}
+                                      <Globe className="w-4 h-4 mr-2 text-gray-500" />
+                                      {church.website}
                                     </div>
                                   )}
                                 </div>
+                                
                                 <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Church Details</h5>
+                                  <div className="flex items-center">
+                                    <Building2 className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.denomination}
+                                  </div>
                                   <div className="flex items-center">
                                     <Users className="w-4 h-4 mr-2 text-gray-500" />
-                                    Admin: {church.adminFirstName} {church.adminLastName}
+                                    {church.memberCount?.toLocaleString() || 0} members
                                   </div>
-                                  {church.denomination && (
-                                    <div className="flex items-center">
-                                      <Building2 className="w-4 h-4 mr-2 text-gray-500" />
-                                      {church.denomination}
-                                    </div>
-                                  )}
-                                  {church.registrationDate && (
-                                    <div className="flex items-center">
-                                      <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                                      Registered: {new Date(church.registrationDate).toLocaleDateString()}
-                                    </div>
-                                  )}
+                                  <div className="flex items-center">
+                                    <User className="w-4 h-4 mr-2 text-gray-500" />
+                                    Pastor: {church.leadPastor}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                                    Est. {church.yearEstablished}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Registration Info</h5>
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                                    <div><strong>Reg #:</strong> {church.registrationNumber}</div>
+                                    <div><strong>Tax #:</strong> {church.taxNumber}</div>
+                                    <div><strong>Bank:</strong> {church.bankName}</div>
+                                    <div><strong>Account:</strong> {church.accountHolder}</div>
+                                  </div>
                                 </div>
                               </div>
+
+                              {/* Address Section */}
+                              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div className="flex items-center mb-2">
+                                  <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                                  <span className="text-sm font-medium">Address</span>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                  {church.address}, {church.city}, {church.province} {church.postalCode}
+                                  {church.country && church.country !== 'South Africa' && `, ${church.country}`}
+                                </p>
+                              </div>
+
+                              {/* Document Verification Status */}
+                              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div className="flex items-center mb-3">
+                                  <Shield className="w-4 h-4 mr-2 text-gray-500" />
+                                  <span className="text-sm font-medium">Document Verification Status</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-xs">
+                                  <div className="flex items-center">
+                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasNpoRegistration ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                    <span className={church.hasNpoRegistration ? 'text-green-600' : 'text-red-600'}>
+                                      NPO Registration
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasTaxClearance ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                    <span className={church.hasTaxClearance ? 'text-green-600' : 'text-red-600'}>
+                                      Tax Clearance
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasBankConfirmation ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                    <span className={church.hasBankConfirmation ? 'text-green-600' : 'text-red-600'}>
+                                      Bank Confirmation
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Administrative Contact */}
+                              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center mb-2">
+                                  <UserCheck className="w-4 h-4 mr-2 text-blue-500" />
+                                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Administrative Contact</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm text-blue-600 dark:text-blue-200">
+                                  <div><strong>Name:</strong> {church.adminFirstName} {church.adminLastName}</div>
+                                  <div><strong>Position:</strong> {church.adminPosition}</div>
+                                  <div><strong>Email:</strong> {church.adminEmail}</div>
+                                  <div><strong>Phone:</strong> {church.adminPhone}</div>
+                                </div>
+                              </div>
+
+                              {/* Services Times */}
+                              {church.servicesTimes && (
+                                <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                  <div className="flex items-center mb-2">
+                                    <Clock className="w-4 h-4 mr-2 text-purple-500" />
+                                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Service Times</span>
+                                  </div>
+                                  <p className="text-sm text-purple-600 dark:text-purple-200">{church.servicesTimes}</p>
+                                </div>
+                              )}
 
                               {church.description && (
                                 <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                   <div className="flex items-center mb-2">
                                     <FileText className="w-4 h-4 mr-2 text-gray-500" />
-                                    <span className="text-sm font-medium">Description</span>
+                                    <span className="text-sm font-medium">Church Description</span>
                                   </div>
                                   <p className="text-sm text-gray-600 dark:text-gray-300">{church.description}</p>
                                 </div>
@@ -283,11 +391,12 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                             {getStatusBadge(church.status)}
                           </div>
                           <div className="text-sm text-gray-600 space-y-1">
-                            <div>{church.email}</div>
+                            <div>{church.contactEmail}</div>
                             <div className="flex items-center">
                               <Users className="w-3 h-3 mr-1" />
-                              {church.memberCount || 0} members
+                              {church.memberCount?.toLocaleString() || 0} members
                             </div>
+                            <div className="text-xs text-gray-500">{church.denomination}</div>
                           </div>
                         </CardContent>
                       </Card>
@@ -296,48 +405,173 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                 </div>
               )}
 
-              {/* Church Review Modal */}
+              {/* Detailed Church Review Modal */}
               {selectedChurch && (
                 <Card className="border-2 border-blue-500 shadow-xl">
-                  <CardHeader className="bg-blue-50 dark:bg-blue-900/20">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                     <CardTitle className="flex items-center justify-between">
-                      <span>Review: {selectedChurch.name}</span>
+                      <div>
+                        <span className="text-xl">Complete Review: {selectedChurch.name}</span>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          Review all church details before making approval decision
+                        </p>
+                      </div>
                       <Button variant="ghost" size="sm" onClick={() => setSelectedChurch(null)}>
-                        ✕
+                        <XCircle className="w-5 h-5" />
                       </Button>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Review Notes</label>
-                        <textarea
-                          className="w-full p-3 border rounded-lg resize-none"
-                          rows={3}
-                          placeholder="Add notes about your decision (optional)..."
-                          value={reviewNotes}
-                          onChange={(e) => setReviewNotes(e.target.value)}
-                        />
+                  <CardContent className="p-6 space-y-6">
+                    {/* Church Overview */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-lg border-b pb-2">Church Information</h4>
+                        <div className="space-y-2 text-sm">
+                          <div><span className="font-medium">Name:</span> {selectedChurch.name}</div>
+                          <div><span className="font-medium">Denomination:</span> {selectedChurch.denomination}</div>
+                          <div><span className="font-medium">Lead Pastor:</span> {selectedChurch.leadPastor}</div>
+                          <div><span className="font-medium">Year Established:</span> {selectedChurch.yearEstablished}</div>
+                          <div><span className="font-medium">Members:</span> {selectedChurch.memberCount?.toLocaleString() || 0}</div>
+                          <div><span className="font-medium">Service Times:</span> {selectedChurch.servicesTimes}</div>
+                        </div>
                       </div>
-                      
-                      <div className="flex justify-end space-x-3">
-                        <Button 
-                          variant="outline"
-                          onClick={() => handleProcess('reject')}
-                          disabled={processMutation.isPending}
-                          className="border-red-600 text-red-600 hover:bg-red-50"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Reject Application
-                        </Button>
-                        <Button 
-                          onClick={() => handleProcess('approve')}
-                          disabled={processMutation.isPending}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Approve Church
-                        </Button>
+
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-lg border-b pb-2">Contact Details</h4>
+                        <div className="space-y-2 text-sm">
+                          <div><span className="font-medium">Email:</span> {selectedChurch.contactEmail}</div>
+                          <div><span className="font-medium">Phone:</span> {selectedChurch.contactPhone}</div>
+                          {selectedChurch.alternativePhone && (
+                            <div><span className="font-medium">Alt Phone:</span> {selectedChurch.alternativePhone}</div>
+                          )}
+                          {selectedChurch.website && (
+                            <div><span className="font-medium">Website:</span> {selectedChurch.website}</div>
+                          )}
+                          <div className="pt-2">
+                            <span className="font-medium">Address:</span><br />
+                            {selectedChurch.address}<br />
+                            {selectedChurch.city}, {selectedChurch.province} {selectedChurch.postalCode}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Administrative Contact */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                      <h4 className="font-semibold text-lg mb-3 text-blue-700 dark:text-blue-300">Administrative Contact</h4>
+                      <div className="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div><span className="font-medium">Name:</span> {selectedChurch.adminFirstName} {selectedChurch.adminLastName}</div>
+                          <div><span className="font-medium">Position:</span> {selectedChurch.adminPosition}</div>
+                        </div>
+                        <div>
+                          <div><span className="font-medium">Email:</span> {selectedChurch.adminEmail}</div>
+                          <div><span className="font-medium">Phone:</span> {selectedChurch.adminPhone}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Legal & Financial Information */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                        <h4 className="font-semibold text-lg mb-3 text-green-700 dark:text-green-300">Legal Information</h4>
+                        <div className="space-y-2 text-sm">
+                          <div><span className="font-medium">Registration #:</span> {selectedChurch.registrationNumber}</div>
+                          <div><span className="font-medium">Tax Number:</span> {selectedChurch.taxNumber}</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                        <h4 className="font-semibold text-lg mb-3 text-purple-700 dark:text-purple-300">Banking Details</h4>
+                        <div className="space-y-2 text-sm">
+                          <div><span className="font-medium">Bank:</span> {selectedChurch.bankName}</div>
+                          <div><span className="font-medium">Account Holder:</span> {selectedChurch.accountHolder}</div>
+                          <div><span className="font-medium">Account Type:</span> {selectedChurch.accountType}</div>
+                          <div><span className="font-medium">Account #:</span> {selectedChurch.accountNumber}</div>
+                          <div><span className="font-medium">Branch Code:</span> {selectedChurch.branchCode}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Document Verification */}
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h4 className="font-semibold text-lg mb-3">Document Verification Status</h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${selectedChurch.hasNpoRegistration ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className={`text-sm ${selectedChurch.hasNpoRegistration ? 'text-green-600' : 'text-red-600'}`}>
+                            NPO Registration
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${selectedChurch.hasTaxClearance ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className={`text-sm ${selectedChurch.hasTaxClearance ? 'text-green-600' : 'text-red-600'}`}>
+                            Tax Clearance
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${selectedChurch.hasBankConfirmation ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className={`text-sm ${selectedChurch.hasBankConfirmation ? 'text-green-600' : 'text-red-600'}`}>
+                            Bank Confirmation
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Church Description */}
+                    {selectedChurch.description && (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                        <h4 className="font-semibold text-lg mb-3 text-yellow-700 dark:text-yellow-300">Church Description</h4>
+                        <p className="text-sm text-yellow-600 dark:text-yellow-200">{selectedChurch.description}</p>
+                      </div>
+                    )}
+
+                    {/* Review Notes and Decision */}
+                    <div className="border-t pt-6">
+                      <h4 className="font-semibold text-lg mb-4">Review Decision</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Review Notes & Reason for Decision
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows={4}
+                            placeholder="Please provide detailed notes explaining your approval or rejection decision. This helps maintain transparency and provides feedback to the church..."
+                            value={reviewNotes}
+                            onChange={(e) => setReviewNotes(e.target.value)}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            These notes will be recorded for audit purposes and may be shared with church administrators.
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3">
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleProcess('reject')}
+                            disabled={processMutation.isPending || !reviewNotes.trim()}
+                            className="border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            {processMutation.isPending ? 'Processing...' : 'Reject Application'}
+                          </Button>
+                          <Button 
+                            onClick={() => handleProcess('approve')}
+                            disabled={processMutation.isPending || !reviewNotes.trim()}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            {processMutation.isPending ? 'Processing...' : 'Approve Church'}
+                          </Button>
+                        </div>
+                        
+                        {!reviewNotes.trim() && (
+                          <p className="text-sm text-red-500 text-right">
+                            Please provide review notes before making a decision
+                          </p>
+                        )}
                       </div>
                     </div>
                   </CardContent>
