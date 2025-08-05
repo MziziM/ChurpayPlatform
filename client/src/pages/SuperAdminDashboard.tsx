@@ -61,9 +61,9 @@ export default function SuperAdminDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center p-6">
         <div className="flex items-center space-x-4">
-          <img src={churpayLogo} alt="ChurPay" className="h-10 w-auto" />
+          <img src={churpayLogo} alt="ChurPay" className="h-10 w-auto filter drop-shadow-lg" />
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {superAdmin?.firstName || 'Super Admin'}</h1>
+            <h1 className="text-3xl font-heading font-bold text-white mb-2">Good afternoon, {superAdmin?.firstName || 'Super Admin'}</h1>
             <div className="text-gray-300 flex items-center">
               Here's your platform overview and system activity
               <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>

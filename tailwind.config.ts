@@ -10,7 +10,19 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'Roboto', 'sans-serif'],
+        'heading': ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        'brand': ['Poppins', 'sans-serif']
+      },
       colors: {
+        'churpay': {
+          purple: 'hsl(262, 83%, 58%)',
+          'purple-dark': 'hsl(258, 90%, 66%)',
+          'purple-light': 'hsl(266, 85%, 90%)',
+          yellow: 'hsl(51, 100%, 50%)',
+          'yellow-dark': 'hsl(45, 100%, 50%)',
+        },
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {
