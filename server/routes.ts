@@ -361,13 +361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/signup', async (req, res) => {
     try {
       const bcrypt = await import('bcryptjs');
-      const { firstName, lastName, email, password, adminCode, acceptTerms } = req.body;
-      
-      // Validate admin authorization code
-      const ADMIN_CODE = process.env.ADMIN_AUTH_CODE || 'CHURPAY_ADMIN_2025';
-      if (adminCode !== ADMIN_CODE) {
-        return res.status(400).json({ message: "Invalid admin authorization code" });
-      }
+      const { firstName, lastName, email, password, acceptTerms } = req.body;
       
       if (!acceptTerms) {
         return res.status(400).json({ message: "Terms and conditions must be accepted" });
