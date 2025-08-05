@@ -1,6 +1,7 @@
 import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
 import { PlatformFinancialsModal } from "@/components/PlatformFinancialsModal";
+import { ChurchManagementModal } from "@/components/ChurchManagementModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
@@ -38,6 +39,7 @@ export default function SuperAdminDashboard() {
   const { superAdmin, isLoading, isAuthenticated } = useSuperAdminAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isFinancialsModalOpen, setIsFinancialsModalOpen] = useState(false);
+  const [isChurchModalOpen, setIsChurchModalOpen] = useState(false);
 
   // Real-time platform statistics
   const { data: platformStats, isLoading: statsLoading } = useQuery<PlatformStats>({
@@ -273,17 +275,81 @@ export default function SuperAdminDashboard() {
 
         {activeTab === 'churches' && (
           <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Church Management</h3>
-            <div className="space-y-4">
-              {churchesLoading ? (
-                <div className="text-gray-400">Loading churches...</div>
-              ) : churchesData?.length > 0 ? (
-                churchesData.map((church: any) => (
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-2">Church Management</h3>
+                <p className="text-gray-400 text-sm">Manage church registrations and platform access</p>
+              </div>
+              <Button 
+                onClick={() => setIsChurchModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Manage Churches
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Quick Stats */}
+              <div className="bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-xl p-4 border border-blue-500/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm">Pending Reviews</p>
+                    <p className="text-2xl font-bold text-white">
+                      {churchesLoading ? '...' : (churchesData?.filter((c: any) => c.status === 'pending').length || 0)}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-yellow-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-600/20 to-green-700/20 rounded-xl p-4 border border-green-500/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm">Active Churches</p>
+                    <p className="text-2xl font-bold text-white">
+                      {churchesLoading ? '...' : (churchesData?.filter((c: any) => c.status === 'approved').length || 0)}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-600/20 to-purple-700/20 rounded-xl p-4 border border-purple-500/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm">Total Members</p>
+                    <p className="text-2xl font-bold text-white">
+                      {churchesLoading ? '...' : (churchesData?.reduce((total: number, church: any) => total + (church.memberCount || 0), 0).toLocaleString() || '0')}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-purple-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Church Activity */}
+            <div className="mt-6">
+              <h4 className="text-lg font-medium text-white mb-4">Recent Church Activity</h4>
+              <div className="space-y-3">
+                {churchesLoading ? (
+                  <div className="text-gray-400">Loading recent activity...</div>
+                ) : churchesData?.slice(0, 3).map((church: any) => (
                   <div key={church.id} className="bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
-                    <div>
-                      <h4 className="text-white font-medium">{church.name}</h4>
-                      <p className="text-gray-400 text-sm">{church.location || 'Location not specified'}</p>
-                      <p className="text-gray-400 text-xs">Members: {church.memberCount || 0}</p>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h5 className="text-white font-medium">{church.name}</h5>
+                        <p className="text-gray-400 text-sm">{church.email}</p>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -293,18 +359,16 @@ export default function SuperAdminDashboard() {
                       }`}>
                         {church.status}
                       </span>
-                      {church.status === 'pending' && (
-                        <div className="flex space-x-2">
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
-                          <Button size="sm" variant="outline" className="border-red-600 text-red-400 hover:bg-red-600">Reject</Button>
-                        </div>
-                      )}
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-gray-400">No churches found</div>
-              )}
+                )) || (
+                  <div className="text-gray-400 text-center py-8">
+                    <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+                    <p>No church registrations yet</p>
+                    <p className="text-sm">Churches will appear here once they register</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -451,6 +515,12 @@ export default function SuperAdminDashboard() {
       <PlatformFinancialsModal 
         isOpen={isFinancialsModalOpen}
         onClose={() => setIsFinancialsModalOpen(false)}
+      />
+
+      {/* Church Management Modal */}
+      <ChurchManagementModal 
+        isOpen={isChurchModalOpen}
+        onClose={() => setIsChurchModalOpen(false)}
       />
     </div>
   );
