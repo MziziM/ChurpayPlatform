@@ -10,7 +10,7 @@ import {
   ArrowDown, ArrowUp, Users, ArrowLeftRight,
   Home, User, Bell, Search, ChevronRight,
   Activity, CreditCard, HandHeart, Banknote,
-  Receipt, Shield, Clock
+  Receipt, Shield, Clock, Settings, MoreVertical, Star
 } from 'lucide-react';
 import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
@@ -156,7 +156,7 @@ export default function MemberDashboard() {
               <span className="text-xs mt-1">Giving</span>
             </div>
             <div className="flex flex-col items-center p-2 text-gray-400">
-              <Church className="h-5 w-5" />
+              <Building2 className="h-5 w-5" />
               <span className="text-xs mt-1">Projects</span>
             </div>
             <div className="flex flex-col items-center p-2 text-gray-400">
@@ -182,7 +182,7 @@ export default function MemberDashboard() {
               <span>My Giving</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
-              <Church className="h-5 w-5" />
+              <Building2 className="h-5 w-5" />
               <span>Church Projects</span>
             </div>
             <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
@@ -211,7 +211,7 @@ export default function MemberDashboard() {
                   setShowDonationModal(true);
                 }}
               >
-                <Church className="h-5 w-5" />
+                <Building2 className="h-5 w-5" />
                 <span>Quick Tithe</span>
               </div>
               <div 
@@ -289,7 +289,7 @@ export default function MemberDashboard() {
                     setShowDonationModal(true);
                   }}
                 >
-                  <Church className="h-4 w-4" />
+                  <Building2 className="h-4 w-4" />
                 </Button>
                 <Button 
                   size="sm" 
@@ -621,7 +621,7 @@ export default function MemberDashboard() {
                             transaction.type === 'topup' ? 'bg-blue-500' : 'bg-gray-500'
                           }`}>
                             {transaction.type === 'donation' ? <Heart className="h-4 w-4 text-white" /> :
-                             transaction.type === 'tithe' ? <Church className="h-4 w-4 text-white" /> :
+                             transaction.type === 'tithe' ? <Building2 className="h-4 w-4 text-white" /> :
                              transaction.type === 'topup' ? <ArrowUp className="h-4 w-4 text-white" /> :
                              <ArrowDown className="h-4 w-4 text-white" />}
                           </div>
@@ -643,7 +643,7 @@ export default function MemberDashboard() {
                       </div>
                     )) : (
                       <div className="text-center py-6">
-                        <Church className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+                        <Building2 className="h-8 w-8 text-gray-500 mx-auto mb-2" />
                         <p className="text-gray-400 text-sm">No recent church giving</p>
                         <p className="text-gray-500 text-xs">Start your faithful giving journey today</p>
                         <Button 
