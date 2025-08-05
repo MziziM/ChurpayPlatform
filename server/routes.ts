@@ -169,6 +169,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug session endpoint for Super Admin
+  app.get('/api/super-admin/debug-session', async (req, res) => {
+    console.log('🔍 Session Debug:', {
+      superAdminId: req.session?.superAdminId,
+      adminId: req.session?.adminId,
+      sessionID: req.sessionID,
+      session: req.session
+    });
+    res.json({
+      superAdminId: req.session?.superAdminId,
+      adminId: req.session?.adminId,
+      sessionID: req.sessionID,
+      hasSession: !!req.session
+    });
+  });
+
+  // TEST BYPASS: Temporary Super Admin session creator for development
+  app.post('/api/super-admin/test-session', async (req, res) => {
+    try {
+      const superAdmin = await storage.getSuperAdminByEmail('mzizi.mzwakhe@churpay.com');
+      if (superAdmin && superAdmin.isActive) {
+        req.session.superAdminId = superAdmin.id;
+        req.session.superAdminEmail = superAdmin.email;
+        req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        
+        console.log(`🔍 TEST: Super Admin session created for ${superAdmin.email}`);
+        res.json({ 
+          success: true, 
+          message: 'Test session created',
+          superAdminId: superAdmin.id,
+          email: superAdmin.email
+        });
+      } else {
+        res.status(404).json({ message: 'Super Admin not found' });
+      }
+    } catch (error) {
+      console.error('Test session creation error:', error);
+      res.status(500).json({ message: 'Failed to create test session' });
+    }
+  });
+
   // Authentication endpoint for checking current user
   app.get('/api/auth/user', async (req: any, res) => {
     try {
