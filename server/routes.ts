@@ -107,6 +107,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Personalized Welcome Screen APIs
+  app.get('/api/user/church', async (req: any, res) => {
+    try {
+      // Mock session for now - in production use authenticated user ID
+      const userId = req.session?.userId || 'mock-user-id';
+      
+      // Mock church data for personalized welcome screen
+      const mockChurch = {
+        id: 'church-001',
+        name: 'Grace Baptist Church',
+        denomination: 'Baptist',
+        logoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center',
+        description: 'A vibrant community of believers committed to worship, fellowship, and service in the heart of Cape Town.',
+        leadPastor: 'Dr. John Smith',
+        city: 'Cape Town',
+        province: 'Western Cape',
+        memberCount: 450,
+        contactEmail: 'office@gracebaptist.org.za',
+        contactPhone: '+27 21 555 0123',
+        website: 'https://gracebaptist.org.za',
+        servicesTimes: 'Sunday: 9:00 AM & 11:00 AM\nWednesday Prayer: 7:00 PM\nYouth Service: Friday 6:30 PM',
+        status: 'approved'
+      };
+
+      res.json(mockChurch);
+    } catch (error) {
+      console.error('Error fetching user church:', error);
+      res.status(500).json({ message: 'Failed to fetch church information' });
+    }
+  });
+
+  app.get('/api/user/stats', async (req: any, res) => {
+    try {
+      // Mock session for now - in production use authenticated user ID
+      const userId = req.session?.userId || 'mock-user-id';
+      
+      // Mock user stats for personalized welcome screen
+      const mockStats = {
+        memberSince: 'Jan 2023',
+        totalGiven: '12,450.00',
+        thisYearGiven: '4,200.00',
+        goalProgress: 42,
+        annualGoal: '10,000.00',
+        transactionCount: 28,
+        averageGift: '444.64',
+        recentAchievements: ['Faithful Giver 2025', 'Consistent Supporter'],
+        upcomingEvents: [
+          { id: '1', title: 'Sunday Service', date: 'This Sunday', type: 'Weekly Service' },
+          { id: '2', title: 'Community Outreach', date: 'Next Weekend', type: 'Community Event' },
+          { id: '3', title: 'Youth Conference', date: 'March 15-17', type: 'Special Event' }
+        ]
+      };
+
+      res.json(mockStats);
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      res.status(500).json({ message: 'Failed to fetch user statistics' });
+    }
+  });
+
   // Authentication endpoint for checking current user
   app.get('/api/auth/user', async (req: any, res) => {
     try {
