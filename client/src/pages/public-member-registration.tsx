@@ -193,19 +193,15 @@ export default function PublicMemberRegistration() {
     form.setValue("country", addressComponents.country);
   };
 
-  const filteredChurches = sampleChurches.filter(church =>
-    church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    church.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (church.denomination && church.denomination.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
+  // Submit registration to unified API
   const submitRegistration = async (data: MemberRegistrationForm) => {
     setIsSubmitting(true);
     try {
+      const { confirmPassword, ...submitData } = data;
       const response = await fetch("/api/members/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -213,31 +209,32 @@ export default function PublicMemberRegistration() {
         throw new Error(errorData.message || "Registration failed");
       }
 
-      const result = await response.json();
-
       toast({
         title: "Registration Successful!",
-        description: `Welcome to ChurPay! You can now access your member dashboard.`,
+        description: "Welcome to ChurPay! You can now sign in to your member account.",
         variant: "default",
       });
-
-      // Store member info for dashboard access
-      localStorage.setItem('churpayMember', JSON.stringify(result.user));
       
-      // Redirect to member dashboard after successful registration
+      // Redirect to sign-in after successful registration
       setTimeout(() => {
-        window.location.href = "/member-dashboard";
+        setLocation("/sign-in");
       }, 2000);
     } catch (error: any) {
       toast({
         title: "Registration Failed",
-        description: error.message || "There was an error with your registration. Please try again.",
+        description: error.message || "There was an error registering your account. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const filteredChurches = sampleChurches.filter(church =>
+    church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    church.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (church.denomination && church.denomination.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const onSubmit = (data: MemberRegistrationForm) => {
     submitRegistration(data);
