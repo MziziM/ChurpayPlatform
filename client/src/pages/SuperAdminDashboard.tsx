@@ -1,5 +1,6 @@
 import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
+import { PlatformFinancialsModal } from "@/components/PlatformFinancialsModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
@@ -36,6 +37,7 @@ export default function SuperAdminDashboard() {
   const { toast } = useToast();
   const { superAdmin, isLoading, isAuthenticated } = useSuperAdminAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isFinancialsModalOpen, setIsFinancialsModalOpen] = useState(false);
 
   // Real-time platform statistics
   const { data: platformStats, isLoading: statsLoading } = useQuery<PlatformStats>({
@@ -406,7 +408,12 @@ export default function SuperAdminDashboard() {
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Platform Financials</h3>
-              <button className="text-sm opacity-75 hover:opacity-100">View Details →</button>
+              <button 
+                onClick={() => setIsFinancialsModalOpen(true)}
+                className="text-sm opacity-75 hover:opacity-100 transition-opacity"
+              >
+                View Details →
+              </button>
             </div>
             <p className="text-sm opacity-90 mb-6">Platform earnings & payouts</p>
             
@@ -439,6 +446,12 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Platform Financials Modal */}
+      <PlatformFinancialsModal 
+        isOpen={isFinancialsModalOpen}
+        onClose={() => setIsFinancialsModalOpen(false)}
+      />
     </div>
   );
 }
