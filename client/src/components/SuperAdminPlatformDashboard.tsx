@@ -253,29 +253,32 @@ export function SuperAdminPlatformDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+    <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
+      {/* Top Navigation Bar */}
+      <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-4 md:px-8 py-4 rounded-t-3xl mx-2 md:mx-8 mt-2 md:mt-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-churpay-gradient flex items-center justify-center">
-              <Crown className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-2 md:space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center">
+                <Crown className="w-6 h-6 text-purple-900" />
+              </div>
+              <h1 className="text-white text-sm md:text-xl font-bold tracking-wider">CHURPAY SUPER ADMIN</h1>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-              <p className="text-gray-600">ChurPay Platform Management</p>
+            <div className="flex items-center space-x-2 md:space-x-6 text-xs md:text-sm text-gray-400">
+              <span className="hidden md:block border-r border-gray-600 pr-6">PLATFORM OVERSIGHT</span>
+              <div className="px-2 md:px-3 py-1 bg-yellow-400 text-purple-900 text-xs rounded font-medium">MASTER ACCESS</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
               <Bell className="w-4 h-4 mr-2" />
               Alerts
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
               <Download className="w-4 h-4 mr-2" />
               Export Data
             </Button>
-            <Button size="sm" className="bg-churpay-gradient text-white">
+            <Button size="sm" className="bg-yellow-400 hover:bg-yellow-500 text-purple-900 font-semibold">
               <Settings className="w-4 h-4 mr-2" />
               Platform Settings
             </Button>
@@ -283,44 +286,45 @@ export function SuperAdminPlatformDashboard() {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="flex flex-col md:flex-row mx-2 md:mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
+        <div className="flex-1 p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="churches">Churches</TabsTrigger>
-            <TabsTrigger value="payouts">Payouts</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-gray-800/60 border-gray-700">
+            <TabsTrigger value="overview" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Overview</TabsTrigger>
+            <TabsTrigger value="churches" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Churches</TabsTrigger>
+            <TabsTrigger value="payouts" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Payouts</TabsTrigger>
+            <TabsTrigger value="members" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Members</TabsTrigger>
+            <TabsTrigger value="system" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">System</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             {/* Platform Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-6 bg-white border border-gray-200">
+              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Churches</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.totalChurches}</p>
-                    <p className="text-sm text-green-600 flex items-center mt-1">
+                    <p className="text-sm text-gray-400">Total Churches</p>
+                    <p className="text-2xl font-bold text-white">{mockPlatformStats.totalChurches}</p>
+                    <p className="text-sm text-green-400 flex items-center mt-1">
                       <TrendingUp className="w-4 h-4 mr-1" />
                       +{mockPlatformStats.platformGrowthRate}% growth
                     </p>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Church className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 rounded-full bg-yellow-400/20 flex items-center justify-center">
+                    <Church className="w-6 h-6 text-yellow-400" />
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-6 bg-white border border-gray-200">
+              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Platform Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(mockPlatformStats.totalRevenue)}</p>
-                    <p className="text-sm text-gray-600">Monthly: {formatCurrency(mockPlatformStats.monthlyRevenue)}</p>
+                    <p className="text-sm text-gray-400">Platform Revenue</p>
+                    <p className="text-2xl font-bold text-white">{formatCurrency(mockPlatformStats.totalRevenue)}</p>
+                    <p className="text-sm text-gray-300">Monthly: {formatCurrency(mockPlatformStats.monthlyRevenue)}</p>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-green-400" />
                   </div>
                 </div>
               </Card>
@@ -976,6 +980,7 @@ export function SuperAdminPlatformDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
 
       {/* Modals */}
