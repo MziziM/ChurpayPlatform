@@ -17,6 +17,7 @@ import { Eye, EyeOff, Shield, Lock, Mail, LogIn, ArrowRight } from 'lucide-react
 const adminSignInSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
+  twoFactorCode: z.string().optional(),
   rememberMe: z.boolean().optional()
 });
 
@@ -26,6 +27,7 @@ export default function AdminSignIn() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const { signIn } = useAdminAuth();
 
   const form = useForm<AdminSignInForm>({
@@ -33,29 +35,42 @@ export default function AdminSignIn() {
     defaultValues: {
       email: '',
       password: '',
+      twoFactorCode: '',
       rememberMe: false
     }
   });
 
   const signInMutation = useMutation({
     mutationFn: async (data: AdminSignInForm) => {
-      const result = await signIn(data.email, data.password, data.rememberMe);
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      return result.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Welcome Back",
-        description: "Successfully signed in to ChurPay Admin Dashboard.",
+      const response = await apiRequest('POST', '/api/admin/signin', {
+        email: data.email,
+        password: data.password,
+        twoFactorCode: data.twoFactorCode,
+        rememberMe: data.rememberMe
       });
-      navigate('/admin/dashboard');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
+        toast({
+          title: "2FA Required",
+          description: "Please enter your 6-digit authentication code from Google Authenticator.",
+        });
+      } else {
+        // Store the token for session management
+        localStorage.setItem('adminToken', data.token);
+        toast({
+          title: "Welcome Back",
+          description: "Successfully signed in to ChurPay Admin Dashboard.",
+        });
+        navigate('/admin/dashboard');
+      }
     },
     onError: (error: any) => {
       toast({
         title: "Sign In Failed", 
-        description: error.message || "Invalid email or password. Please try again.",
+        description: error.message || "Invalid credentials or 2FA code. Please try again.",
         variant: "destructive",
       });
     },
@@ -143,6 +158,38 @@ export default function AdminSignIn() {
                     </FormItem>
                   )}
                 />
+
+                {/* Two-Factor Authentication Code */}
+                {requiresTwoFactor && (
+                  <FormField
+                    control={form.control}
+                    name="twoFactorCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Authentication Code
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input
+                              {...field}
+                              type="text"
+                              placeholder="Enter 6-digit code"
+                              maxLength={6}
+                              className="pl-10 h-11 border-gray-200 focus:border-purple-500 focus:ring-purple-500 text-center tracking-wider"
+                              onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ''))}
+                            />
+                          </div>
+                        </FormControl>
+                        <div className="text-xs text-gray-500">
+                          Enter the 6-digit code from your Google Authenticator app
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between">

@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { Eye, EyeOff, Shield, Lock, User, Mail, Key, CheckCircle } from 'lucide-react';
+import { TwoFactorSetup } from '@/components/TwoFactorSetup';
 
 const adminSignUpSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -37,6 +38,8 @@ export default function AdminSignUp() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [step, setStep] = useState<'signup' | 'twofa'>('signup');
+  const [twoFactorData, setTwoFactorData] = useState<any>(null);
 
   const form = useForm<AdminSignUpForm>({
     resolver: zodResolver(adminSignUpSchema),
@@ -53,14 +56,24 @@ export default function AdminSignUp() {
 
   const signUpMutation = useMutation({
     mutationFn: async (data: AdminSignUpForm) => {
-      return apiRequest('POST', '/api/admin/signup', data);
+      const response = await apiRequest('POST', '/api/admin/signup', data);
+      return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Admin Account Created",
-        description: "Your administrator account has been successfully created. You can now sign in.",
-      });
-      navigate('/admin/signin');
+    onSuccess: (data) => {
+      if (data.twoFactorSetup) {
+        setTwoFactorData(data);
+        setStep('twofa');
+        toast({
+          title: "Account Created!",
+          description: "Now set up two-factor authentication for enhanced security.",
+        });
+      } else {
+        toast({
+          title: "Admin Account Created",
+          description: "Your administrator account has been successfully created. You can now sign in.",
+        });
+        navigate('/admin/signin');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -71,9 +84,47 @@ export default function AdminSignUp() {
     },
   });
 
+  const handleVerifyTwoFactor = async (code: string): Promise<boolean> => {
+    try {
+      const response = await apiRequest('POST', '/api/admin/enable-2fa', {
+        verificationCode: code
+      });
+      
+      if (response.ok) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleTwoFactorComplete = () => {
+    toast({
+      title: "2FA Setup Complete!",
+      description: "Your admin account is now secured with two-factor authentication.",
+    });
+    navigate('/admin/signin');
+  };
+
   const onSubmit = (data: AdminSignUpForm) => {
     signUpMutation.mutate(data);
   };
+
+  // Render 2FA setup step
+  if (step === 'twofa' && twoFactorData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center p-4">
+        <TwoFactorSetup
+          qrCodeUrl={twoFactorData.twoFactorSetup.qrCodeUrl}
+          manualEntryKey={twoFactorData.twoFactorSetup.manualEntryKey}
+          backupCodes={twoFactorData.twoFactorSetup.backupCodes}
+          onVerify={handleVerifyTwoFactor}
+          onComplete={handleTwoFactorComplete}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center p-4">

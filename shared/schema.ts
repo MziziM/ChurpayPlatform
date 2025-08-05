@@ -692,6 +692,13 @@ export const admins = pgTable("admins", {
   lastLoginAt: timestamp("last_login_at"),
   failedLoginAttempts: integer("failed_login_attempts").default(0),
   accountLockedUntil: timestamp("account_locked_until"),
+  
+  // Google Authenticator 2FA Integration
+  twoFactorSecret: varchar("two_factor_secret", { length: 255 }), // TOTP secret for Google Authenticator
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  twoFactorBackupCodes: text("two_factor_backup_codes").array(), // Emergency recovery codes
+  authorizationCode: varchar("authorization_code", { length: 50 }).default("CHURPAY_ADMIN_2025"), // Fallback for setup
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

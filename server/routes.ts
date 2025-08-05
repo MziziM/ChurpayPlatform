@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
+import { generateTwoFactorSecret, validateTwoFactorToken, removeUsedBackupCode } from "./googleAuth";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -356,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin Authentication Endpoints
+  // Admin Authentication Endpoints with Google Authenticator 2FA
   app.post('/api/admin/signup', async (req, res) => {
     try {
       const bcrypt = await import('bcryptjs');
@@ -378,24 +379,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Admin account already exists with this email" });
       }
       
-      // Hash password
-      const passwordHash = await bcrypt.hash(password, 10);
+      // Hash password with enhanced security (12 rounds)
+      const passwordHash = await bcrypt.hash(password, 12);
       
-      // Create admin account
+      // Generate Google Authenticator 2FA setup
+      const twoFactorSetup = await generateTwoFactorSecret(email, `${firstName} ${lastName}`);
+      
+      // Create admin account with 2FA
       const adminData = {
         firstName,
         lastName,
         email,
         passwordHash,
         role: 'admin' as const,
-        isActive: true
+        isActive: true,
+        twoFactorSecret: twoFactorSetup.secret,
+        twoFactorEnabled: false, // Will be enabled after verification
+        twoFactorBackupCodes: twoFactorSetup.backupCodes
       };
       
       const admin = await storage.createAdmin(adminData);
       
-      // Return admin data (without password hash)
-      const { passwordHash: _, ...adminResponse } = admin;
-      res.json(adminResponse);
+      console.log(`🔐 New admin registered with 2FA: ${email} at ${new Date().toISOString()}`);
+      
+      // Return admin data with 2FA setup (without sensitive data)
+      const { passwordHash: _, twoFactorSecret: __, twoFactorBackupCodes: ___, ...adminResponse } = admin;
+      res.json({
+        admin: adminResponse,
+        twoFactorSetup: {
+          qrCodeUrl: twoFactorSetup.qrCodeUrl,
+          manualEntryKey: twoFactorSetup.manualEntryKey,
+          backupCodes: twoFactorSetup.backupCodes,
+          instructions: "Scan the QR code with Google Authenticator or enter the manual key"
+        }
+      });
       
     } catch (error: any) {
       console.error("Error creating admin account:", error);
@@ -406,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/signin', async (req, res) => {
     try {
       const bcrypt = await import('bcryptjs');
-      const { email, password, rememberMe } = req.body;
+      const { email, password, twoFactorCode, rememberMe } = req.body;
       
       // Get admin by email
       const admin = await storage.getAdminByEmail(email);
@@ -427,13 +444,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid email or password" });
       }
       
+      // If 2FA is enabled, validate the code
+      if (admin.twoFactorEnabled && admin.twoFactorSecret) {
+        if (!twoFactorCode) {
+          return res.status(200).json({ 
+            requiresTwoFactor: true,
+            message: "Two-factor authentication code required"
+          });
+        }
+        
+        const validation = validateTwoFactorToken(
+          admin.twoFactorSecret, 
+          twoFactorCode, 
+          admin.twoFactorBackupCodes || []
+        );
+        
+        if (!validation.isValid) {
+          await storage.incrementFailedLoginAttempts(admin.id);
+          return res.status(401).json({ message: "Invalid two-factor authentication code" });
+        }
+        
+        // If backup code was used, remove it from the list
+        if (validation.isBackupCode && validation.usedBackupCode) {
+          const updatedBackupCodes = removeUsedBackupCode(
+            admin.twoFactorBackupCodes || [], 
+            validation.usedBackupCode
+          );
+          await storage.updateAdminBackupCodes(admin.id, updatedBackupCodes);
+        }
+      }
+      
       // Reset failed login attempts and update last login
       await storage.updateAdminLogin(admin.id);
       
-      // Create session token (simplified for demo)
+      // Create session token
       const sessionToken = Buffer.from(`${admin.id}:${Date.now()}`).toString('base64');
       
-      const { passwordHash: _, ...adminResponse } = admin;
+      console.log(`🔐 Admin signed in: ${admin.email} ${admin.twoFactorEnabled ? '(2FA verified)' : '(no 2FA)'} at ${new Date().toISOString()}`);
+      
+      const { passwordHash: _, twoFactorSecret: __, twoFactorBackupCodes: ___, ...adminResponse } = admin;
       res.json({
         admin: adminResponse,
         token: sessionToken,
@@ -443,6 +492,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error signing in admin:", error);
       res.status(500).json({ message: "Failed to sign in", error: error.message });
+    }
+  });
+
+  // Enable 2FA for admin
+  app.post('/api/admin/enable-2fa', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { verificationCode } = req.body;
+      const admin = req.admin;
+
+      if (!admin.twoFactorSecret) {
+        return res.status(400).json({ message: "2FA secret not found. Please contact administrator." });
+      }
+
+      // Verify the code before enabling 2FA
+      const isValid = validateTwoFactorToken(admin.twoFactorSecret, verificationCode);
+      if (!isValid.isValid) {
+        return res.status(400).json({ message: "Invalid verification code. Please try again." });
+      }
+
+      // Enable 2FA
+      await storage.enableTwoFactor(admin.id);
+
+      console.log(`🔐 2FA enabled for admin: ${admin.email} at ${new Date().toISOString()}`);
+
+      res.json({ 
+        message: "Two-factor authentication enabled successfully",
+        twoFactorEnabled: true
+      });
+    } catch (error: any) {
+      console.error("Error enabling 2FA:", error);
+      res.status(500).json({ message: "Failed to enable 2FA", error: error.message });
+    }
+  });
+
+  // Disable 2FA for admin
+  app.post('/api/admin/disable-2fa', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { verificationCode, password } = req.body;
+      const admin = req.admin;
+      const bcrypt = await import('bcryptjs');
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+
+      // If 2FA is enabled, verify the code
+      if (admin.twoFactorEnabled && admin.twoFactorSecret) {
+        if (!verificationCode) {
+          return res.status(400).json({ message: "2FA verification code required" });
+        }
+
+        const isValid = validateTwoFactorToken(admin.twoFactorSecret, verificationCode, admin.twoFactorBackupCodes || []);
+        if (!isValid.isValid) {
+          return res.status(400).json({ message: "Invalid verification code" });
+        }
+      }
+
+      // Disable 2FA
+      await storage.disableTwoFactor(admin.id);
+
+      console.log(`🔐 2FA disabled for admin: ${admin.email} at ${new Date().toISOString()}`);
+
+      res.json({ 
+        message: "Two-factor authentication disabled successfully",
+        twoFactorEnabled: false
+      });
+    } catch (error: any) {
+      console.error("Error disabling 2FA:", error);
+      res.status(500).json({ message: "Failed to disable 2FA", error: error.message });
     }
   });
 
