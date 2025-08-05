@@ -13,25 +13,14 @@ import {
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
 import { ProjectsModal } from '@/components/ProjectsModal';
-import { ProfessionalWalletModal } from '@/components/ProfessionalWalletModal';
+
 import { ProfileModal } from '@/components/ProfileModal';
 import { ChurchModal } from '@/components/ChurchModal';
 import { NotificationModal } from '@/components/NotificationModal';
 import { ActivitiesModal } from '@/components/ActivitiesModal';
 import { PersonalizedWelcomeScreen } from '@/components/PersonalizedWelcomeScreen';
 
-interface WalletData {
-  id: string;
-  userId: string;
-  availableBalance: string;
-  pendingBalance: string;
-  rewardPoints: string;
-  dailyTransferLimit: string;
-  monthlyTransferLimit: string;
-  isActive: boolean;
-  isPinSet: boolean;
-  autoTopUpEnabled: boolean;
-}
+
 
 interface DonationHistory {
   id: string;
@@ -45,20 +34,17 @@ interface DonationHistory {
 
 export default function ProfessionalMemberDashboard() {
   const [showDonationModal, setShowDonationModal] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
+
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChurchModal, setShowChurchModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showActivitiesModal, setShowActivitiesModal] = useState(false);
   const [showProjectsModal, setShowProjectsModal] = useState(false);
-  const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project' | 'topup'>('donation');
+  const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentView, setCurrentView] = useState<'welcome' | 'dashboard'>('welcome');
 
-  // Data queries
-  const { data: walletData } = useQuery<WalletData>({
-    queryKey: ['/api/wallet']
-  });
+  // Data queries - removed wallet since church members don't need wallets
 
   const { data: donationHistory } = useQuery<DonationHistory[]>({
     queryKey: ['/api/donations/history']
@@ -97,8 +83,7 @@ export default function ProfessionalMemberDashboard() {
     queryKey: ['/api/user/recent-activity']
   });
 
-  const walletBalance = parseFloat(walletData?.availableBalance || '0');
-  const rewardPoints = parseInt(walletData?.rewardPoints || '0');
+  // Removed wallet functionality - church members don't need wallet balances
 
   // Handle quick actions from welcome screen
   const handleQuickAction = (action: string) => {
@@ -115,10 +100,7 @@ export default function ProfessionalMemberDashboard() {
         setDonationType('project');
         setShowDonationModal(true);
         break;
-      case 'topup':
-        setDonationType('topup');
-        setShowDonationModal(true);
-        break;
+
       default:
         break;
     }
@@ -259,14 +241,14 @@ export default function ProfessionalMemberDashboard() {
               </Button>
               
               <Button
-                onClick={() => setShowWalletModal(true)}
+                onClick={() => setShowActivitiesModal(true)}
                 variant="outline"
-                className="h-24 border-2 border-gray-200 hover:border-purple-300 bg-white hover:bg-purple-50 flex flex-col items-center justify-center space-y-2 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                className="h-24 border-2 border-gray-200 hover:border-blue-300 bg-white hover:bg-blue-50 flex flex-col items-center justify-center space-y-2 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                <Wallet className="h-7 w-7 text-purple-600" />
+                <Activity className="h-7 w-7 text-blue-600" />
                 <div className="text-center">
-                  <span className="font-semibold text-gray-900">My Wallet</span>
-                  <p className="text-xs text-gray-600">R {walletBalance.toLocaleString()}</p>
+                  <span className="font-semibold text-gray-900">History</span>
+                  <p className="text-xs text-gray-600">View transactions</p>
                 </div>
               </Button>
               
@@ -324,49 +306,34 @@ export default function ProfessionalMemberDashboard() {
               </Card>
 
               <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white pb-4">
+                <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white pb-4">
                   <CardTitle className="text-xl font-bold flex items-center space-x-2">
-                    <CreditCard className="h-6 w-6" />
-                    <span>Wallet Balance</span>
+                    <TrendingUp className="h-6 w-6" />
+                    <span>Giving Goals</span>
                   </CardTitle>
-                  <p className="text-purple-100 text-sm">Your available funds</p>
+                  <p className="text-green-100 text-sm">Your annual progress</p>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-3xl font-bold text-gray-900">R {walletBalance.toLocaleString()}</span>
-                        <p className="text-gray-500 text-sm mt-1">Available balance</p>
+                        <span className="text-3xl font-bold text-gray-900">R {userStats?.thisYearGiven || '0.00'}</span>
+                        <p className="text-gray-500 text-sm mt-1">Given this year</p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowWalletModal(true)}
-                        className="text-purple-600 hover:bg-purple-50 rounded-lg px-4 py-2"
-                      >
-                        Manage
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-green-700 font-medium text-sm">Active & Secured</span>
+                      <div className="text-right">
+                        <span className="text-lg font-medium text-gray-700">{userStats?.goalProgress || 0}%</span>
+                        <p className="text-gray-500 text-sm">of R {userStats?.annualGoal || '10,000.00'}</p>
                       </div>
-                      <Shield className="h-5 w-5 text-green-600" />
                     </div>
-                    <div className="text-center">
-                      <Button
-                        onClick={() => {
-                          setDonationType('topup');
-                          setShowDonationModal(true);
-                        }}
-                        size="sm"
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-6"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Funds
-                      </Button>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div 
+                        className="bg-green-500 h-3 rounded-full transition-all duration-300" 
+                        style={{ width: `${Math.min(userStats?.goalProgress || 0, 100)}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <span>Total transactions: {userStats?.transactionCount || 0}</span>
+                      <span>Avg gift: R {userStats?.averageGift || '0.00'}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -501,7 +468,7 @@ export default function ProfessionalMemberDashboard() {
                   <h3 className="text-xl font-bold mb-2">Faithful Giver</h3>
                   <p className="text-purple-100 mb-4">12 months of consistent giving</p>
                   <div className="bg-white/20 rounded-full py-2 px-4 backdrop-blur-sm">
-                    <span className="font-semibold">{rewardPoints} reward points</span>
+                    <span className="font-semibold">Member since {userStats?.memberSince || '2025'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -665,24 +632,10 @@ export default function ProfessionalMemberDashboard() {
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
         type={donationType}
-        walletBalance={walletBalance.toString()}
+        walletBalance="0"
       />
 
-      <ProfessionalWalletModal
-        isOpen={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
-        walletBalance={walletBalance}
-        rewardPoints={rewardPoints}
-        transactions={[]}
-        onTopUp={() => {
-          setShowWalletModal(false);
-          setDonationType('topup');
-          setShowDonationModal(true);
-        }}
-        onSend={() => {
-          setShowWalletModal(false);
-        }}
-      />
+
 
       <ProfileModal
         isOpen={showProfileModal}

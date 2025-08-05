@@ -145,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session?.userId;
       
       if (!userId) {
-        // Return zero values for unauthenticated users
+        // Return zero values for unauthenticated users - no mock data
         return res.json({
           memberSince: 'Not logged in',
           totalGiven: '0.00',
