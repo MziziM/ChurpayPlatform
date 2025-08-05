@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Progress } from './ui/progress';
@@ -66,7 +66,8 @@ import {
   User,
   Image,
   ExternalLink,
-  Paperclip
+  Paperclip,
+  ArrowLeftRight
 } from 'lucide-react';
 
 export function SuperAdminPlatformDashboard() {
