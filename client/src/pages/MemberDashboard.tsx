@@ -12,6 +12,7 @@ import {
   Activity, CreditCard, HandHeart, Banknote,
   Receipt, Shield, Clock
 } from 'lucide-react';
+import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 import { EnhancedDonationModal } from '@/components/EnhancedDonationModal';
 
 interface WalletData {
