@@ -19,6 +19,7 @@ import { ChurchModal } from '@/components/ChurchModal';
 import { NotificationModal } from '@/components/NotificationModal';
 import { ActivitiesModal } from '@/components/ActivitiesModal';
 import { PersonalizedWelcomeScreen } from '@/components/PersonalizedWelcomeScreen';
+import { AnimatedCommunityWelcome } from '@/components/AnimatedCommunityWelcome';
 
 
 
@@ -206,7 +207,7 @@ export default function ProfessionalMemberDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {currentView === 'welcome' ? (
-          <PersonalizedWelcomeScreen onQuickAction={handleQuickAction} />
+          <AnimatedCommunityWelcome onQuickAction={handleQuickAction} />
         ) : (
           <>
             <div className="mb-8">
