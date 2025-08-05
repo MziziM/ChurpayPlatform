@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Users, MapPin, Phone, Mail, Shield } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Phone, Mail, Shield, Eye, EyeOff, Lock, User, Heart } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +47,8 @@ type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
 export default function MemberRegistration() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Fetch approved churches
   const { data: churches, isLoading: churchesLoading } = useQuery({
@@ -56,7 +58,28 @@ export default function MemberRegistration() {
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
     defaultValues: {
+      churchId: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      dateOfBirth: "",
+      password: "",
+      confirmPassword: "",
+      address: "",
+      addressLine2: "",
+      city: "",
+      province: "",
+      postalCode: "",
       country: "South Africa",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelationship: "",
+      emergencyContactEmail: "",
+      emergencyContactAddress: "",
+      membershipType: "",
+      previousChurch: "",
+      howDidYouHear: "",
     },
   });
 
