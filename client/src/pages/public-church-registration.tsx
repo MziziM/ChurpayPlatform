@@ -52,15 +52,18 @@ const churchRegistrationSchema = z.object({
   adminPhone: z.string().min(1, "Admin phone is required"),
   adminPosition: z.string().min(1, "Admin position/title is required"),
   
-  // Church Details
+  // Church Details (REQUIRED BY SCHEMA)
   memberCount: z.number().min(1, "Member count is required"),
   description: z.string().min(1, "Brief description is required"),
+  servicesTimes: z.string().min(1, "Service times are required"),
+  leadPastor: z.string().min(1, "Lead pastor name is required"),
   
   // Banking Information
   bankName: z.string().min(1, "Bank name is required"),
   accountHolder: z.string().min(1, "Account holder name is required"),
   accountNumber: z.string().min(1, "Account number is required"),
   branchCode: z.string().min(1, "Branch code is required"),
+  accountType: z.string().min(1, "Account type is required"),
   
   // Documents (required for verification)
   hasNpoRegistration: z.boolean().refine(val => val === true, "NPO registration certificate is required"),
@@ -117,12 +120,15 @@ export default function PublicChurchRegistration() {
       // Church Details
       memberCount: 1,
       description: "",
+      servicesTimes: "",
+      leadPastor: "",
       
       // Banking Information
       bankName: "",
       accountHolder: "",
       accountNumber: "",
       branchCode: "",
+      accountType: "",
       
       // Documents (required for verification)
       hasNpoRegistration: false,
@@ -394,6 +400,39 @@ export default function PublicChurchRegistration() {
                           <FormControl>
                             <Textarea 
                               placeholder="Tell us about your church, its mission, and community..."
+                              className="resize-none"
+                              rows={3}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="leadPastor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lead Pastor *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Pastor John Smith" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="servicesTimes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Service Times *</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Sunday: 9:00 AM & 11:00 AM&#10;Wednesday Prayer: 7:00 PM"
                               className="resize-none"
                               rows={3}
                               {...field} 
@@ -698,6 +737,29 @@ export default function PublicChurchRegistration() {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="accountType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Account Type *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select account type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="current">Current Account</SelectItem>
+                              <SelectItem value="savings">Savings Account</SelectItem>
+                              <SelectItem value="transmission">Transmission Account</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 )}
 
