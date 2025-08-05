@@ -78,7 +78,48 @@ export default function ChurchRegistration() {
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
     defaultValues: {
+      // Basic Information
+      name: "",
+      denomination: "",
+      description: "",
+      memberCount: "",
+      foundedYear: "",
+      leadPastor: "",
+      
+      // Contact Information
+      phone: "",
+      email: "",
+      alternativePhone: "",
+      website: "",
+      
+      // Address Information
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
       country: "South Africa",
+      
+      // Administrative Contact
+      adminFirstName: "",
+      adminLastName: "",
+      adminEmail: "",
+      adminPhone: "",
+      adminPosition: "",
+      adminPassword: "",
+      confirmPassword: "",
+      
+      // Legal Information
+      registrationNumber: "",
+      taxNumber: "",
+      
+      // Banking Information
+      bankName: "",
+      accountNumber: "",
+      branchCode: "",
+      accountHolder: "",
+      accountType: "",
+      
+      // Document Verification
       hasNpoRegistration: false,
       hasTaxClearance: false,
       hasBankConfirmation: false,
