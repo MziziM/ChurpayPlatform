@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
-import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, PROTECTED_CONSTANTS } from "./codeProtection";
+import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -443,6 +443,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error signing in admin:", error);
       res.status(500).json({ message: "Failed to sign in", error: error.message });
+    }
+  });
+
+  // Admin Dashboard API - Secured with authentication
+  app.get('/api/admin/dashboard', requireAdminAuth, async (req: any, res) => {
+    try {
+      // Get comprehensive platform statistics for admin dashboard
+      const platformStats = await storage.getPlatformStats();
+      const allChurches = await storage.getAllChurches();
+      const allPayouts = await storage.getAllPayouts();
+      const allTransactions = await storage.getAllTransactions();
+      
+      // Calculate admin-specific metrics
+      const totalChurches = allChurches.length;
+      const pendingChurches = allChurches.filter(c => c.status === 'pending').length;
+      const activeChurches = allChurches.filter(c => c.status === 'approved').length;
+      const pendingPayouts = allPayouts.filter(p => p.status === 'requested').length;
+      
+      // Monthly revenue data for charts
+      const monthlyRevenue = allTransactions
+        .filter(t => t.status === 'completed')
+        .reduce((acc: any, transaction: any) => {
+          const month = new Date(transaction.createdAt).toISOString().slice(0, 7);
+          if (!acc[month]) acc[month] = 0;
+          acc[month] += parseFloat(transaction.platformFee || '0');
+          return acc;
+        }, {});
+
+      const responseData = {
+        admin: {
+          id: req.admin.id,
+          firstName: req.admin.firstName,
+          lastName: req.admin.lastName,
+          email: req.admin.email,
+          lastLoginAt: req.admin.lastLoginAt
+        },
+        stats: {
+          totalChurches,
+          pendingChurches,
+          activeChurches,
+          totalMembers: platformStats.totalMembers || 0,
+          totalTransactions: allTransactions.length,
+          totalRevenue: platformStats.totalRevenue || 0,
+          pendingPayouts,
+          monthlyRevenue: Object.entries(monthlyRevenue).map(([month, revenue]) => ({
+            month,
+            revenue: Number(revenue)
+          }))
+        },
+        recentActivity: {
+          churches: allChurches.slice(0, 5),
+          payouts: allPayouts.slice(0, 5),
+          transactions: allTransactions.slice(0, 10)
+        },
+        systemHealth: {
+          codeProtectionActive: true,
+          feeStructureValid: validateFeeStructure(),
+          platformFees: {
+            percentage: PROTECTED_CONSTANTS.PLATFORM_FEE_PERCENTAGE,
+            fixed: PROTECTED_CONSTANTS.PLATFORM_FEE_FIXED,
+            currency: PROTECTED_CONSTANTS.CURRENCY
+          }
+        }
+      };
+
+      res.json(responseData);
+    } catch (error: any) {
+      console.error("Error fetching admin dashboard data:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch admin dashboard data",
+        message: error.message 
+      });
+    }
+  });
+
+  // Admin logout endpoint
+  app.post('/api/admin/logout', requireAdminAuth, async (req: any, res) => {
+    try {
+      console.log(`🔐 Admin logout: ${req.admin.email} at ${new Date().toISOString()}`);
+      res.json({ message: "Successfully logged out" });
+    } catch (error: any) {
+      console.error("Error during admin logout:", error);
+      res.status(500).json({ 
+        error: "Logout failed",
+        message: error.message 
+      });
+    }
+  });
+
+  // Admin profile endpoint
+  app.get('/api/admin/profile', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { passwordHash: _, ...adminProfile } = req.admin;
+      res.json(adminProfile);
+    } catch (error: any) {
+      console.error("Error fetching admin profile:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch admin profile",
+        message: error.message 
+      });
     }
   });
 
