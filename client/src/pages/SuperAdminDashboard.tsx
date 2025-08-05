@@ -2,7 +2,7 @@ import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
-import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown } from "lucide-react";
+import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
