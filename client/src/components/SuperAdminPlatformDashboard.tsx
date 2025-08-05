@@ -287,98 +287,203 @@ export function SuperAdminPlatformDashboard() {
       </div>
 
       <div className="flex flex-col md:flex-row mx-2 md:mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
+        {/* Left Sidebar - Hidden on Mobile */}
+        <div className="hidden md:block w-52 p-6 border-r border-gray-800/50">
+          <nav className="space-y-2">
+            <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'overview' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`} onClick={() => setActiveTab('overview')}>
+              <Activity className="h-5 w-5" />
+              <span className={activeTab === 'overview' ? 'font-medium' : ''}>Overview</span>
+            </div>
+            <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'churches' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`} onClick={() => setActiveTab('churches')}>
+              <Building2 className="h-5 w-5" />
+              <span className={activeTab === 'churches' ? 'font-medium' : ''}>Churches</span>
+            </div>
+            <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'payouts' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`} onClick={() => setActiveTab('payouts')}>
+              <DollarSign className="h-5 w-5" />
+              <span className={activeTab === 'payouts' ? 'font-medium' : ''}>Payouts</span>
+            </div>
+            <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'members' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`} onClick={() => setActiveTab('members')}>
+              <Users className="h-5 w-5" />
+              <span className={activeTab === 'members' ? 'font-medium' : ''}>Members</span>
+            </div>
+            <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'system' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`} onClick={() => setActiveTab('system')}>
+              <Server className="h-5 w-5" />
+              <span className={activeTab === 'system' ? 'font-medium' : ''}>System</span>
+            </div>
+          </nav>
+
+          {/* Bottom Section */}
+          <div className="mt-auto pt-12 space-y-2">
+            <div className="flex items-center space-x-3 p-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
+              <Settings className="h-5 w-5" />
+              <span>Settings</span>
+            </div>
+            <div className="flex items-center space-x-3 p-3 text-red-400 hover:text-red-300 hover:bg-gray-800/50 rounded-xl cursor-pointer transition-all">
+              <ArrowLeftRight className="h-5 w-5" />
+              <span>Logout</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
         <div className="flex-1 p-6">
+          {/* Top Section with Profile - Mobile Optimized */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-6 w-full md:w-auto">
+              {/* Search Bar */}
+              <div className="relative flex-1 md:flex-initial">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search platform data..."
+                  className="w-full md:w-80 pl-12 bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-400 rounded-2xl h-12"
+                />
+              </div>
+              
+              {/* Notification Button */}
+              <Button className="relative bg-gray-800/60 hover:bg-gray-700/60 text-white border-gray-700/50 rounded-2xl w-12 h-12 p-0 flex-shrink-0">
+                <Bell className="h-5 w-5" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></div>
+              </Button>
+            </div>
+            
+            {/* Profile Section */}
+            <div className="flex items-center justify-between w-full md:w-auto md:space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-purple-900" />
+                </div>
+                <div className="text-left md:text-right">
+                  <p className="text-white font-semibold">Super Admin</p>
+                  <p className="text-gray-400 text-sm">Platform Oversight</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 mb-6 bg-gray-800/60 border-gray-700">
-            <TabsTrigger value="overview" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Overview</TabsTrigger>
-            <TabsTrigger value="churches" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Churches</TabsTrigger>
-            <TabsTrigger value="payouts" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Payouts</TabsTrigger>
-            <TabsTrigger value="members" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">Members</TabsTrigger>
-            <TabsTrigger value="system" className="text-gray-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white">System</TabsTrigger>
-          </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Platform Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Total Churches</p>
-                    <p className="text-2xl font-bold text-white">{mockPlatformStats.totalChurches}</p>
-                    <p className="text-sm text-green-400 flex items-center mt-1">
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                      +{mockPlatformStats.platformGrowthRate}% growth
-                    </p>
+            {/* Platform Statistics - Nomsa Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0 text-white rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm opacity-90 mb-2">Platform Revenue</p>
+                      <p className="text-3xl font-bold">R {(mockPlatformStats.totalRevenue / 1000).toFixed(0)}k</p>
+                    </div>
+                    <div className="relative w-16 h-16">
+                      <svg className="w-16 h-16 transform -rotate-90">
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="none" className="text-purple-400/30" />
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray={`${2 * Math.PI * 28}`} strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.85)}`} className="text-white" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-bold">+85%</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-yellow-400/20 flex items-center justify-center">
-                    <Church className="w-6 h-6 text-yellow-400" />
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Platform Revenue</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(mockPlatformStats.totalRevenue)}</p>
-                    <p className="text-sm text-gray-300">Monthly: {formatCurrency(mockPlatformStats.monthlyRevenue)}</p>
+              <Card className="bg-gradient-to-br from-pink-600 to-purple-600 border-0 text-white rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm opacity-90 mb-2">Active Churches</p>
+                      <p className="text-3xl font-bold">{mockPlatformStats.totalChurches}</p>
+                    </div>
+                    <div className="relative w-16 h-16">
+                      <svg className="w-16 h-16 transform -rotate-90">
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="none" className="text-pink-400/30" />
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray={`${2 * Math.PI * 28}`} strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.92)}`} className="text-white" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-bold">+92%</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-green-400" />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Additional Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-0 text-white rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm opacity-90 mb-2">Active Users</p>
+                      <p className="text-2xl font-bold">{(mockPlatformStats.activeUsers / 1000).toFixed(1)}k</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <Users className="w-6 h-6" />
+                    </div>
                   </div>
-                </div>
+                </CardContent>
               </Card>
 
-              <Card className="p-6 bg-white border border-gray-200">
-                <div className="flex items-center justify-between">  
-                  <div>
-                    <p className="text-sm text-gray-600">Active Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.activeUsers.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">{mockPlatformStats.totalTransactions} transactions</p>
+              <Card className="bg-gradient-to-br from-green-600 to-emerald-600 border-0 text-white rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm opacity-90 mb-2">System Health</p>
+                      <p className="text-2xl font-bold">{mockPlatformStats.systemUptime}%</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <Activity className="w-6 h-6" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              <Card className="p-6 bg-white border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">System Health</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.systemUptime}%</p>
-                    <p className="text-sm text-gray-600">{mockPlatformStats.avgResponseTime}ms avg response</p>
+              <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 border-0 text-white rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm opacity-90 mb-2">Transactions</p>
+                      <p className="text-2xl font-bold">{(mockPlatformStats.totalTransactions / 1000).toFixed(1)}k</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <Receipt className="w-6 h-6" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-orange-600" />
-                  </div>
-                </div>
+                </CardContent>
               </Card>
             </div>
 
             {/* Recent Activity and Churches Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Churches */}
-              <Card className="p-6 bg-white border border-gray-200">
+              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Churches</h3>
-                  <Button variant="outline" size="sm" onClick={() => setActiveTab('churches')}>
+                  <h3 className="text-lg font-semibold text-white">Recent Churches</h3>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('churches')} className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white">
                     View All
                   </Button>
                 </div>
                 <div className="space-y-4">
                   {mockPlatformStats.recentChurches.slice(0, 5).map((church) => (
-                    <div key={church.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                    <div key={church.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-xl border border-gray-600/50">
                       <div className="flex items-center space-x-3">
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={church.logo} />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-purple-600 text-white">
                             <Church className="w-5 h-5" />
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">{church.name}</p>
-                          <p className="text-sm text-gray-600">{church.location} • {church.members} members</p>
+                          <p className="font-medium text-white">{church.name}</p>
+                          <p className="text-sm text-gray-400">{church.location} • {church.members} members</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -393,63 +498,63 @@ export function SuperAdminPlatformDashboard() {
               </Card>
 
               {/* System Performance */}
-              <Card className="p-6 bg-white border border-gray-200">
+              <Card className="p-6 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">System Performance</h3>
-                  <Button variant="outline" size="sm" onClick={() => setActiveTab('system')}>
+                  <h3 className="text-lg font-semibold text-white">System Performance</h3>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('system')} className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white">
                     View Details
                   </Button>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Server Uptime</span>
-                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.systemUptime}%</span>
+                      <span className="text-sm text-gray-300">Server Uptime</span>
+                      <span className="text-sm font-medium text-white">{mockPlatformStats.systemUptime}%</span>
                     </div>
-                    <Progress value={mockPlatformStats.systemUptime} className="h-2" />
+                    <Progress value={mockPlatformStats.systemUptime} className="h-2 bg-gray-700" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Success Rate</span>
-                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.successRate}%</span>
+                      <span className="text-sm text-gray-300">Success Rate</span>
+                      <span className="text-sm font-medium text-white">{mockPlatformStats.successRate}%</span>
                     </div>
-                    <Progress value={mockPlatformStats.successRate} className="h-2" />
+                    <Progress value={mockPlatformStats.successRate} className="h-2 bg-gray-700" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Response Time</span>
-                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.avgResponseTime}ms</span>
+                      <span className="text-sm text-gray-300">Response Time</span>
+                      <span className="text-sm font-medium text-white">{mockPlatformStats.avgResponseTime}ms</span>
                     </div>
-                    <Progress value={100 - (mockPlatformStats.avgResponseTime / 10)} className="h-2" />
+                    <Progress value={100 - (mockPlatformStats.avgResponseTime / 10)} className="h-2 bg-gray-700" />
                   </div>
                 </div>
               </Card>
             </div>
 
             {/* Commission Settings */}
-            <Card className="p-6 bg-white border border-gray-200">
+            <Card className="p-6 bg-gradient-to-br from-yellow-500 to-orange-500 border-0 text-white rounded-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Platform Commission</h3>
-                  <p className="text-sm text-gray-600">Current commission rate for all transactions</p>
+                  <h3 className="text-lg font-semibold text-white">Platform Commission</h3>
+                  <p className="text-sm opacity-90">Current commission rate for all transactions</p>
                 </div>
-                <Button onClick={() => setShowCommissionModal(true)} size="sm">
+                <Button onClick={() => setShowCommissionModal(true)} size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
                   <Edit className="w-4 h-4 mr-2" />
                   Update Rate
                 </Button>
               </div>
               <div className="flex items-center space-x-6">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-churpay-purple">{commissionRate}%</p>
-                  <p className="text-sm text-gray-600">Commission Rate</p>
+                  <p className="text-3xl font-bold text-white">{commissionRate}%</p>
+                  <p className="text-sm opacity-90">Commission Rate</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-green-600">{formatCurrency(mockPlatformStats.commissionEarned)}</p>
-                  <p className="text-sm text-gray-600">Total Earned</p>
+                  <p className="text-3xl font-bold text-white">{formatCurrency(mockPlatformStats.commissionEarned)}</p>
+                  <p className="text-sm opacity-90">Total Earned</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-blue-600">{formatCurrency(mockPlatformStats.monthlyRevenue * (commissionRate / 100))}</p>
-                  <p className="text-sm text-gray-600">Monthly Commission</p>
+                  <p className="text-3xl font-bold text-white">{formatCurrency(mockPlatformStats.monthlyRevenue * (commissionRate / 100))}</p>
+                  <p className="text-sm opacity-90">Monthly Commission</p>
                 </div>
               </div>
             </Card>
