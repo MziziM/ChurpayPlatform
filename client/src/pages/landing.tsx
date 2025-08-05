@@ -33,6 +33,7 @@ import {
   MessageCircle,
   Crown
 } from "lucide-react";
+import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 
 export default function Landing() {
   const [, setLocation] = useLocation();
@@ -91,13 +92,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-churpay-gradient flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <span className="text-2xl font-bold">
-                <span className="text-gray-900">Chur</span>
-                <span className="text-churpay-yellow">Pay</span>
-              </span>
+              <img src={churpayLogo} alt="ChurPay" className="h-10 w-auto" />
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
