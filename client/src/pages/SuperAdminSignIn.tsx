@@ -98,9 +98,9 @@ export default function SuperAdminSignIn() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src={churpayLogo} alt="ChurPay" className="h-16 w-auto" />
+            <img src={churpayLogo} alt="ChurPay" className="h-16 w-auto filter drop-shadow-xl" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Owner Access</h1>
+          <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Owner Access</h1>
           <p className="text-gray-600">Sign in to your super admin account</p>
         </div>
 
