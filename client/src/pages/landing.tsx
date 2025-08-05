@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GetStartedModal } from "@/components/GetStartedModal";
 import DashboardModal from "@/components/DashboardModal";
-import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+
 import { useAuth } from "@/hooks/useAuth";
 import { 
   Church, 
@@ -43,7 +43,7 @@ export default function Landing() {
 
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
-  const [superAdminModalOpen, setSuperAdminModalOpen] = useState(false);
+
 
   // Fetch dynamic data from API
   const { data: platformStats } = useQuery({
@@ -1006,7 +1006,7 @@ export default function Landing() {
           <Button 
             size="lg"
             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
-            onClick={() => setSuperAdminModalOpen(true)}
+            onClick={() => setLocation('/super-admin/signin')}
           >
             <Crown className="h-5 w-5" />
           </Button>
@@ -1027,10 +1027,7 @@ export default function Landing() {
         userType={dashboardUserType}
       />
       
-      <SuperAdminDashboard 
-        isOpen={superAdminModalOpen} 
-        onClose={() => setSuperAdminModalOpen(false)} 
-      />
+
     </div>
   );
 }
