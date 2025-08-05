@@ -119,6 +119,9 @@ export interface IStorage {
   getAdminById(id: string): Promise<Admin | undefined>;
   updateAdminLogin(adminId: string): Promise<Admin>;
   incrementFailedLoginAttempts(adminId: string): Promise<Admin>;
+  updateAdminBackupCodes(adminId: string, backupCodes: string[]): Promise<Admin>;
+  enableTwoFactor(adminId: string): Promise<Admin>;
+  disableTwoFactor(adminId: string): Promise<Admin>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -811,7 +814,7 @@ export class DatabaseStorage implements IStorage {
     const currentAdmin = await this.getAdminById(adminId);
     if (!currentAdmin) throw new Error('Admin not found');
     
-    const newFailedAttempts = currentAdmin.failedLoginAttempts + 1;
+    const newFailedAttempts = (currentAdmin.failedLoginAttempts || 0) + 1;
     const shouldLockAccount = newFailedAttempts >= 5;
     const lockUntil = shouldLockAccount ? new Date(Date.now() + 30 * 60 * 1000) : null; // 30 minutes
     
@@ -820,6 +823,45 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         failedLoginAttempts: newFailedAttempts,
         accountLockedUntil: lockUntil,
+        updatedAt: new Date()
+      })
+      .where(eq(admins.id, adminId))
+      .returning();
+    return admin;
+  }
+
+  // Google Authenticator 2FA methods
+  async updateAdminBackupCodes(adminId: string, backupCodes: string[]): Promise<Admin> {
+    const [admin] = await db
+      .update(admins)
+      .set({ 
+        twoFactorBackupCodes: backupCodes,
+        updatedAt: new Date()
+      })
+      .where(eq(admins.id, adminId))
+      .returning();
+    return admin;
+  }
+
+  async enableTwoFactor(adminId: string): Promise<Admin> {
+    const [admin] = await db
+      .update(admins)
+      .set({ 
+        twoFactorEnabled: true,
+        updatedAt: new Date()
+      })
+      .where(eq(admins.id, adminId))
+      .returning();
+    return admin;
+  }
+
+  async disableTwoFactor(adminId: string): Promise<Admin> {
+    const [admin] = await db
+      .update(admins)
+      .set({ 
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorBackupCodes: null,
         updatedAt: new Date()
       })
       .where(eq(admins.id, adminId))
