@@ -19,6 +19,7 @@ import SuperAdminSignUp from "@/pages/SuperAdminSignUp";
 import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
 function Router() {
@@ -30,16 +31,48 @@ function Router() {
       <Route path="/public-church-registration" component={PublicChurchRegistration} />
       <Route path="/public-member-registration" component={PublicMemberRegistration} />
       <Route path="/register" component={PublicMemberRegistration} />
-      <Route path="/member-dashboard" component={ProfessionalMemberDashboard} />
-      <Route path="/member" component={ProfessionalMemberDashboard} />
-      <Route path="/church-dashboard" component={ProfessionalChurchDashboard} />
-      <Route path="/church" component={ProfessionalChurchDashboard} />
-      <Route path="/wallet" component={WalletDashboard} />
-      <Route path="/super-admin" component={SuperAdminDashboard} />
-      <Route path="/admin" component={SuperAdminDashboard} />
+      <Route path="/member-dashboard">
+        <ProtectedRoute requiredRole={['member']}>
+          <ProfessionalMemberDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/member">
+        <ProtectedRoute requiredRole={['member']}>
+          <ProfessionalMemberDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/church-dashboard">
+        <ProtectedRoute requiredRole={['church_admin', 'church_staff']}>
+          <ProfessionalChurchDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/church">
+        <ProtectedRoute requiredRole={['church_admin', 'church_staff']}>
+          <ProfessionalChurchDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/wallet">
+        <ProtectedRoute requiredRole={['member']}>
+          <WalletDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/super-admin">
+        <ProtectedRoute requiredRole={['superadmin']}>
+          <SuperAdminDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute requiredRole={['superadmin']}>
+          <SuperAdminDashboard />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/signup" component={AdminSignUp} />
       <Route path="/admin/signin" component={AdminSignIn} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/dashboard">
+        <ProtectedRoute requiredRole={['superadmin', 'church_admin']}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
       <Route path="/super-admin/signup" component={SuperAdminSignUp} />
       <Route path="/super-admin/signin" component={SuperAdminSignIn} />
       <Route path="/sign-in" component={SignIn} />
