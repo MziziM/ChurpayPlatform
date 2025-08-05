@@ -716,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin Signup with 2FA
   app.post('/api/super-admin/signup', async (req: any, res: any) => {
     try {
-      logProtectedPathAccess('/api/super-admin/signup', 'anonymous');
+      console.log(`🔒 Protected path access: /api/super-admin/signup by anonymous`);
 
       const { firstName, lastName, email, password, ownerCode, acceptTerms } = req.body;
 
@@ -804,7 +804,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Verify super admin 2FA during signup
   app.post('/api/super-admin/verify-signup-2fa', async (req: any, res: any) => {
     try {
-      logProtectedPathAccess('/api/super-admin/verify-signup-2fa', 'anonymous');
+      console.log(`🔒 Protected path access: /api/super-admin/verify-signup-2fa by anonymous`);
 
       const { email, verificationCode } = req.body;
 
@@ -857,7 +857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin Sign In with 2FA
   app.post('/api/super-admin/signin', async (req: any, res: any) => {
     try {
-      logProtectedPathAccess('/api/super-admin/signin', 'anonymous');
+      console.log(`🔒 Protected path access: /api/super-admin/signin by anonymous`);
 
       const { email, password, twoFactorCode, rememberMe } = req.body;
 
@@ -950,7 +950,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin Profile - Protected Route
   app.get('/api/super-admin/profile', async (req: any, res: any) => {
     try {
-      logProtectedPathAccess('/api/super-admin/profile', 'anonymous');
+      console.log(`🔒 Protected path access: /api/super-admin/profile by anonymous`);
 
       if (!req.session.superAdminId) {
         return res.status(401).json({ message: 'Super admin authentication required' });
@@ -984,7 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin Logout
   app.post('/api/super-admin/logout', async (req: any, res: any) => {
     try {
-      logProtectedPathAccess('/api/super-admin/logout', 'anonymous');
+      console.log(`🔒 Protected path access: /api/super-admin/logout by anonymous`);
 
       if (req.session.superAdminEmail) {
         console.log(`🔐 Super Admin logout: ${req.session.superAdminEmail} at ${new Date().toISOString()}`);
