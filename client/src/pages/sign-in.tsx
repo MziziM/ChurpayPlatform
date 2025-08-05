@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Church, Users, Eye, EyeOff, ArrowLeft, Shield } from "lucide-react";
+import churpayLogoPath from "@assets/Churpay Logo (1600 x 900 px)_1754295367415.png";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -142,15 +143,11 @@ export default function SignIn() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">C</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  Chur<span className="text-yellow-500">Pay</span>
-                </h1>
-                <p className="text-xs text-slate-400 font-medium">Financial Platform</p>
+                <img 
+                  src={churpayLogoPath} 
+                  alt="ChurPay Logo" 
+                  className="h-10 w-auto object-contain brightness-0 invert"
+                />
               </div>
             </div>
             <Button 
@@ -170,8 +167,12 @@ export default function SignIn() {
         <div className="w-full max-w-lg">
           {/* Professional Welcome Section */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-yellow-500 rounded-2xl shadow-xl mb-6">
-              <Shield className="h-8 w-8 text-white" />
+            <div className="inline-flex items-center justify-center mb-6">
+              <img 
+                src={churpayLogoPath} 
+                alt="ChurPay Logo" 
+                className="h-16 w-auto object-contain brightness-0 invert"
+              />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
             <p className="text-slate-400">Access your ChurPay dashboard</p>
