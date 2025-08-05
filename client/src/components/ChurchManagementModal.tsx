@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, MapPin, Phone, Mail, Calendar, Shield, CheckCircle, XCircle, Clock, FileText, Globe, User, UserCheck } from "lucide-react";
+import { Building2, Users, MapPin, Phone, Mail, Calendar, Shield, CheckCircle, XCircle, Clock, FileText, Globe, User, UserCheck, Eye, AlertTriangle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +61,7 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
   const queryClient = useQueryClient();
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState<Church | null>(null);
 
   const { data: churches, isLoading } = useQuery<Church[]>({
     queryKey: ['/api/super-admin/churches'],
@@ -97,6 +98,32 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (churchId: string) => {
+      const response = await fetch(`/api/super-admin/churches/${churchId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to delete church');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      toast({
+        title: "Church Deleted",
+        description: "Church has been permanently removed from the platform.",
+      });
+      setDeleteConfirmation(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete church. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -118,6 +145,15 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
       action,
       notes: reviewNotes,
     });
+  };
+
+  const handleDeleteChurch = (church: Church) => {
+    setDeleteConfirmation(church);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirmation) return;
+    deleteMutation.mutate(deleteConfirmation.id);
   };
 
   const pendingChurches = churches?.filter(church => church.status === 'pending') || [];
@@ -382,21 +418,95 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                     <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
                     Active Churches ({approvedChurches.length})
                   </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {approvedChurches.slice(0, 6).map((church) => (
-                      <Card key={church.id} className="border-0 shadow-lg">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold">{church.name}</h4>
-                            {getStatusBadge(church.status)}
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <div>{church.contactEmail}</div>
-                            <div className="flex items-center">
-                              <Users className="w-3 h-3 mr-1" />
-                              {church.memberCount?.toLocaleString() || 0} members
+                  <div className="grid gap-4">
+                    {approvedChurches.map((church) => (
+                      <Card key={church.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-lg font-semibold">{church.name}</h4>
+                                {getStatusBadge(church.status)}
+                              </div>
+                              
+                              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                                <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Contact Information</h5>
+                                  <div className="flex items-center">
+                                    <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.contactEmail}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.contactPhone}
+                                  </div>
+                                  {church.website && (
+                                    <div className="flex items-center">
+                                      <Globe className="w-4 h-4 mr-2 text-gray-500" />
+                                      <a href={church.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        {church.website}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Church Details</h5>
+                                  <div className="flex items-center">
+                                    <Building2 className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.denomination}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Users className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.memberCount?.toLocaleString() || 0} members
+                                  </div>
+                                  <div className="flex items-center">
+                                    <User className="w-4 h-4 mr-2 text-gray-500" />
+                                    Pastor: {church.leadPastor}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Location & Admin</h5>
+                                  <div className="flex items-center">
+                                    <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.city}, {church.province}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <UserCheck className="w-4 h-4 mr-2 text-gray-500" />
+                                    {church.adminFirstName} {church.adminLastName}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {church.adminPosition}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {church.description && (
+                                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{church.description}</p>
+                                </div>
+                              )}
                             </div>
-                            <div className="text-xs text-gray-500">{church.denomination}</div>
+                          </div>
+                          
+                          <div className="flex justify-end space-x-3 mt-6">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setSelectedChurch(church)}
+                              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Full Details
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handleDeleteChurch(church)}
+                              className="border-red-600 text-red-600 hover:bg-red-50"
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Delete Church
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -572,6 +682,68 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                             Please provide review notes before making a decision
                           </p>
                         )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Delete Confirmation Dialog */}
+              {deleteConfirmation && (
+                <Card className="border-2 border-red-500 shadow-xl bg-red-50 dark:bg-red-900/20">
+                  <CardHeader className="bg-red-100 dark:bg-red-900/30">
+                    <CardTitle className="flex items-center text-red-700 dark:text-red-300">
+                      <AlertTriangle className="w-5 h-5 mr-2" />
+                      Confirm Church Deletion
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg">
+                        <p className="text-red-800 dark:text-red-200 font-medium mb-2">
+                          You are about to permanently delete:
+                        </p>
+                        <p className="text-red-700 dark:text-red-300 text-lg font-semibold">
+                          {deleteConfirmation.name}
+                        </p>
+                        <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                          {deleteConfirmation.contactEmail} • {deleteConfirmation.city}, {deleteConfirmation.province}
+                        </p>
+                      </div>
+                      
+                      <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-lg border border-yellow-300 dark:border-yellow-700">
+                        <div className="flex items-start space-x-2">
+                          <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-yellow-800 dark:text-yellow-200 font-medium mb-1">
+                              Warning: This action cannot be undone
+                            </p>
+                            <ul className="text-yellow-700 dark:text-yellow-300 text-sm space-y-1">
+                              <li>• All church data will be permanently removed</li>
+                              <li>• All associated transactions and records will be lost</li>
+                              <li>• Church members will lose access to the platform</li>
+                              <li>• This action cannot be reversed</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-3">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setDeleteConfirmation(null)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={confirmDelete}
+                          disabled={deleteMutation.isPending}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          {deleteMutation.isPending ? 'Deleting...' : 'Permanently Delete Church'}
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
