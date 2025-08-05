@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,17 +15,17 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
-// Form schemas
+// Sign-in schemas
 const memberSignInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().default(false)
 });
 
 const churchSignInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().default(false)
 });
 
 type MemberSignInData = z.infer<typeof memberSignInSchema>;
@@ -33,93 +34,82 @@ type ChurchSignInData = z.infer<typeof churchSignInSchema>;
 export default function SignIn() {
   const [currentTab, setCurrentTab] = useState("member");
   const [showPassword, setShowPassword] = useState(false);
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
-  // Member form
   const memberForm = useForm<MemberSignInData>({
     resolver: zodResolver(memberSignInSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
-    },
+      rememberMe: false
+    }
   });
 
-  // Church form
   const churchForm = useForm<ChurchSignInData>({
     resolver: zodResolver(churchSignInSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
-    },
+      rememberMe: false
+    }
   });
 
-  // Member sign-in mutation
   const memberSignInMutation = useMutation({
     mutationFn: async (data: MemberSignInData) => {
-      const response = await apiRequest('/api/auth/member/signin', {
-        method: 'POST',
-        body: data,
+      return await apiRequest('/api/auth/member/signin', 'POST', data);
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in to your member account.",
       });
       
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Sign in failed');
-      }
+      // Store user data in localStorage for now
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('userRole', 'member');
       
-      return response.json();
+      // Redirect to member dashboard
+      setLocation('/member-dashboard');
     },
-    onSuccess: (data) => {
-      if (data.user?.role === 'member') {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to your member account.",
-        });
-        setLocation('/professional-member-dashboard');
-      }
-    },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: "Sign in failed",
-        description: error.message,
+        title: "Sign In Failed",
+        description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  // Church sign-in mutation
   const churchSignInMutation = useMutation({
     mutationFn: async (data: ChurchSignInData) => {
-      const response = await apiRequest('/api/auth/church/signin', {
-        method: 'POST',
-        body: data,
+      return await apiRequest('/api/auth/church/signin', 'POST', data);
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in to your church account.",
       });
       
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Sign in failed');
-      }
+      // Store user data in localStorage for now
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('church', JSON.stringify(response.church));
+      localStorage.setItem('userRole', response.user.role);
       
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.user?.role === 'church_admin' || data.user?.role === 'church_staff') {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to your church account.",
-        });
-        setLocation('/professional-church-dashboard');
+      // Redirect to appropriate dashboard based on role
+      if (response.user.role === 'church_admin' || response.user.role === 'church_staff') {
+        setLocation('/church-dashboard');
+      } else {
+        setLocation('/church');
       }
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: "Sign in failed",
-        description: error.message,
+        title: "Sign In Failed",
+        description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
-    },
+    }
   });
 
   const handleMemberSignIn = (data: MemberSignInData) => {
@@ -333,6 +323,7 @@ export default function SignIn() {
                           <span>• Members</span>
                           <span>• Projects</span>
                           <span>• Reports</span>
+                          </div>
                         </div>
                       </div>
                     </div>
