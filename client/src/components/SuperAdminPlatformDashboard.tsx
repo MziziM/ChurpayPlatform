@@ -71,8 +71,8 @@ import {
 
 export function SuperAdminPlatformDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedChurch, setSelectedChurch] = useState(null);
-  const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedChurch, setSelectedChurch] = useState<any>(null);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showChurchModal, setShowChurchModal] = useState(false);
@@ -80,7 +80,7 @@ export function SuperAdminPlatformDashboard() {
   const [showSystemModal, setShowSystemModal] = useState(false);
   
   // Payout request management states
-  const [selectedPayoutRequest, setSelectedPayoutRequest] = useState(null);
+  const [selectedPayoutRequest, setSelectedPayoutRequest] = useState<any>(null);
   const [payoutDecision, setPayoutDecision] = useState('');
   const [payoutNotes, setPayoutNotes] = useState('');
   
@@ -343,71 +343,134 @@ export function SuperAdminPlatformDashboard() {
                   <div>
                     <p className="text-sm text-gray-600">System Health</p>
                     <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.systemUptime}%</p>
-                    <p className="text-sm text-green-600">Uptime</p>
+                    <p className="text-sm text-gray-600">{mockPlatformStats.avgResponseTime}ms avg response</p>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-orange-600" />
                   </div>
                 </div>
               </Card>
             </div>
 
-            {/* Recent Churches */}
-            <Card className="bg-white border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Church Registrations</h3>
+            {/* Recent Activity and Churches Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Churches */}
+              <Card className="p-6 bg-white border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Recent Churches</h3>
                   <Button variant="outline" size="sm" onClick={() => setActiveTab('churches')}>
                     View All
                   </Button>
                 </div>
-              </div>
-              <div className="p-6">
                 <div className="space-y-4">
-                  {mockPlatformStats.recentChurches.slice(0, 5).map((church: any) => (
-                    <div key={church.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
+                  {mockPlatformStats.recentChurches.slice(0, 5).map((church) => (
+                    <div key={church.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="w-10 h-10">
                           <AvatarImage src={church.logo} />
-                          <AvatarFallback>{church.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                          <AvatarFallback>
+                            <Church className="w-5 h-5" />
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium text-gray-900">{church.name}</p>
                           <p className="text-sm text-gray-600">{church.location} • {church.members} members</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      <div className="text-right">
                         <Badge className={getStatusColor(church.status)}>
                           {church.status}
                         </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                        <p className="text-xs text-gray-500 mt-1">{church.joined}</p>
                       </div>
                     </div>
                   ))}
+                </div>
+              </Card>
+
+              {/* System Performance */}
+              <Card className="p-6 bg-white border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">System Performance</h3>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('system')}>
+                    View Details
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Server Uptime</span>
+                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.systemUptime}%</span>
+                    </div>
+                    <Progress value={mockPlatformStats.systemUptime} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Success Rate</span>
+                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.successRate}%</span>
+                    </div>
+                    <Progress value={mockPlatformStats.successRate} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Response Time</span>
+                      <span className="text-sm font-medium text-gray-900">{mockPlatformStats.avgResponseTime}ms</span>
+                    </div>
+                    <Progress value={100 - (mockPlatformStats.avgResponseTime / 10)} className="h-2" />
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Commission Settings */}
+            <Card className="p-6 bg-white border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Platform Commission</h3>
+                  <p className="text-sm text-gray-600">Current commission rate for all transactions</p>
+                </div>
+                <Button onClick={() => setShowCommissionModal(true)} size="sm">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Update Rate
+                </Button>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-churpay-purple">{commissionRate}%</p>
+                  <p className="text-sm text-gray-600">Commission Rate</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-green-600">{formatCurrency(mockPlatformStats.commissionEarned)}</p>
+                  <p className="text-sm text-gray-600">Total Earned</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-blue-600">{formatCurrency(mockPlatformStats.monthlyRevenue * (commissionRate / 100))}</p>
+                  <p className="text-sm text-gray-600">Monthly Commission</p>
                 </div>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="churches" className="space-y-6">
-            {/* Churches Management */}
+            {/* Churches Management Header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Churches Management</h2>
-              <div className="flex space-x-2">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Church Management</h2>
+                <p className="text-gray-600">Manage church registrations and approvals</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input placeholder="Search churches..." className="pl-10 w-64" />
+                </div>
                 <Button variant="outline" size="sm">
                   <Filter className="w-4 h-4 mr-2" />
                   Filter
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
               </div>
             </div>
 
-            {/* Churches Status Cards */}
+            {/* Church Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
@@ -415,90 +478,90 @@ export function SuperAdminPlatformDashboard() {
                     <p className="text-sm text-gray-600">Total Churches</p>
                     <p className="text-2xl font-bold text-gray-900">{mockPlatformStats.totalChurches}</p>
                   </div>
-                  <Building2 className="w-8 h-8 text-blue-600" />
+                  <Church className="w-8 h-8 text-blue-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Active</p>
                     <p className="text-2xl font-bold text-green-600">{mockPlatformStats.activeChurches}</p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-500" />
+                  <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Pending</p>
                     <p className="text-2xl font-bold text-yellow-600">{mockPlatformStats.pendingApprovals}</p>
                   </div>
-                  <Clock className="w-8 h-8 text-yellow-500" />
+                  <Clock className="w-8 h-8 text-yellow-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Suspended</p>
                     <p className="text-2xl font-bold text-red-600">{mockPlatformStats.suspendedChurches}</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-red-500" />
+                  <AlertTriangle className="w-8 h-8 text-red-600" />
                 </div>
               </Card>
             </div>
 
             {/* Churches Table */}
             <Card className="bg-white border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">All Churches</h3>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="border-b border-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left p-4 text-gray-600">Church</th>
-                      <th className="text-left p-4 text-gray-600">Location</th>
-                      <th className="text-left p-4 text-gray-600">Members</th>
-                      <th className="text-left p-4 text-gray-600">Status</th>
-                      <th className="text-left p-4 text-gray-600">Revenue</th>
-                      <th className="text-left p-4 text-gray-600">Joined</th>
-                      <th className="text-left p-4 text-gray-600">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {mockPlatformStats.recentChurches.map((church: any) => (
-                      <tr key={church.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="p-4">
-                          <div className="flex items-center space-x-3">
-                            <Avatar>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {mockPlatformStats.recentChurches.map((church) => (
+                      <tr key={church.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Avatar className="w-10 h-10 mr-3">
                               <AvatarImage src={church.logo} />
-                              <AvatarFallback>{church.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                              <AvatarFallback>
+                                <Church className="w-5 h-5" />
+                              </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">{church.name}</p>
-                              <p className="text-sm text-gray-600">{church.admin}</p>
+                              <div className="text-sm font-medium text-gray-900">{church.name}</div>
+                              <div className="text-sm text-gray-500">{church.admin}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-900">{church.location}</span>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-900">{church.members}</span>
-                        </td>
-                        <td className="p-4">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{church.location}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{church.members}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(church.revenue)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <Badge className={getStatusColor(church.status)}>
                             {church.status}
                           </Badge>
                         </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-900">{formatCurrency(church.revenue || 0)}</span>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-900">{church.joined}</span>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{church.joined}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <Button
                               size="sm"
+                              variant="outline"
                               onClick={() => {
                                 setSelectedChurch(church);
                                 setShowChurchModal(true);
@@ -506,7 +569,7 @@ export function SuperAdminPlatformDashboard() {
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button size="sm" variant="outline">
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </div>
@@ -520,57 +583,65 @@ export function SuperAdminPlatformDashboard() {
           </TabsContent>
 
           <TabsContent value="payouts" className="space-y-6">
-            {/* Payout Requests */}
+            {/* Payout Management Header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Payout Requests</h2>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export Payouts
-              </Button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Payout Management</h2>
+                <p className="text-gray-600">Review and approve church payout requests</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Report
+                </Button>
+                <Button size="sm" className="bg-churpay-gradient text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Manual Payout
+                </Button>
+              </div>
             </div>
 
-            {/* Payout Stats */}
+            {/* Payout Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Pending Requests</p>
-                    <p className="text-2xl font-bold text-yellow-600">
-                      {mockPlatformStats.payoutRequests.filter((p: any) => p.status === 'pending').length}
-                    </p>
+                    <p className="text-2xl font-bold text-yellow-600">{mockPlatformStats.payoutRequests.length}</p>
                   </div>
-                  <Clock className="w-8 h-8 text-yellow-500" />
+                  <Clock className="w-8 h-8 text-yellow-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(mockPlatformStats.payoutRequests.reduce((sum: number, p: any) => sum + p.amount, 0))}
+                      {formatCurrency(mockPlatformStats.payoutRequests.reduce((sum, req) => sum + req.amount, 0))}
                     </p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">This Month</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {mockPlatformStats.payoutRequests.length}
-                    </p>
+                    <p className="text-sm text-gray-600">Approved Today</p>
+                    <p className="text-2xl font-bold text-green-600">12</p>
                   </div>
-                  <BarChart3 className="w-8 h-8 text-blue-600" />
+                  <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Processing Time</p>
-                    <p className="text-2xl font-bold text-gray-900">2.4 hrs</p>
+                    <p className="text-2xl font-bold text-blue-600">2.4h</p>
                   </div>
-                  <Activity className="w-8 h-8 text-purple-600" />
+                  <Activity className="w-8 h-8 text-blue-600" />
                 </div>
               </Card>
             </div>
@@ -578,60 +649,52 @@ export function SuperAdminPlatformDashboard() {
             {/* Payout Requests Table */}
             <Card className="bg-white border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Payout Requests</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Pending Payout Requests</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="border-b border-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left p-4 text-gray-600">Church</th>
-                      <th className="text-left p-4 text-gray-600">Amount</th>
-                      <th className="text-left p-4 text-gray-600">Category</th>
-                      <th className="text-left p-4 text-gray-600">Date</th>
-                      <th className="text-left p-4 text-gray-600">Status</th>
-                      <th className="text-left p-4 text-gray-600">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Details</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {mockPlatformStats.payoutRequests.map((request: any) => (
-                      <tr key={request.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="p-4">
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {mockPlatformStats.payoutRequests.map((request) => (
+                      <tr key={request.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <p className="font-medium text-gray-900">{request.church}</p>
-                            <p className="text-sm text-gray-600">{request.admin}</p>
+                            <div className="text-sm font-medium text-gray-900">{request.church}</div>
+                            <div className="text-sm text-gray-500">{request.admin}</div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <span className="font-medium text-gray-900">{formatCurrency(request.amount)}</span>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{formatCurrency(request.amount)}</div>
+                          <div className="text-sm text-gray-500">Balance: {formatCurrency(request.availableBalance)}</div>
                         </td>
-                        <td className="p-4">
-                          <Badge variant="outline">{request.category}</Badge>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-sm text-gray-900">{request.requestDate}</span>
-                        </td>
-                        <td className="p-4">
-                          <Badge className="bg-yellow-100 text-yellow-800">
-                            {request.status}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge className="bg-blue-100 text-blue-800 capitalize">
+                            {request.category}
                           </Badge>
                         </td>
-                        <td className="p-4">
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{request.requestDate}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{request.bankDetails}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <Button
                               size="sm"
+                              variant="outline"
                               onClick={() => {
                                 setSelectedPayoutRequest(request);
                                 setShowPayoutModal(true);
                               }}
                             >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-green-600">
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-red-600">
-                              <X className="w-4 h-4" />
+                              <Eye className="w-4 h-4 mr-1" />
+                              Review
                             </Button>
                           </div>
                         </td>
@@ -644,22 +707,25 @@ export function SuperAdminPlatformDashboard() {
           </TabsContent>
 
           <TabsContent value="members" className="space-y-6">
-            {/* Members Overview */}
+            {/* Members Management */}
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Platform Members</h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Member Management</h2>
+                <p className="text-gray-600">Platform member overview and management</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input placeholder="Search members..." className="pl-10 w-64" />
+                </div>
                 <Button variant="outline" size="sm">
                   <Download className="w-4 h-4 mr-2" />
-                  Export
+                  Export Members
                 </Button>
               </div>
             </div>
 
-            {/* Member Stats */}
+            {/* Member Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
@@ -670,266 +736,551 @@ export function SuperAdminPlatformDashboard() {
                   <Users className="w-8 h-8 text-blue-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Active This Month</p>
-                    <p className="text-2xl font-bold text-green-600">12,847</p>
+                    <p className="text-2xl font-bold text-green-600">12,458</p>
                   </div>
-                  <UserCheck className="w-8 h-8 text-green-500" />
+                  <UserCheck className="w-8 h-8 text-green-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">New Registrations</p>
-                    <p className="text-2xl font-bold text-purple-600">{registrations.members.length + 45}</p>
+                    <p className="text-sm text-gray-600">New This Week</p>
+                    <p className="text-2xl font-bold text-purple-600">247</p>
                   </div>
-                  <User className="w-8 h-8 text-purple-500" />
+                  <Plus className="w-8 h-8 text-purple-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Avg. Donations</p>
-                    <p className="text-2xl font-bold text-gray-900">R485</p>
+                    <p className="text-sm text-gray-600">Average Donation</p>
+                    <p className="text-2xl font-bold text-yellow-600">R420</p>
                   </div>
-                  <Heart className="w-8 h-8 text-red-500" />
+                  <Heart className="w-8 h-8 text-yellow-600" />
                 </div>
               </Card>
             </div>
 
-            {/* Recent Members */}
+            {/* Recent Members Table */}
             <Card className="bg-white border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Member Registrations</h3>
               </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {registrations.members.slice(0, 8).map((member: any, index: number) => (
-                    <div key={member.id || index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarFallback>{member.firstName?.[0]}{member.lastName?.[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-gray-900">{member.firstName} {member.lastName}</p>
-                          <p className="text-sm text-gray-600">{member.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Active
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Donations</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {registrations.members.slice(0, 10).map((member, index) => (
+                      <tr key={member.id || index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Avatar className="w-10 h-10 mr-3">
+                              <AvatarFallback>
+                                <User className="w-5 h-5" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{member.fullName}</div>
+                              <div className="text-sm text-gray-500">{member.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.churchName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.submittedAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R0</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge className="bg-green-100 text-green-800">Active</Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Button size="sm" variant="outline">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="system" className="space-y-6">
-            {/* System Overview */}
+            {/* System Management */}
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">System Management</h2>
-              <Button variant="outline" size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh Status
-              </Button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">System Management</h2>
+                <p className="text-gray-600">Platform performance, security, and configuration</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button size="sm" className="bg-churpay-gradient text-white">
+                  <Settings className="w-4 h-4 mr-2" />
+                  System Settings
+                </Button>
+              </div>
             </div>
 
-            {/* System Health Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* System Health Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">System Uptime</p>
+                    <p className="text-sm text-gray-600">Server Uptime</p>
                     <p className="text-2xl font-bold text-green-600">{mockPlatformStats.systemUptime}%</p>
+                    <p className="text-sm text-gray-500">30 days</p>
                   </div>
                   <Server className="w-8 h-8 text-green-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Response Time</p>
                     <p className="text-2xl font-bold text-blue-600">{mockPlatformStats.avgResponseTime}ms</p>
+                    <p className="text-sm text-gray-500">Average</p>
                   </div>
                   <Zap className="w-8 h-8 text-blue-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Success Rate</p>
-                    <p className="text-2xl font-bold text-green-600">{mockPlatformStats.successRate}%</p>
+                    <p className="text-2xl font-bold text-purple-600">{mockPlatformStats.successRate}%</p>
+                    <p className="text-sm text-gray-500">Transactions</p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <CheckCircle className="w-8 h-8 text-purple-600" />
                 </div>
               </Card>
+              
               <Card className="p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Commission Rate</p>
-                    <p className="text-2xl font-bold text-purple-600">{commissionRate}%</p>
+                    <p className="text-sm text-gray-600">Security Score</p>
+                    <p className="text-2xl font-bold text-orange-600">98.5</p>
+                    <p className="text-sm text-gray-500">High</p>
                   </div>
-                  <Settings className="w-8 h-8 text-purple-600" />
+                  <Shield className="w-8 h-8 text-orange-600" />
                 </div>
               </Card>
             </div>
 
-            {/* System Settings */}
-            <Card className="bg-white border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Platform Configuration</h3>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Commission Rate</p>
-                    <p className="text-sm text-gray-600">Current platform commission rate</p>
+            {/* System Components */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6 bg-white border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">System Components</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Database className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Database</p>
+                        <p className="text-sm text-gray-600">PostgreSQL 15.0</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Online</Badge>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-purple-600">{commissionRate}%</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowCommissionModal(true)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
+                  
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Server className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">API Server</p>
+                        <p className="text-sm text-gray-600">Node.js 18.0</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Online</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Globe className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">CDN</p>
+                        <p className="text-sm text-gray-600">CloudFlare</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Online</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <CreditCard className="w-5 h-5 text-orange-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Payment Gateway</p>
+                        <p className="text-sm text-gray-600">PayFast</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Online</Badge>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+
+              <Card className="p-6 bg-white border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent System Activity</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-green-600 mt-2"></div>
+                    <div>
+                      <p className="text-sm text-gray-900">System backup completed successfully</p>
+                      <p className="text-xs text-gray-500">2 minutes ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                    <div>
+                      <p className="text-sm text-gray-900">Database maintenance completed</p>
+                      <p className="text-xs text-gray-500">1 hour ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-yellow-600 mt-2"></div>
+                    <div>
+                      <p className="text-sm text-gray-900">Security scan initiated</p>
+                      <p className="text-xs text-gray-500">3 hours ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-2"></div>
+                    <div>
+                      <p className="text-sm text-gray-900">API rate limits adjusted</p>
+                      <p className="text-xs text-gray-500">6 hours ago</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Church Detail Modal */}
-      <Dialog open={showChurchModal} onOpenChange={setShowChurchModal}>
-        <DialogContent className="sm:max-w-2xl bg-white">
+      {/* Modals */}
+      
+      {/* Commission Rate Modal */}
+      <Dialog open={showCommissionModal} onOpenChange={setShowCommissionModal}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Church Application Review</DialogTitle>
+            <DialogTitle>Update Commission Rate</DialogTitle>
+            <DialogDescription>
+              Set the platform commission rate for all transactions. Current rate is {commissionRate}%.
+            </DialogDescription>
           </DialogHeader>
-          {selectedChurch && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="w-16 h-16">
-                  <AvatarImage src={(selectedChurch as any).logo} />
-                  <AvatarFallback>{(selectedChurch as any).name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
-                </Avatar>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                New Commission Rate (%)
+              </label>
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="15"
+                value={tempCommissionRate}
+                onChange={(e) => setTempCommissionRate(e.target.value)}
+                placeholder={commissionRate.toString()}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Commission rate must be between 0% and 15%
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <Button
+                onClick={() => {
+                  const newRate = parseFloat(tempCommissionRate);
+                  if (newRate >= 0 && newRate <= 15) {
+                    setCommissionRate(newRate);
+                    localStorage.setItem('churpay-commission-rate', newRate.toString());
+                    setShowCommissionModal(false);
+                    setTempCommissionRate('');
+                  }
+                }}
+                className="flex-1 bg-churpay-gradient text-white"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Update Rate
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCommissionModal(false);
+                  setTempCommissionRate('');
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payout Review Modal */}
+      <Dialog open={showPayoutModal} onOpenChange={setShowPayoutModal}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Review Payout Request</DialogTitle>
+            <DialogDescription>
+              Carefully review the payout request details before making a decision.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPayoutRequest && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{(selectedChurch as any).name}</h3>
-                  <p className="text-gray-600">{(selectedChurch as any).location}</p>
-                  <Badge className={getStatusColor((selectedChurch as any).status)}>
-                    {(selectedChurch as any).status}
-                  </Badge>
+                  <h4 className="font-medium text-gray-900 mb-2">Church Details</h4>
+                  <p className="text-sm text-gray-600">Church: {selectedPayoutRequest.church}</p>
+                  <p className="text-sm text-gray-600">Admin: {selectedPayoutRequest.admin}</p>
+                  <p className="text-sm text-gray-600">Total Revenue: {formatCurrency(selectedPayoutRequest.churchRevenue)}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Request Details</h4>
+                  <p className="text-sm text-gray-600">Amount: {formatCurrency(selectedPayoutRequest.amount)}</p>
+                  <p className="text-sm text-gray-600">Category: {selectedPayoutRequest.category}</p>
+                  <p className="text-sm text-gray-600">Request Date: {selectedPayoutRequest.requestDate}</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Admin Contact</label>
-                  <p className="text-gray-900">{(selectedChurch as any).admin}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Members</label>
-                  <p className="text-gray-900">{(selectedChurch as any).members}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Email</label>
-                  <p className="text-gray-900">{(selectedChurch as any).email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Phone</label>
-                  <p className="text-gray-900">{(selectedChurch as any).phone}</p>
-                </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  {selectedPayoutRequest.description}
+                </p>
               </div>
-
-              {(selectedChurch as any).status === 'Pending' && (
-                <div className="flex space-x-2 pt-4">
-                  <Button 
-                    onClick={() => handleChurchDecision(selectedChurch, 'Approved')}
-                    className="bg-green-600 text-white"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleChurchDecision(selectedChurch, 'Rejected')}
-                    className="border-red-600 text-red-600"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Reject
-                  </Button>
-                </div>
-              )}
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Bank Details</h4>
+                <p className="text-sm text-gray-600">{selectedPayoutRequest.bankDetails}</p>
+                <p className="text-sm text-gray-600">Available Balance: {formatCurrency(selectedPayoutRequest.availableBalance)}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Decision Notes (Optional)
+                </label>
+                <Textarea
+                  value={payoutNotes}
+                  onChange={(e) => setPayoutNotes(e.target.value)}
+                  placeholder="Add any notes about your decision..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => handlePayoutDecision(selectedPayoutRequest, 'Approved')}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Approve Payout
+                </Button>
+                <Button
+                  onClick={() => handlePayoutDecision(selectedPayoutRequest, 'Rejected')}
+                  variant="outline"
+                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Reject Request
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Payout Detail Modal */}
-      <Dialog open={showPayoutModal} onOpenChange={setShowPayoutModal}>
-        <DialogContent className="sm:max-w-lg bg-white">
+      {/* Church Review Modal */}
+      <Dialog open={showChurchModal} onOpenChange={setShowChurchModal}>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Payout Request Review</DialogTitle>
+            <DialogTitle>Church Application Review</DialogTitle>
+            <DialogDescription>
+              Review the church registration details and make an approval decision.
+            </DialogDescription>
           </DialogHeader>
-          {selectedPayoutRequest && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          {selectedChurch && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Church</label>
-                  <p className="text-gray-900">{(selectedPayoutRequest as any).church}</p>
+                  <h4 className="font-medium text-gray-900 mb-3">Church Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      {selectedChurch.logo ? (
+                        <Avatar className="w-12 h-12">
+                          <AvatarImage src={selectedChurch.logo} />
+                          <AvatarFallback><Church className="w-6 h-6" /></AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                          <Church className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900">{selectedChurch.name}</p>
+                        <p className="text-sm text-gray-600">{selectedChurch.denomination}</p>
+                      </div>
+                    </div>
+                    {selectedChurch.establishedYear && (
+                      <p className="text-sm text-gray-600">Established: {selectedChurch.establishedYear}</p>
+                    )}
+                    {selectedChurch.description && (
+                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg mt-3">
+                        {selectedChurch.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
+                
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Amount</label>
-                  <p className="text-gray-900 font-bold">{formatCurrency((selectedPayoutRequest as any).amount)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Category</label>
-                  <p className="text-gray-900">{(selectedPayoutRequest as any).category}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Request Date</label>
-                  <p className="text-gray-900">{(selectedPayoutRequest as any).requestDate}</p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-600">Description</label>
-                  <p className="text-gray-900">{(selectedPayoutRequest as any).description}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Bank Details</label>
-                  <p className="text-gray-900">{(selectedPayoutRequest as any).bankDetails}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Available Balance</label>
-                  <p className="text-gray-900">{formatCurrency((selectedPayoutRequest as any).availableBalance)}</p>
+                  <h4 className="font-medium text-gray-900 mb-3">Contact Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {selectedChurch.contactTitle} {selectedChurch.admin}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">{selectedChurch.email}</span>
+                    </div>
+                    {selectedChurch.phone && (
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">{selectedChurch.phone}</span>
+                      </div>
+                    )}
+                    {selectedChurch.website && (
+                      <div className="flex items-center space-x-2">
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <a href={selectedChurch.website} target="_blank" rel="noopener noreferrer" 
+                           className="text-sm text-blue-600 hover:underline">
+                          {selectedChurch.website}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={() => handlePayoutDecision(selectedPayoutRequest, 'Approved')}
-                  className="bg-green-600 text-white flex-1"
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3">Address</h4>
+                  <div className="space-y-1">
+                    {selectedChurch.streetAddress && (
+                      <p className="text-sm text-gray-600">{selectedChurch.streetAddress}</p>
+                    )}
+                    <p className="text-sm text-gray-600">
+                      {selectedChurch.city}, {selectedChurch.province}
+                    </p>
+                    {selectedChurch.postalCode && (
+                      <p className="text-sm text-gray-600">{selectedChurch.postalCode}</p>
+                    )}
+                    {selectedChurch.country && (
+                      <p className="text-sm text-gray-600">{selectedChurch.country}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3">Statistics</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Members:</span>
+                      <span className="text-sm font-medium text-gray-900">{selectedChurch.members}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Revenue:</span>
+                      <span className="text-sm font-medium text-gray-900">{formatCurrency(selectedChurch.revenue)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Growth:</span>
+                      <span className="text-sm font-medium text-green-600">+{selectedChurch.monthlyGrowth}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Joined:</span>
+                      <span className="text-sm font-medium text-gray-900">{selectedChurch.joined}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {selectedChurch.bankName && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3">Banking Details</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Bank: {selectedChurch.bankName}</p>
+                        <p className="text-sm text-gray-600">Account Name: {selectedChurch.accountName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Account Number: {selectedChurch.accountNumber}</p>
+                        <p className="text-sm text-gray-600">Branch Code: {selectedChurch.branchCode}</p>
+                        <p className="text-sm text-gray-600">Account Type: {selectedChurch.accountType}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Decision Notes (Optional)
+                </label>
+                <Textarea
+                  value={churchNotes}
+                  onChange={(e) => setChurchNotes(e.target.value)}
+                  placeholder="Add any notes about your decision..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => handleChurchDecision(selectedChurch, 'Approved')}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Approve Payout
+                  Approve Church
                 </Button>
-                <Button 
+                <Button
+                  onClick={() => handleChurchDecision(selectedChurch, 'Rejected')}
                   variant="outline"
-                  onClick={() => handlePayoutDecision(selectedPayoutRequest, 'Rejected')}
-                  className="border-red-600 text-red-600 flex-1"
+                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Reject
+                  Reject Application
+                </Button>
+                <Button
+                  onClick={() => handleChurchDecision(selectedChurch, 'Under Review')}
+                  variant="outline"
+                  className="flex-1 border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Request More Info
                 </Button>
               </div>
             </div>
