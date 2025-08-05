@@ -34,7 +34,7 @@ interface DonationHistory {
 
 export default function ProfessionalMemberDashboard() {
   const [showDonationModal, setShowDonationModal] = useState(false);
-
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChurchModal, setShowChurchModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -71,7 +71,7 @@ export default function ProfessionalMemberDashboard() {
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0 // Don't cache the response
+    gcTime: 0 // Don't cache the response (was cacheTime in v4)
   });
 
   // Recent activity query

@@ -233,37 +233,20 @@ export class DatabaseStorage implements IStorage {
 
   async getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }> {
     try {
-      const totalResult = await db.select({ count: count() }).from(churches);
-      const pendingResult = await db.select({ count: count() }).from(churches).where(eq(churches.status, 'pending'));
-      const approvedResult = await db.select({ count: count() }).from(churches).where(eq(churches.status, 'approved'));
+      const stats = await db
+        .select({
+          total: count(),
+          pending: sql<number>`count(*) filter (where status = 'pending')`,
+          approved: sql<number>`count(*) filter (where status = 'approved')`,
+          active: sql<number>`count(*) filter (where is_active = true)`,
+        })
+        .from(churches);
       
-      const total = totalResult[0]?.count || 0;
-      const pending = pendingResult[0]?.count || 0;
-      const approved = approvedResult[0]?.count || 0;
-      
-      return {
-        total,
-        pending,
-        approved,
-        active: approved // For now, approved = active
-      };
+      return stats[0] || { total: 0, pending: 0, approved: 0, active: 0 };
     } catch (error) {
       console.error("Error getting church stats:", error);
       return { total: 0, pending: 0, approved: 0, active: 0 };
     }
-  }
-
-  async getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }> {
-    const stats = await db
-      .select({
-        total: count(),
-        pending: sql<number>`count(*) filter (where status = 'pending')`,
-        approved: sql<number>`count(*) filter (where status = 'approved')`,
-        active: sql<number>`count(*) filter (where is_active = true)`,
-      })
-      .from(churches);
-    
-    return stats[0];
   }
   
   // Project operations
@@ -311,7 +294,7 @@ export class DatabaseStorage implements IStorage {
     if (newTransaction.projectId && newTransaction.status === 'completed') {
       const project = await this.getProject(newTransaction.projectId);
       if (project) {
-        const newAmount = parseFloat(project.currentAmount) + parseFloat(newTransaction.amount);
+        const newAmount = parseFloat(project.currentAmount || '0') + parseFloat(newTransaction.amount || '0');
         await this.updateProjectAmount(newTransaction.projectId, newAmount);
       }
     }
