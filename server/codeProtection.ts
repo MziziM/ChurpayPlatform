@@ -1,6 +1,8 @@
 /**
- * ChurPay Code Protection System
- * Monitors and prevents unauthorized modifications to core files
+ * ChurPay Maximum Security Code Protection System
+ * Comprehensive monitoring and prevention of unauthorized modifications
+ * All core application files are now locked and secured
+ * Last Updated: August 5, 2025 - Full Code Lock Implementation
  */
 
 export const LOCKED_FILES = [
@@ -14,6 +16,8 @@ export const LOCKED_FILES = [
   'server/index.ts',
   'server/routes.ts',
   'server/routes-clean.ts',
+  'server/vite.ts',
+  'server/googleAuth.ts',
   'client/src/App.tsx',
   'client/src/main.tsx',
   'client/src/index.css',
@@ -21,23 +25,81 @@ export const LOCKED_FILES = [
   'vite.config.ts',
   'tailwind.config.ts',
   'tsconfig.json',
+  'components.json',
   
-  // Dashboard Components - Professional UI
+  // Dashboard Components - Professional UI (All Locked)
   'client/src/pages/SuperAdminDashboard.tsx',
   'client/src/pages/ProfessionalMemberDashboard.tsx', 
   'client/src/pages/ProfessionalChurchDashboard.tsx',
+  'client/src/pages/AdminDashboard.tsx',
+  'client/src/pages/WalletDashboard.tsx',
+  'client/src/components/SuperAdminPlatformDashboard.tsx',
   'client/src/components/SuperAdminPayoutModal.tsx',
   'client/src/components/SuperAdminChurchModal.tsx',
   'client/src/components/SuperAdminMemberModal.tsx',
   'client/src/components/SuperAdminReportsModal.tsx',
+  'client/src/components/MemberDashboardFull.tsx',
+  'client/src/components/EnhancedDonationModal.tsx',
+  'client/src/components/ProfessionalDonationModal.tsx',
+  'client/src/components/ProfessionalWalletModal.tsx',
+  
+  // Authentication System - Complete Security Layer
+  'client/src/pages/SuperAdminSignIn.tsx',
+  'client/src/pages/SuperAdminSignUp.tsx',
+  'client/src/pages/AdminSignIn.tsx',
+  'client/src/pages/AdminSignUp.tsx',
+  'client/src/pages/sign-in.tsx',
+  'client/src/hooks/useSuperAdminAuth.ts',
+  'client/src/hooks/useAdminAuth.ts',
+  'client/src/hooks/useAuth.ts',
+  'client/src/components/TwoFactorSetup.tsx',
   
   // Registration System - Core User Experience
-  'client/src/pages/ChurchRegistration.tsx',
-  'client/src/pages/MemberRegistration.tsx',
-  'client/src/pages/Landing.tsx',
+  'client/src/pages/church-registration.tsx',
+  'client/src/pages/member-registration.tsx',
+  'client/src/pages/public-church-registration.tsx',
+  'client/src/pages/public-member-registration.tsx',
+  'client/src/pages/landing.tsx',
+  'client/src/pages/home.tsx',
+  'client/src/components/RegistrationModal.tsx',
+  'client/src/components/ChurchModal.tsx',
+  'client/src/components/ChurchMemberModal.tsx',
+  
+  // Financial Components - Payment Processing Core
+  'client/src/components/FinancialManagement.tsx',
+  'client/src/components/FinancialAnalyticsModal.tsx',
+  'client/src/components/FinancialTrendsChart.tsx',
+  'client/src/components/MemberGivingAnalytics.tsx',
+  'client/src/components/PaymentMethodSelector.tsx',
+  'client/src/components/WalletModal.tsx',
+  'client/src/components/ChurchPayoutModal.tsx',
+  
+  // UI Foundation - Shadcn Components (Critical)
   'client/src/components/ui/form.tsx',
   'client/src/components/ui/card.tsx',
   'client/src/components/ui/button.tsx',
+  'client/src/components/ui/input.tsx',
+  'client/src/components/ui/select.tsx',
+  'client/src/components/ui/dialog.tsx',
+  'client/src/components/ui/toast.tsx',
+  'client/src/components/ui/toaster.tsx',
+  'client/src/components/ui/tooltip.tsx',
+  'client/src/components/ui/tabs.tsx',
+  'client/src/components/ui/textarea.tsx',
+  
+  // Core Utilities & Libraries
+  'client/src/lib/queryClient.ts',
+  'client/src/lib/utils.ts',
+  'client/src/hooks/use-toast.ts',
+  'client/src/hooks/use-mobile.tsx',
+  
+  // Management & Reports
+  'client/src/components/ChurchManagement.tsx',
+  'client/src/components/MemberManagement.tsx',
+  'client/src/components/EventManagement.tsx',
+  'client/src/components/reports.tsx',
+  'client/src/components/DashboardWidgets.tsx',
+  'client/src/components/navigation.tsx',
   
   // Protection System Files
   'server/codeProtection.ts',
