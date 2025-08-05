@@ -29,7 +29,6 @@ export default function SuperAdminSignIn() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
-  const { signIn } = useSuperAdminAuth();
 
   const form = useForm<SuperAdminSignInForm>({
     resolver: zodResolver(superAdminSignInSchema),
