@@ -9,6 +9,28 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+// Platform Statistics Type Definition
+interface PlatformStats {
+  totalRevenue: string;
+  totalTransactions: number;
+  activeChurches: number;
+  totalChurches: number;
+  totalMembers: number;
+  pendingPayouts: string;
+  completedPayouts: string;
+  platformFees: string;
+  monthlyRevenue: string;
+  revenueGrowth: number;
+  transactionGrowth: number;
+  churchGrowth: number;
+  payoutGrowth: number;
+  // Additional properties for enhanced functionality
+  monthlyTransactions?: number;
+  newChurchesThisMonth?: number;
+  platformReserves?: string;
+  availableReserves?: string;
+}
+
 export default function SuperAdminDashboard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -16,7 +38,7 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Real-time platform statistics
-  const { data: platformStats, isLoading: statsLoading } = useQuery({
+  const { data: platformStats, isLoading: statsLoading } = useQuery<PlatformStats>({
     queryKey: ['/api/super-admin/stats'],
     enabled: isAuthenticated,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -339,61 +361,80 @@ export default function SuperAdminDashboard() {
 
         {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* This Month Card */}
+          {/* This Month Platform Stats Card */}
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
             <div className="flex items-center mb-4">
-              <TrendingUp className="w-4 h-4 mr-2" />
+              <BarChart3 className="w-5 h-5 mr-2" />
               <h3 className="text-lg font-semibold">This Month</h3>
             </div>
-            <p className="text-sm opacity-90 mb-6">Your giving summary</p>
+            <p className="text-sm opacity-90 mb-6">Platform performance summary</p>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Total Given</span>
+                  <span className="text-sm">Platform Revenue</span>
                 </div>
-                <span className="font-semibold">R 2,400</span>
+                <span className="font-semibold">
+                  {statsLoading ? '...' : `R ${platformStats?.monthlyRevenue || '0.00'}`}
+                </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Tithes</span>
+                  <span className="text-sm">Platform Fees</span>
                 </div>
-                <span className="font-semibold">R 1,800</span>
+                <span className="font-semibold">
+                  {statsLoading ? '...' : `R ${platformStats?.platformFees || '0.00'}`}
+                </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Donations</span>
+                  <span className="text-sm">Active Churches</span>
                 </div>
-                <span className="font-semibold">R 600</span>
+                <span className="font-semibold">
+                  {statsLoading ? '...' : (platformStats?.activeChurches || 0)}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Wallet Balance Card */}
+          {/* Platform Financial Summary Card */}
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Wallet Balance</h3>
-              <button className="text-sm opacity-75 hover:opacity-100">Manage →</button>
+              <h3 className="text-lg font-semibold">Platform Financials</h3>
+              <button className="text-sm opacity-75 hover:opacity-100">View Details →</button>
             </div>
-            <p className="text-sm opacity-90 mb-6">Your available funds</p>
+            <p className="text-sm opacity-90 mb-6">Platform earnings & payouts</p>
             
             <div className="text-center">
-              <p className="text-4xl font-bold mb-2">R 0</p>
-              <p className="text-sm opacity-75 mb-4">Available balance</p>
+              <p className="text-4xl font-bold mb-2">
+                {statsLoading ? '...' : `R ${platformStats?.platformFees || '0.00'}`}
+              </p>
+              <p className="text-sm opacity-75 mb-4">Platform earnings</p>
               
-              <div className="flex items-center justify-center text-sm">
+              <div className="flex items-center justify-center text-sm mb-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                <span>Active & Secured</span>
+                <span>Operational & Secured</span>
               </div>
               
-              <button className="mt-4 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium transition-colors w-full">
-                + Add Funds
-              </button>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-white/10 rounded-lg p-2">
+                  <div>Pending Payouts</div>
+                  <div className="font-semibold">
+                    {statsLoading ? '...' : `R ${platformStats?.pendingPayouts || '0.00'}`}
+                  </div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-2">
+                  <div>Completed</div>
+                  <div className="font-semibold">
+                    {statsLoading ? '...' : `R ${platformStats?.completedPayouts || '0.00'}`}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
