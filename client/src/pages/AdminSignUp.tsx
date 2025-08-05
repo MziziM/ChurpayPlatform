@@ -60,6 +60,7 @@ export default function AdminSignUp() {
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('Signup response:', data); // Debug log
       if (data.twoFactorSetup) {
         setTwoFactorData(data);
         setStep('twofa');
@@ -113,6 +114,7 @@ export default function AdminSignUp() {
 
   // Render 2FA setup step
   if (step === 'twofa' && twoFactorData) {
+    console.log('Rendering 2FA setup with data:', twoFactorData); // Debug log
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center p-4">
         <TwoFactorSetup
