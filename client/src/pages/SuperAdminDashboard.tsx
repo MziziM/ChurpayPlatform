@@ -3,6 +3,7 @@ import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDash
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
+import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
@@ -59,11 +60,14 @@ export default function SuperAdminDashboard() {
     <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
       {/* Header */}
       <div className="flex justify-between items-center p-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {superAdmin?.firstName || 'Super Admin'}</h1>
-          <div className="text-gray-300 flex items-center">
-            Here's your platform overview and system activity
-            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+        <div className="flex items-center space-x-4">
+          <img src={churpayLogo} alt="ChurPay" className="h-10 w-auto" />
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {superAdmin?.firstName || 'Super Admin'}</h1>
+            <div className="text-gray-300 flex items-center">
+              Here's your platform overview and system activity
+              <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+            </div>
           </div>
         </div>
         <div className="text-sm text-gray-300">
