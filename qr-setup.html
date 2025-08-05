@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChurPay Super Admin 2FA Setup</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            color: #fbbf24;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .manual-key {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .instructions {
+            text-align: left;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 ChurPay 2FA Setup</h1>
+        <p>Set up Google Authenticator for Super Admin account:</p>
+        <p><strong>mzizi.mzwakhe@churpay.com</strong></p>
+        
+        <div class="qr-code">
+            <div id="qrcode"></div>
+        </div>
+        
+        <p><strong>Manual Entry Key:</strong></p>
+        <div class="manual-key">
+            K5BWEOKYKQ4EM2ZYPA5XQT2XGJUWOTCRJJOS4XKJONNXULDBNE7Q
+        </div>
+        
+        <div class="instructions">
+            <h3>Setup Instructions:</h3>
+            <div class="step">
+                <strong>1.</strong> Download Google Authenticator app on your phone
+            </div>
+            <div class="step">
+                <strong>2.</strong> Scan the QR code above OR manually enter the key
+            </div>
+            <div class="step">
+                <strong>3.</strong> Enter the 6-digit code when signing in
+            </div>
+            <div class="step">
+                <strong>4.</strong> Your account is now secured with 2FA!
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Generate QR code
+        const qrCodeUrl = 'otpauth://totp/ChurPay%20Super%20Admin%20(mzizi.mzwakhe%40churpay.com)?secret=K5BWEOKYKQ4EM2ZYPA5XQT2XGJUWOTCRJJOS4XKJONNXULDBNE7Q&issuer=ChurPay';
+        
+        QRCode.toCanvas(document.getElementById('qrcode'), qrCodeUrl, {
+            width: 200,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function (error) {
+            if (error) {
+                console.error(error);
+                document.getElementById('qrcode').innerHTML = '<p style="color: red;">QR Code generation failed</p>';
+            }
+        });
+    </script>
+</body>
+</html>
