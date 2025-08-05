@@ -98,36 +98,38 @@ export default function AdminDashboard() {
   const systemHealth = dashboardData?.systemHealth || {};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="h-8 w-8 text-purple-600" />
-                <h1 className="text-2xl font-bold text-gray-900">ChurPay Admin</h1>
+    <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
+      {/* Top Navigation Bar */}
+      <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-4 md:px-8 py-4 rounded-t-3xl mx-2 md:mx-8 mt-2 md:mt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 md:space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <div className="hidden md:block text-sm text-gray-500">
-                Welcome back, {admin.firstName} {admin.lastName}
-              </div>
+              <h1 className="text-white text-sm md:text-xl font-bold tracking-wider">CHURPAY ADMIN</h1>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button onClick={handleSignOut} variant="outline" size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+            <div className="flex items-center space-x-2 md:space-x-6 text-xs md:text-sm text-gray-400">
+              <span className="hidden md:block border-r border-gray-600 pr-6">Welcome, {admin.firstName} {admin.lastName}</span>
+              <div className="px-2 md:px-3 py-1 bg-purple-600 text-white text-xs rounded font-medium">ADMIN ACCESS</div>
             </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+            <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col md:flex-row mx-2 md:mx-8 bg-gray-900/70 backdrop-blur-sm rounded-b-3xl min-h-screen">
+        <div className="flex-1 p-6">
         {/* System Health Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -347,6 +349,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </motion.div>
+        </div>
       </div>
     </div>
   );
