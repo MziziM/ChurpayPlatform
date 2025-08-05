@@ -60,9 +60,12 @@ export default function SignIn() {
   // Member sign-in mutation
   const memberSignInMutation = useMutation({
     mutationFn: async (data: MemberSignInData) => {
-      const response = await apiRequest('/api/auth/member/signin', {
+      const response = await fetch('/api/auth/member/signin', {
         method: 'POST',
-        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
       
       if (!response.ok) {
@@ -93,9 +96,12 @@ export default function SignIn() {
   // Church sign-in mutation
   const churchSignInMutation = useMutation({
     mutationFn: async (data: ChurchSignInData) => {
-      const response = await apiRequest('/api/auth/church/signin', {
+      const response = await fetch('/api/auth/church/signin', {
         method: 'POST',
-        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
       
       if (!response.ok) {
@@ -329,11 +335,11 @@ export default function SignIn() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">Church Administration</h3>
-                        <p className="text-gray-600 text-sm">Manage your congregation and financial operations</p>
+                        <p className="text-gray-600 text-sm">Access your congregation and financial dashboard</p>
                         <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                           <span>• Members</span>
                           <span>• Projects</span>
-                          <span>• Reports</span>
+                          <span>• Analytics</span>
                         </div>
                       </div>
                     </div>
@@ -346,13 +352,13 @@ export default function SignIn() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-700 text-sm font-medium">Church Admin Email</FormLabel>
+                            <FormLabel className="text-gray-700 text-sm font-medium">Email Address</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 type="email"
                                 placeholder="admin@yourchurch.org"
-                                className="h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+                                className="h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
                               />
                             </FormControl>
                             <FormMessage className="text-red-600 text-sm" />
@@ -372,7 +378,7 @@ export default function SignIn() {
                                   {...field}
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your password"
-                                  className="h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all pr-10"
+                                  className="h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all pr-10"
                                 />
                                 <Button
                                   type="button"
@@ -403,7 +409,7 @@ export default function SignIn() {
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 border-gray-300"
+                                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
                               />
                             </FormControl>
                             <FormLabel className="text-sm text-gray-600 font-normal">
@@ -426,7 +432,7 @@ export default function SignIn() {
                         ) : (
                           <div className="flex items-center space-x-2">
                             <Church className="h-4 w-4" />
-                            <span>Sign In to Church Dashboard</span>
+                            <span>Sign In to Church Portal</span>
                           </div>
                         )}
                       </Button>
