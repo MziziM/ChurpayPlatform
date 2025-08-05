@@ -1,7 +1,8 @@
 import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown } from "lucide-react";
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
@@ -55,16 +56,38 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="relative">
-      {/* Logout Button - Fixed position */}
-      <div className="fixed top-4 right-4 z-50">
-        <Button onClick={handleSignOut} variant="outline" size="sm">
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
-        </Button>
+    <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #2d1b69 0%, #663399 50%, #11101d 100%)'}}>
+      {/* Header */}
+      <div className="flex justify-between items-center p-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Good afternoon, {superAdmin?.firstName || 'Super Admin'}</h1>
+          <p className="text-gray-300 flex items-center">
+            Here's your platform overview and system activity
+            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+          </p>
+        </div>
+        <div className="text-sm text-gray-300">
+          Last active<br />
+          <span className="text-white font-medium">2 minutes ago</span>
+        </div>
       </div>
-      
-      {/* Professional Dashboard */}
+
+      {/* Navigation */}
+      <div className="flex items-center space-x-6 px-6 mb-8">
+        <div className="text-white border-b-2 border-purple-400 pb-2">Dashboard</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Churches</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Members</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Reports</div>
+        <div className="text-gray-400 hover:text-white cursor-pointer">Settings</div>
+        <div className="ml-auto">
+          <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+
+      {/* Show simplified dashboard instead of complex platform dashboard */}
       <SuperAdminPlatformDashboard />
     </div>
   );
