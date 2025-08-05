@@ -17,6 +17,8 @@ import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import AdminSignUp from "@/pages/AdminSignUp";
 import AdminSignIn from "@/pages/AdminSignIn";
 import AdminDashboard from "@/pages/AdminDashboard";
+import SuperAdminSignUp from "@/pages/SuperAdminSignUp";
+import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 
@@ -41,6 +43,8 @@ function Router() {
       <Route path="/admin/signup" component={AdminSignUp} />
       <Route path="/admin/signin" component={AdminSignIn} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/super-admin/signup" component={SuperAdminSignUp} />
+      <Route path="/super-admin/signin" component={SuperAdminSignIn} />
       <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
     </Switch>
