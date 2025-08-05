@@ -73,6 +73,9 @@ export default function ProfessionalMemberDashboard() {
     memberSince: string;
     totalGiven: string;
     thisYearGiven: string;
+    thisMonthGiven: string;
+    thisMonthTithes: string;
+    thisMonthDonations: string;
     goalProgress: number;
     annualGoal: string;
     transactionCount: number;
@@ -300,21 +303,21 @@ export default function ProfessionalMemberDashboard() {
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Total Given</span>
                       </div>
-                      <span className="font-bold text-xl text-gray-900">R 2,400</span>
+                      <span className="font-bold text-xl text-gray-900">R {userStats?.thisMonthGiven || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Tithes</span>
                       </div>
-                      <span className="font-bold text-lg text-gray-900">R 1,800</span>
+                      <span className="font-bold text-lg text-gray-900">R {userStats?.thisMonthTithes || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Donations</span>
                       </div>
-                      <span className="font-bold text-lg text-gray-900">R 600</span>
+                      <span className="font-bold text-lg text-gray-900">R {userStats?.thisMonthDonations || '0.00'}</span>
                     </div>
                   </div>
                 </CardContent>

@@ -142,19 +142,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/user/stats', async (req: any, res) => {
     try {
-      // Mock session for now - in production use authenticated user ID
-      const userId = req.session?.userId || 'mock-user-id';
+      const userId = req.session?.userId;
       
-      // Mock user stats for personalized welcome screen
-      const mockStats = {
-        memberSince: 'Jan 2023',
-        totalGiven: '12,450.00',
-        thisYearGiven: '4,200.00',
-        goalProgress: 42,
-        annualGoal: '10,000.00',
-        transactionCount: 28,
-        averageGift: '444.64',
-        recentAchievements: ['Faithful Giver 2025', 'Consistent Supporter'],
+      if (!userId) {
+        // Return zero values for unauthenticated users
+        return res.json({
+          memberSince: 'Not logged in',
+          totalGiven: '0.00',
+          thisYearGiven: '0.00',
+          thisMonthGiven: '0.00',
+          thisMonthTithes: '0.00',
+          thisMonthDonations: '0.00',
+          goalProgress: 0,
+          annualGoal: '10,000.00',
+          transactionCount: 0,
+          averageGift: '0.00',
+          recentAchievements: [],
+          upcomingEvents: []
+        });
+      }
+
+      // Get real user data from database
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get real transaction data for this user
+      const userTransactions = await storage.getUserTransactions(userId);
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth();
+      
+      // Calculate real statistics
+      const thisYearTransactions = userTransactions.filter(t => 
+        new Date(t.createdAt).getFullYear() === currentYear
+      );
+      
+      const thisMonthTransactions = userTransactions.filter(t => {
+        const txDate = new Date(t.createdAt);
+        return txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth;
+      });
+
+      const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      const thisYearGiven = thisYearTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      const thisMonthGiven = thisMonthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      
+      // Separate tithes and donations
+      const thisMonthTithes = thisMonthTransactions
+        .filter(t => t.transactionType === 'tithe')
+        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      
+      const thisMonthDonations = thisMonthTransactions
+        .filter(t => t.transactionType === 'donation')
+        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+      const averageGift = userTransactions.length > 0 ? (totalGiven / userTransactions.length) : 0;
+      const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      // Calculate goal progress (assuming R 10,000 annual goal)
+      const annualGoal = 10000;
+      const goalProgress = Math.min(Math.round((thisYearGiven / annualGoal) * 100), 100);
+
+      const realStats = {
+        memberSince,
+        totalGiven: totalGiven.toFixed(2),
+        thisYearGiven: thisYearGiven.toFixed(2),
+        thisMonthGiven: thisMonthGiven.toFixed(2),
+        thisMonthTithes: thisMonthTithes.toFixed(2),
+        thisMonthDonations: thisMonthDonations.toFixed(2),
+        goalProgress,
+        annualGoal: annualGoal.toFixed(2),
+        transactionCount: userTransactions.length,
+        averageGift: averageGift.toFixed(2),
+        recentAchievements: totalGiven > 5000 ? ['Faithful Giver 2025'] : ['New Member'],
         upcomingEvents: [
           { id: '1', title: 'Sunday Service', date: 'This Sunday', type: 'Weekly Service' },
           { id: '2', title: 'Community Outreach', date: 'Next Weekend', type: 'Community Event' },
@@ -162,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]
       };
 
-      res.json(mockStats);
+      res.json(realStats);
     } catch (error) {
       console.error('Error fetching user stats:', error);
       res.status(500).json({ message: 'Failed to fetch user statistics' });
