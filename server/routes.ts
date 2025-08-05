@@ -1389,6 +1389,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Church Data API
+  app.get('/api/user/church', async (req, res) => {
+    try {
+      // For now, return the first approved church as demo data
+      const approvedChurches = await storage.getApprovedChurches();
+      if (approvedChurches.length > 0) {
+        res.json(approvedChurches[0]);
+      } else {
+        res.json({
+          id: "demo-church",
+          name: "Community Church",
+          denomination: "Non-denominational", 
+          description: "A vibrant community church serving our local area",
+          leadPastor: "Pastor John Smith",
+          city: "Johannesburg",
+          province: "Gauteng",
+          memberCount: 450,
+          contactEmail: "info@communitychurch.co.za",
+          contactPhone: "+27-11-123-4567",
+          servicesTimes: "Sunday Service: 9:00 AM & 6:00 PM",
+          status: "approved"
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user church:", error);
+      res.status(500).json({ message: "Failed to fetch church data" });
+    }
+  });
+
+  // User Stats API
+  app.get('/api/user/stats', async (req, res) => {
+    try {
+      const userStats = {
+        memberSince: "January 2023",
+        totalGiven: "25,480",
+        thisYearGiven: "18,750",
+        thisMonthGiven: "2,500",
+        goalProgress: 75,
+        annualGoal: "25,000",
+        recentAchievements: ["Faithful Giver", "Community Supporter"],
+        transactionCount: 48,
+        averageGift: "530",
+        upcomingEvents: [
+          {
+            id: "1",
+            title: "Youth Service",
+            date: "2025-08-10",
+            type: "service"
+          },
+          {
+            id: "2", 
+            title: "Community Outreach",
+            date: "2025-08-15",
+            type: "outreach"
+          }
+        ]
+      };
+      
+      res.json(userStats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user statistics" });
+    }
+  });
+
+  // Community Insights API
+  app.get('/api/church/community-insights', async (req, res) => {
+    try {
+      const insights = {
+        totalMembers: 450,
+        activeThisWeek: 89,
+        totalDonationsThisMonth: "125,340",
+        averageDonation: "2,785",
+        topContributors: 23,
+        upcomingEvents: 5,
+        recentActivities: [
+          {
+            id: "1",
+            type: "donation",
+            description: "New member joined the community",
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: "2", 
+            type: "event",
+            description: "Youth service scheduled for next Sunday",
+            timestamp: new Date().toISOString()
+          }
+        ],
+        monthlyGrowth: 12,
+        engagementScore: 85
+      };
+      
+      res.json(insights);
+    } catch (error) {
+      console.error("Error fetching community insights:", error);
+      res.status(500).json({ message: "Failed to fetch community insights" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
