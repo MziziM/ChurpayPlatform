@@ -868,6 +868,13 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return admin;
   }
+
+  async deleteAdminByEmail(email: string): Promise<boolean> {
+    const result = await db
+      .delete(admins)
+      .where(eq(admins.email, email));
+    return true;
+  }
 }
 
 export const storage = new DatabaseStorage();
