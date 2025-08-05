@@ -58,8 +58,14 @@ export default function AdminSignIn() {
           description: "Please enter your 6-digit authentication code from Google Authenticator.",
         });
       } else {
-        // Store the token for session management
-        localStorage.setItem('adminToken', data.token);
+        // Store admin auth data for session management
+        const adminAuth = {
+          admin: data.admin,
+          token: data.token || 'authenticated', // Session-based auth
+          timestamp: Date.now()
+        };
+        localStorage.setItem('adminAuth', JSON.stringify(adminAuth));
+        
         toast({
           title: "Welcome Back",
           description: "Successfully signed in to ChurPay Admin Dashboard.",
