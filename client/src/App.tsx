@@ -56,16 +56,8 @@ function Router() {
           <WalletDashboard />
         </ProtectedRoute>
       </Route>
-      <Route path="/super-admin">
-        <ProtectedRoute requiredRole={['superadmin']}>
-          <SuperAdminDashboard />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/admin">
-        <ProtectedRoute requiredRole={['superadmin']}>
-          <SuperAdminDashboard />
-        </ProtectedRoute>
-      </Route>
+      <Route path="/super-admin" component={SuperAdminDashboard} />
+      <Route path="/admin" component={SuperAdminDashboard} />
       <Route path="/admin/signup" component={AdminSignUp} />
       <Route path="/admin/signin" component={AdminSignIn} />
       <Route path="/admin/dashboard">
