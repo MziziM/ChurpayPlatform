@@ -39,12 +39,24 @@ export function useSuperAdminProfile() {
 
 export function useSuperAdminAuth() {
   const { data: superAdmin, isLoading, error } = useSuperAdminProfile();
+  const queryClient = useQueryClient();
+
+  const signIn = useMutation({
+    mutationFn: async (data: SuperAdminSigninData) => {
+      const response = await apiRequest('POST', '/api/super-admin/signin', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/profile'] });
+    }
+  });
 
   return {
     superAdmin: superAdmin as SuperAdmin | undefined,
     isLoading,
     isAuthenticated: !!superAdmin && !error,
-    error
+    error,
+    signIn
   };
 }
 
