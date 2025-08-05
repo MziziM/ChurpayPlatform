@@ -24,7 +24,6 @@ const adminSignUpSchema = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
            'Password must contain uppercase, lowercase, number and special character'),
   confirmPassword: z.string(),
-  adminCode: z.string().min(1, 'Admin authorization code is required'),
   acceptTerms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions')
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -49,7 +48,6 @@ export default function AdminSignUp() {
       email: '',
       password: '',
       confirmPassword: '',
-      adminCode: '',
       acceptTerms: false
     }
   });
@@ -150,6 +148,9 @@ export default function AdminSignUp() {
             <CardTitle className="text-xl font-semibold text-gray-900">
               Administrator Registration
             </CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Secure your account with Google Authenticator 2FA
+            </p>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...form}>
@@ -281,28 +282,7 @@ export default function AdminSignUp() {
                   )}
                 />
 
-                {/* Admin Code */}
-                <FormField
-                  control={form.control}
-                  name="adminCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Admin Authorization Code</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input
-                            {...field}
-                            type="password"
-                            className="pl-10 h-11 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
-                            placeholder="Enter admin code"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 {/* Terms Checkbox */}
                 <FormField
