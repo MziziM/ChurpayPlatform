@@ -703,8 +703,40 @@ export const admins = pgTable("admins", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Super Admin storage table.
+// (IMPORTANT) This table is for super admin/owner authentication with platform-wide access.
+export const superAdmins = pgTable("super_admins", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50 }).default('super_admin'),
+  isActive: boolean("is_active").default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  accountLockedUntil: timestamp("account_locked_until"),
+  
+  // Google Authenticator 2FA Integration
+  twoFactorSecret: varchar("two_factor_secret", { length: 255 }), // TOTP secret for Google Authenticator
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  twoFactorBackupCodes: text("two_factor_backup_codes").array(), // Emergency recovery codes
+  ownerCode: varchar("owner_code", { length: 50 }).default("CHURPAY_OWNER_2025"), // Owner authorization
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Zod schemas for admins
 export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Zod schemas for super admins
+export const insertSuperAdminSchema = createInsertSchema(superAdmins).omit({
   id: true,
   passwordHash: true,
   createdAt: true,
@@ -718,6 +750,9 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type InsertAdmin = typeof admins.$inferInsert;
 export type Admin = typeof admins.$inferSelect;
+
+export type InsertSuperAdmin = typeof superAdmins.$inferInsert;
+export type SuperAdmin = typeof superAdmins.$inferSelect;
 
 export type Church = typeof churches.$inferSelect;
 export type InsertChurch = z.infer<typeof insertChurchSchema>;

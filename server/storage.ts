@@ -36,8 +36,11 @@ import {
   type Donation,
   type InsertDonation,
   admins,
+  superAdmins,
   type Admin,
   type InsertAdmin,
+  type SuperAdmin,
+  type InsertSuperAdmin,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
@@ -122,6 +125,14 @@ export interface IStorage {
   updateAdminBackupCodes(adminId: string, backupCodes: string[]): Promise<Admin>;
   enableTwoFactor(adminId: string): Promise<Admin>;
   disableTwoFactor(adminId: string): Promise<Admin>;
+
+  // Super Admin operations (IMPORTANT) - for super admin auth system
+  createSuperAdmin(superAdmin: InsertSuperAdmin): Promise<SuperAdmin>;
+  getSuperAdminByEmail(email: string): Promise<SuperAdmin | undefined>;
+  getSuperAdminById(id: string): Promise<SuperAdmin | undefined>;
+  updateSuperAdminLoginInfo(id: string, loginInfo: Partial<Pick<SuperAdmin, 'lastLoginAt' | 'failedLoginAttempts' | 'accountLockedUntil'>>): Promise<SuperAdmin>;
+  updateSuperAdminTwoFactor(id: string, twoFactorData: Partial<Pick<SuperAdmin, 'twoFactorSecret' | 'twoFactorEnabled' | 'twoFactorBackupCodes'>>): Promise<SuperAdmin>;
+  deleteSuperAdminByEmail(email: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -879,6 +890,69 @@ export class DatabaseStorage implements IStorage {
       .delete(admins)
       .where(eq(admins.email, email));
     return true;
+  }
+
+  // Super Admin operations
+  async createSuperAdmin(superAdminData: InsertSuperAdmin): Promise<SuperAdmin> {
+    const [superAdmin] = await db
+      .insert(superAdmins)
+      .values({
+        ...superAdminData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return superAdmin;
+  }
+
+  async getSuperAdminByEmail(email: string): Promise<SuperAdmin | undefined> {
+    const [superAdmin] = await db
+      .select()
+      .from(superAdmins)
+      .where(eq(superAdmins.email, email));
+    return superAdmin;
+  }
+
+  async getSuperAdminById(id: string): Promise<SuperAdmin | undefined> {
+    const [superAdmin] = await db
+      .select()
+      .from(superAdmins)
+      .where(eq(superAdmins.id, id));
+    return superAdmin;
+  }
+
+  async updateSuperAdminLoginInfo(
+    id: string,
+    loginInfo: Partial<Pick<SuperAdmin, 'lastLoginAt' | 'failedLoginAttempts' | 'accountLockedUntil'>>
+  ): Promise<SuperAdmin> {
+    const [superAdmin] = await db
+      .update(superAdmins)
+      .set({
+        ...loginInfo,
+        updatedAt: new Date(),
+      })
+      .where(eq(superAdmins.id, id))
+      .returning();
+    return superAdmin;
+  }
+
+  async updateSuperAdminTwoFactor(
+    id: string,
+    twoFactorData: Partial<Pick<SuperAdmin, 'twoFactorSecret' | 'twoFactorEnabled' | 'twoFactorBackupCodes'>>
+  ): Promise<SuperAdmin> {
+    const [superAdmin] = await db
+      .update(superAdmins)
+      .set({
+        ...twoFactorData,
+        updatedAt: new Date(),
+      })
+      .where(eq(superAdmins.id, id))
+      .returning();
+    return superAdmin;
+  }
+
+  async deleteSuperAdminByEmail(email: string): Promise<void> {
+    await db.delete(superAdmins).where(eq(superAdmins.email, email));
   }
 }
 

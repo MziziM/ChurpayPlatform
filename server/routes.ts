@@ -709,6 +709,301 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===========================================
+  // SUPER ADMIN AUTHENTICATION SYSTEM ROUTES - 2FA
+  // ===========================================
+
+  // Super Admin Signup with 2FA
+  app.post('/api/super-admin/signup', async (req: any, res: any) => {
+    try {
+      logProtectedPathAccess('/api/super-admin/signup', 'anonymous');
+
+      const { firstName, lastName, email, password, ownerCode, acceptTerms } = req.body;
+
+      // Validate input
+      if (!firstName || !lastName || !email || !password || !ownerCode || !acceptTerms) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      // Verify owner code
+      if (ownerCode !== 'CHURPAY_OWNER_2025') {
+        return res.status(403).json({ message: 'Invalid owner authorization code' });
+      }
+
+      // Check if super admin already exists
+      const existingSuperAdmin = await storage.getSuperAdminByEmail(email);
+      if (existingSuperAdmin) {
+        return res.status(400).json({ message: 'Super admin account already exists with this email' });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcryptjs');
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      // Generate TOTP secret for Google Authenticator
+      const speakeasy = await import('speakeasy');
+      const qrcode = await import('qrcode');
+      
+      const secret = speakeasy.generateSecret({
+        name: `ChurPay Super Admin (${email})`,
+        issuer: 'ChurPay',
+        length: 32
+      });
+
+      // Generate backup codes
+      const backupCodes = Array.from({ length: 8 }, () => 
+        Math.random().toString(36).substr(2, 8).toUpperCase()
+      );
+
+      // Create super admin with 2FA disabled initially
+      const superAdmin = await storage.createSuperAdmin({
+        firstName,
+        lastName,
+        email,
+        passwordHash,
+        role: 'super_admin',
+        ownerCode,
+        twoFactorSecret: secret.base32,
+        twoFactorEnabled: false, // Will be enabled after verification
+        twoFactorBackupCodes: backupCodes,
+        isActive: true
+      });
+
+      // Generate QR code for Google Authenticator
+      const qrCodeUrl = await new Promise<string>((resolve, reject) => {
+        qrcode.toDataURL(secret.otpauth_url!, (err, dataUrl) => {
+          if (err) reject(err);
+          else resolve(dataUrl);
+        });
+      });
+
+      console.log(`🔐 Super Admin signup initiated: ${email} at ${new Date().toISOString()}`);
+
+      res.status(201).json({
+        message: 'Super admin account created. Please complete 2FA setup.',
+        admin: {
+          id: superAdmin.id,
+          firstName: superAdmin.firstName,
+          lastName: superAdmin.lastName,
+          email: superAdmin.email,
+          role: superAdmin.role
+        },
+        twoFactorSetup: {
+          secret: secret.base32,
+          qrCodeUrl,
+          backupCodes
+        }
+      });
+
+    } catch (error) {
+      console.error('Super admin signup error:', error);
+      res.status(500).json({ message: 'Internal server error during super admin signup' });
+    }
+  });
+
+  // Verify super admin 2FA during signup
+  app.post('/api/super-admin/verify-signup-2fa', async (req: any, res: any) => {
+    try {
+      logProtectedPathAccess('/api/super-admin/verify-signup-2fa', 'anonymous');
+
+      const { email, verificationCode } = req.body;
+
+      if (!email || !verificationCode) {
+        return res.status(400).json({ message: 'Email and verification code are required' });
+      }
+
+      const superAdmin = await storage.getSuperAdminByEmail(email);
+      if (!superAdmin || !superAdmin.twoFactorSecret) {
+        return res.status(400).json({ message: 'Invalid super admin account or 2FA not set up' });
+      }
+
+      // Verify TOTP code
+      const speakeasy = await import('speakeasy');
+      const verified = speakeasy.totp.verify({
+        secret: superAdmin.twoFactorSecret,
+        encoding: 'base32',
+        token: verificationCode,
+        window: 2
+      });
+
+      if (!verified) {
+        return res.status(400).json({ message: 'Invalid verification code' });
+      }
+
+      // Enable 2FA for the super admin
+      await storage.updateSuperAdminTwoFactor(superAdmin.id, {
+        twoFactorEnabled: true
+      });
+
+      console.log(`🔐 Super Admin 2FA enabled: ${email} at ${new Date().toISOString()}`);
+
+      res.json({ 
+        message: 'Super admin account verified and activated successfully',
+        admin: {
+          id: superAdmin.id,
+          firstName: superAdmin.firstName,
+          lastName: superAdmin.lastName,
+          email: superAdmin.email,
+          role: superAdmin.role
+        }
+      });
+
+    } catch (error) {
+      console.error('Super admin 2FA verification error:', error);
+      res.status(500).json({ message: 'Internal server error during 2FA verification' });
+    }
+  });
+
+  // Super Admin Sign In with 2FA
+  app.post('/api/super-admin/signin', async (req: any, res: any) => {
+    try {
+      logProtectedPathAccess('/api/super-admin/signin', 'anonymous');
+
+      const { email, password, twoFactorCode, rememberMe } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      const superAdmin = await storage.getSuperAdminByEmail(email);
+      if (!superAdmin || !superAdmin.isActive) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Check account lock
+      if (superAdmin.accountLockedUntil && new Date() < superAdmin.accountLockedUntil) {
+        return res.status(423).json({ 
+          message: 'Account is temporarily locked due to multiple failed attempts' 
+        });
+      }
+
+      // Verify password
+      const bcrypt = await import('bcryptjs');
+      const passwordValid = await bcrypt.compare(password, superAdmin.passwordHash);
+      if (!passwordValid) {
+        // Increment failed attempts
+        await storage.updateSuperAdminLoginInfo(superAdmin.id, {
+          failedLoginAttempts: (superAdmin.failedLoginAttempts || 0) + 1,
+          accountLockedUntil: (superAdmin.failedLoginAttempts || 0) >= 4 ? 
+            new Date(Date.now() + 30 * 60 * 1000) : null // Lock for 30 minutes after 5 attempts
+        });
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Check if 2FA is enabled
+      if (superAdmin.twoFactorEnabled && !twoFactorCode) {
+        return res.json({ 
+          requiresTwoFactor: true,
+          message: 'Two-factor authentication required'
+        });
+      }
+
+      // Verify 2FA if provided
+      if (superAdmin.twoFactorEnabled && twoFactorCode) {
+        const speakeasy = await import('speakeasy');
+        const verified = speakeasy.totp.verify({
+          secret: superAdmin.twoFactorSecret!,
+          encoding: 'base32',
+          token: twoFactorCode,
+          window: 2
+        });
+
+        if (!verified) {
+          return res.status(401).json({ message: 'Invalid authentication code' });
+        }
+      }
+
+      // Reset failed attempts and update last login
+      await storage.updateSuperAdminLoginInfo(superAdmin.id, {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        accountLockedUntil: null
+      });
+
+      // Create session
+      const sessionDuration = rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 7 days or 24 hours
+      req.session.superAdminId = superAdmin.id;
+      req.session.superAdminEmail = superAdmin.email;
+      req.session.cookie.maxAge = sessionDuration;
+
+      console.log(`🔐 Super Admin signed in: ${email} (2FA verified) at ${new Date().toISOString()}`);
+
+      res.json({
+        message: 'Super admin sign in successful',
+        superAdmin: {
+          id: superAdmin.id,
+          firstName: superAdmin.firstName,
+          lastName: superAdmin.lastName,
+          email: superAdmin.email,
+          role: superAdmin.role,
+          lastLoginAt: superAdmin.lastLoginAt,
+          isActive: superAdmin.isActive
+        }
+      });
+
+    } catch (error) {
+      console.error('Super admin signin error:', error);
+      res.status(500).json({ message: 'Internal server error during super admin signin' });
+    }
+  });
+
+  // Super Admin Profile - Protected Route
+  app.get('/api/super-admin/profile', async (req: any, res: any) => {
+    try {
+      logProtectedPathAccess('/api/super-admin/profile', 'anonymous');
+
+      if (!req.session.superAdminId) {
+        return res.status(401).json({ message: 'Super admin authentication required' });
+      }
+
+      const superAdmin = await storage.getSuperAdminById(req.session.superAdminId);
+      if (!superAdmin || !superAdmin.isActive) {
+        req.session.destroy();
+        return res.status(401).json({ message: 'Invalid super admin session' });
+      }
+
+      console.log(`🔐 Super Admin access: ${superAdmin.email} accessing /api/super-admin/profile at ${new Date().toISOString()}`);
+
+      res.json({
+        id: superAdmin.id,
+        firstName: superAdmin.firstName,
+        lastName: superAdmin.lastName,
+        email: superAdmin.email,
+        role: superAdmin.role,
+        lastLoginAt: superAdmin.lastLoginAt,
+        isActive: superAdmin.isActive,
+        twoFactorEnabled: superAdmin.twoFactorEnabled
+      });
+
+    } catch (error) {
+      console.error('Super admin profile error:', error);
+      res.status(500).json({ message: 'Internal server error fetching super admin profile' });
+    }
+  });
+
+  // Super Admin Logout
+  app.post('/api/super-admin/logout', async (req: any, res: any) => {
+    try {
+      logProtectedPathAccess('/api/super-admin/logout', 'anonymous');
+
+      if (req.session.superAdminEmail) {
+        console.log(`🔐 Super Admin logout: ${req.session.superAdminEmail} at ${new Date().toISOString()}`);
+      }
+
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+          return res.status(500).json({ message: 'Error during logout' });
+        }
+        res.json({ message: 'Successfully logged out' });
+      });
+
+    } catch (error) {
+      console.error('Super admin logout error:', error);
+      res.status(500).json({ message: 'Internal server error during logout' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
