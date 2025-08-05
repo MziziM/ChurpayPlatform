@@ -1,11 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema } from "@shared/schema";
+import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
 import { generateTwoFactorSecret, validateTwoFactorToken, removeUsedBackupCode } from "./googleAuth";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -316,25 +318,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 🔒 CODE PROTECTION: Super Admin Dashboard API - Core ChurPay functionality protected
-  // Super Admin Statistics
-  app.get('/api/super-admin/stats', async (req, res) => {
+  // Super Admin Statistics - Real Data Integration
+  app.get('/api/super-admin/stats', requireAdminAuth, async (req, res) => {
     try {
-      // Mock super admin statistics - keep simple values only
-      const stats = {
-        totalRevenue: '2,847,500.00',
-        totalTransactions: 18420,
-        activeChurches: 247,
-        totalChurches: 247,
-        totalMembers: 11800,
-        pendingPayouts: '23,450.00',
-        completedPayouts: '125,680.00',
-        platformFees: '89,325.00',
-        monthlyRevenue: '385,000.00',
-        revenueGrowth: 12.5,
-        transactionGrowth: 8.3,
-        churchGrowth: 15.2, 
-        payoutGrowth: 6.7
-      };
+      const stats = await storage.getPlatformStats();
       res.json(stats);
     } catch (error) {
       console.error("🔒 PROTECTED: Error fetching admin stats:", error);
@@ -342,43 +329,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Super Admin Payouts
-  app.get('/api/super-admin/payouts', async (req, res) => {
+  // Super Admin Payouts - Real Data Integration
+  app.get('/api/super-admin/payouts', requireAdminAuth, async (req, res) => {
     try {
-      // Mock payout requests
-      const payouts = [
-        {
-          id: 'payout-001',
-          churchName: 'Grace Baptist Church',
-          requestedAmount: '15,250.00',
-          availableAmount: '14,691.25',
-          fees: '558.75',
-          status: 'pending',
-          requestDate: '2024-08-01T10:30:00Z',
-          details: 'Monthly payout request for July donations',
-          bankDetails: {
-            accountName: 'Grace Baptist Church',
-            accountNumber: '****7834',
-            bank: 'Standard Bank'
-          }
-        },
-        {
-          id: 'payout-002',
-          churchName: 'New Life Methodist',
-          requestedAmount: '8,900.00',
-          availableAmount: '8,562.90',
-          fees: '337.10',
-          status: 'approved',
-          requestDate: '2024-07-28T14:15:00Z',
-          processedDate: '2024-07-29T09:00:00Z',
-          details: 'Weekly payout for building fund',
-          bankDetails: {
-            accountName: 'New Life Methodist Church',
-            accountNumber: '****2156',
-            bank: 'FNB'
-          }
-        }
-      ];
+      const { status } = req.query;
+      const payouts = await storage.getAllPayouts(status as string);
       res.json(payouts);
     } catch (error) {
       console.error("🔒 PROTECTED: Error fetching payouts:", error);
@@ -386,58 +341,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Process payout (approve/reject)
-  app.post('/api/super-admin/payouts/:id/process', async (req, res) => {
+  // Process payout (approve/reject) - Real Data Integration
+  app.post('/api/super-admin/payouts/:id/process', requireAdminAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const { action, notes } = req.body;
+      const superAdminId = (req.session as any).superAdminId;
       
-      // Mock payout processing
-      const result = {
-        id,
-        action,
-        processedAt: new Date().toISOString(),
-        notes: notes || '',
-        status: action === 'approve' ? 'approved' : 'rejected'
-      };
+      const status = action === 'approve' ? 'approved' : 'rejected';
+      const payout = await storage.updatePayoutStatus(id, status, superAdminId, notes);
       
-      res.json(result);
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: null,
+        action: `payout_${action}`,
+        entity: 'payout',
+        entityId: id,
+        details: { notes, previousStatus: 'pending' },
+      });
+      
+      res.json(payout);
     } catch (error) {
       console.error("🔒 PROTECTED: Error processing payout:", error);
       res.status(500).json({ message: "Failed to process payout request" });
     }
   });
 
-  // Super Admin Churches
-  app.get('/api/super-admin/churches', async (req, res) => {
+  // Super Admin Churches - Real Data Integration
+  app.get('/api/super-admin/churches', requireAdminAuth, async (req, res) => {
     try {
-      // Mock churches data
-      const churches = [
-        {
-          id: 'church-001',
-          name: 'Grace Baptist Church',
-          location: 'Cape Town, Western Cape',
-          memberCount: 450,
-          totalRevenue: '125,400.00',
-          status: 'active',
-          joinDate: '2024-01-15T08:00:00Z',
-          contactPerson: 'Pastor John Smith',
-          email: 'admin@gracebaptist.org.za',
-          phone: '+27 21 555 0123'
-        },
-        {
-          id: 'church-002',
-          name: 'New Life Methodist',
-          location: 'Johannesburg, Gauteng',
-          memberCount: 320,
-          totalRevenue: '89,750.00',
-          status: 'active',
-          joinDate: '2024-02-10T10:30:00Z',
-          contactPerson: 'Pastor Sarah Johnson',
-          email: 'contact@newlifemethodist.co.za',
-          phone: '+27 11 555 0456'
-        }
-      ];
+      const { status, limit = 50, offset = 0 } = req.query;
+      let churches;
+      
+      if (status === 'pending') {
+        churches = await storage.getPendingChurches();
+      } else if (status === 'approved') {
+        churches = await storage.getApprovedChurches();
+      } else {
+        churches = await storage.getAllChurches(Number(limit), Number(offset));
+      }
+      
       res.json(churches);
     } catch (error) {
       console.error("🔒 PROTECTED: Error fetching churches:", error);
@@ -445,33 +388,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Super Admin Members
-  app.get('/api/super-admin/members', async (req, res) => {
+  // Super Admin Analytics
+  app.get('/api/super-admin/analytics', requireAdminAuth, async (req, res) => {
     try {
-      // Mock members data
-      const members = [
-        {
-          id: 'member-001',
-          firstName: 'John',
-          lastName: 'Smith',
-          email: 'john.smith@email.com',
-          churchName: 'Grace Baptist Church',
-          totalDonated: '2,500.00',
-          status: 'active',
-          joinDate: '2024-03-15T10:00:00Z',
-          profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=center'
-        },
-        {
-          id: 'member-002',
-          firstName: 'Sarah',
-          lastName: 'Johnson',
-          email: 'sarah.johnson@email.com',
-          churchName: 'New Life Methodist',
-          totalDonated: '1,850.00',
-          status: 'active',
-          joinDate: '2024-04-20T14:30:00Z'
-        }
-      ];
+      const analytics = await storage.getSuperAdminAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics data" });
+    }
+  });
+
+  // Approve/Reject Church Applications
+  app.post('/api/super-admin/churches/:id/process', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { action, notes } = req.body;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      const status = action === 'approve' ? 'approved' : 'rejected';
+      const church = await storage.updateChurchStatus(id, status, superAdminId);
+      
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: id,
+        action: `church_${action}`,
+        entity: 'church',
+        entityId: id,
+        details: { notes, previousStatus: 'pending' },
+      });
+      
+      res.json(church);
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error processing church:", error);
+      res.status(500).json({ message: "Failed to process church application" });
+    }
+  });
+
+  // Member Management APIs
+  app.get('/api/super-admin/members', requireAdminAuth, async (req, res) => {
+    try {
+      const { limit = 50, offset = 0, churchId } = req.query;
+      
+      let query = db.select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        role: users.role,
+        churchId: users.churchId,
+        isActive: users.isActive,
+        createdAt: users.createdAt
+      }).from(users);
+      
+      if (churchId) {
+        query = query.where(eq(users.churchId, churchId as string));
+      }
+      
+      const members = await query
+        .orderBy(desc(users.createdAt))
+        .limit(Number(limit))
+        .offset(Number(offset));
+      
       res.json(members);
     } catch (error) {
       console.error("🔒 PROTECTED: Error fetching members:", error);
@@ -479,26 +457,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Super Admin Analytics Data
-  app.get('/api/super-admin/analytics', async (req, res) => {
+  // Dashboard Quick Actions and Modals - Super Admin specific endpoints
+  app.get('/api/super-admin/recent-activity', requireAdminAuth, async (req, res) => {
     try {
-      // Mock analytics data - ensure no objects are accidentally rendered
-      const analytics = {
-        revenueChart: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          revenue: [240000, 265000, 290000, 315000, 342000, 385000],
-          fees: [9360, 10340, 11310, 12285, 13338, 15015]
-        },
-        churchGrowth: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          churches: [180, 195, 210, 225, 240, 247],
-          members: [8500, 9200, 9800, 10500, 11200, 11800]
-        }
-      };
-      res.json(analytics);
+      const activities = await storage.getActivityLogs(undefined, undefined, 20);
+      res.json(activities);
     } catch (error) {
-      console.error("🔒 PROTECTED: Error fetching analytics:", error);
-      res.status(500).json({ message: "Failed to fetch analytics data" });
+      console.error("🔒 PROTECTED: Error fetching recent activity:", error);
+      res.status(500).json({ message: "Failed to fetch recent activity" });
+    }
+  });
+
+  // Church Dashboard APIs - Real Data Integration
+  app.get('/api/churches/:churchId/dashboard', async (req, res) => {
+    try {
+      const { churchId } = req.params;
+      const dashboardData = await storage.getChurchDashboardData(churchId);
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error fetching church dashboard data:", error);
+      res.status(500).json({ message: "Failed to fetch church dashboard data" });
+    }
+  });
+
+  // Member Dashboard APIs - Real Data Integration  
+  app.get('/api/members/:userId/dashboard', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const dashboardData = await storage.getMemberDashboardData(userId);
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error fetching member dashboard data:", error);
+      res.status(500).json({ message: "Failed to fetch member dashboard data" });
+    }
+  });
+
+  // Transaction Processing APIs
+  app.post('/api/transactions/create', async (req, res) => {
+    try {
+      const transactionData = insertTransactionSchema.parse(req.body);
+      const transaction = await storage.createTransaction(transactionData);
+      
+      // Log transaction creation
+      await storage.logActivity({
+        userId: transaction.userId,
+        churchId: transaction.churchId,
+        action: 'transaction_created',
+        entity: 'transaction',
+        entityId: transaction.id,
+        details: { 
+          amount: transaction.amount, 
+          type: transaction.donationType,
+          paymentMethod: transaction.paymentMethod 
+        },
+      });
+      
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      res.status(400).json({ message: "Failed to create transaction", error: (error as Error).message });
+    }
+  });
+
+  // Payout Request API (for churches)
+  app.post('/api/payouts/request', async (req, res) => {
+    try {
+      const payoutData = insertPayoutSchema.parse(req.body);
+      const payout = await storage.createPayout(payoutData);
+      
+      await storage.logActivity({
+        userId: payout.requestedBy,
+        churchId: payout.churchId,
+        action: 'payout_requested',
+        entity: 'payout',
+        entityId: payout.id,
+        details: { amount: payout.amount },
+      });
+      
+      res.json(payout);
+    } catch (error) {
+      console.error("Error creating payout request:", error);
+      res.status(400).json({ message: "Failed to create payout request", error: (error as Error).message });
     }
   });
 

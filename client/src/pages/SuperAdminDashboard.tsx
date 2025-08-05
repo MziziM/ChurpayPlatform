@@ -6,12 +6,47 @@ import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, C
 import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export default function SuperAdminDashboard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { superAdmin, isLoading, isAuthenticated } = useSuperAdminAuth();
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Real-time platform statistics
+  const { data: platformStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/super-admin/stats'],
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Real-time analytics data
+  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['/api/super-admin/analytics'],
+    enabled: isAuthenticated,
+    refetchInterval: 60000, // Refresh every minute
+  });
+
+  // Churches data
+  const { data: churchesData, isLoading: churchesLoading } = useQuery({
+    queryKey: ['/api/super-admin/churches'],
+    enabled: isAuthenticated && activeTab === 'churches',
+  });
+
+  // Payouts data
+  const { data: payoutsData, isLoading: payoutsLoading } = useQuery({
+    queryKey: ['/api/super-admin/payouts'],
+    enabled: isAuthenticated && activeTab === 'payouts',
+  });
+
+  // Recent activity
+  const { data: recentActivity, isLoading: activityLoading } = useQuery({
+    queryKey: ['/api/super-admin/recent-activity'],
+    enabled: isAuthenticated,
+    refetchInterval: 15000, // Refresh every 15 seconds
+  });
 
   // Redirect to signin if not authenticated
   useEffect(() => {
@@ -78,11 +113,30 @@ export default function SuperAdminDashboard() {
 
       {/* Navigation */}
       <div className="flex items-center space-x-6 px-6 mb-8">
-        <div className="text-white border-b-2 border-purple-400 pb-2">Dashboard</div>
-        <div className="text-gray-400 hover:text-white cursor-pointer">Churches</div>
-        <div className="text-gray-400 hover:text-white cursor-pointer">Members</div>
-        <div className="text-gray-400 hover:text-white cursor-pointer">Reports</div>
-        <div className="text-gray-400 hover:text-white cursor-pointer">Settings</div>
+        <div 
+          className={`cursor-pointer pb-2 ${activeTab === 'dashboard' ? 'text-white border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          Dashboard
+        </div>
+        <div 
+          className={`cursor-pointer pb-2 ${activeTab === 'churches' ? 'text-white border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('churches')}
+        >
+          Churches
+        </div>
+        <div 
+          className={`cursor-pointer pb-2 ${activeTab === 'payouts' ? 'text-white border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('payouts')}
+        >
+          Payouts
+        </div>
+        <div 
+          className={`cursor-pointer pb-2 ${activeTab === 'analytics' ? 'text-white border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          Analytics
+        </div>
         <div className="ml-auto">
           <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
             <LogOut className="h-4 w-4 mr-2" />
@@ -93,40 +147,195 @@ export default function SuperAdminDashboard() {
 
       {/* Main Content */}
       <div className="px-6 space-y-6">
-        {/* Action Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Give Now Card */}
-          <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Shield className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Admin Panel</h3>
-            <p className="text-sm opacity-90 mb-4">Make a donation</p>
-            <button className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium transition-colors">
-              Open Panel
-            </button>
-          </div>
+        {activeTab === 'dashboard' && (
+          <>
+            {/* Real-Time Platform Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Total Revenue */}
+              <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-green-200" />
+                </div>
+                <h3 className="text-sm font-medium mb-1 opacity-90">Total Revenue</h3>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? '...' : `R ${platformStats?.totalRevenue || '0.00'}`}
+                </p>
+                <p className="text-xs opacity-75 mt-1">
+                  {statsLoading ? '...' : `${platformStats?.revenueGrowth || 0}% growth`}
+                </p>
+              </div>
 
-          {/* My Wallet Card */}
-          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-blue-400" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">System Stats</h3>
-            <p className="text-xl font-bold text-gray-300">R 0</p>
-            <p className="text-xs text-gray-400">System uptime</p>
-          </div>
+              {/* Active Churches */}
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-blue-200" />
+                </div>
+                <h3 className="text-sm font-medium mb-1 opacity-90">Active Churches</h3>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? '...' : (platformStats?.activeChurches || 0)}
+                </p>
+                <p className="text-xs opacity-75 mt-1">
+                  {statsLoading ? '...' : `${platformStats?.churchGrowth || 0}% growth`}
+                </p>
+              </div>
 
-          {/* Tithe Card */}
-          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-green-500/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-green-400" />
+              {/* Total Members */}
+              <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-purple-200" />
+                </div>
+                <h3 className="text-sm font-medium mb-1 opacity-90">Total Members</h3>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? '...' : (platformStats?.totalMembers || 0).toLocaleString()}
+                </p>
+                <p className="text-xs opacity-75 mt-1">Active users</p>
+              </div>
+
+              {/* Transactions */}
+              <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-2xl p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <BarChart3 className="w-6 h-6" />
+                  </div>
+                  <TrendingUp className="w-5 h-5 text-orange-200" />
+                </div>
+                <h3 className="text-sm font-medium mb-1 opacity-90">Transactions</h3>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? '...' : (platformStats?.totalTransactions || 0).toLocaleString()}
+                </p>
+                <p className="text-xs opacity-75 mt-1">
+                  {statsLoading ? '...' : `${platformStats?.transactionGrowth || 0}% growth`}
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Churches</h3>
-            <p className="text-xl font-bold text-gray-300">Support your church</p>
-            <p className="text-xs text-gray-400">Active churches</p>
+
+            {/* Recent Activity Feed */}
+            <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Recent Platform Activity</h3>
+              <div className="space-y-3">
+                {activityLoading ? (
+                  <div className="text-gray-400">Loading recent activity...</div>
+                ) : recentActivity?.length > 0 ? (
+                  recentActivity.slice(0, 5).map((activity: any) => (
+                    <div key={activity.id} className="flex items-center justify-between py-3 border-b border-gray-700/50 last:border-b-0">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        <div>
+                          <p className="text-white text-sm">{activity.description || activity.action}</p>
+                          <p className="text-gray-400 text-xs">{activity.timestamp || activity.createdAt}</p>
+                        </div>
+                      </div>
+                      <div className="text-green-400 text-sm font-medium">
+                        {activity.amount && `R ${activity.amount}`}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-400">No recent activity</div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'churches' && (
+          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Church Management</h3>
+            <div className="space-y-4">
+              {churchesLoading ? (
+                <div className="text-gray-400">Loading churches...</div>
+              ) : churchesData?.length > 0 ? (
+                churchesData.map((church: any) => (
+                  <div key={church.id} className="bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">{church.name}</h4>
+                      <p className="text-gray-400 text-sm">{church.location || 'Location not specified'}</p>
+                      <p className="text-gray-400 text-xs">Members: {church.memberCount || 0}</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        church.status === 'approved' ? 'bg-green-500/20 text-green-400' : 
+                        church.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {church.status}
+                      </span>
+                      {church.status === 'pending' && (
+                        <div className="flex space-x-2">
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
+                          <Button size="sm" variant="outline" className="border-red-600 text-red-400 hover:bg-red-600">Reject</Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400">No churches found</div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'payouts' && (
+          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Payout Requests</h3>
+            <div className="space-y-4">
+              {payoutsLoading ? (
+                <div className="text-gray-400">Loading payouts...</div>
+              ) : payoutsData?.length > 0 ? (
+                payoutsData.map((payout: any) => (
+                  <div key={payout.id} className="bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">{payout.churchName || 'Church Name'}</h4>
+                      <p className="text-gray-400 text-sm">Amount: R {payout.amount}</p>
+                      <p className="text-gray-400 text-xs">Requested: {payout.requestDate || payout.createdAt}</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        payout.status === 'completed' ? 'bg-green-500/20 text-green-400' : 
+                        payout.status === 'requested' || payout.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {payout.status}
+                      </span>
+                      {(payout.status === 'requested' || payout.status === 'pending') && (
+                        <div className="flex space-x-2">
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
+                          <Button size="sm" variant="outline" className="border-red-600 text-red-400 hover:bg-red-600">Reject</Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400">No payout requests</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Platform Analytics</h3>
+            <div className="text-gray-400">
+              {analyticsLoading ? 'Loading analytics...' : 'Analytics charts and data visualization coming soon...'}
+            </div>
+            {analyticsData && (
+              <pre className="text-xs text-gray-500 mt-4 overflow-auto">
+                {JSON.stringify(analyticsData, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
 
         {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
