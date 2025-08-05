@@ -178,29 +178,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Calculate real statistics
       const thisYearTransactions = userTransactions.filter(t => 
-        new Date(t.createdAt).getFullYear() === currentYear
+        t.createdAt && new Date(t.createdAt).getFullYear() === currentYear
       );
       
       const thisMonthTransactions = userTransactions.filter(t => {
+        if (!t.createdAt) return false;
         const txDate = new Date(t.createdAt);
         return txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth;
       });
 
-      const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      const thisYearGiven = thisYearTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-      const thisMonthGiven = thisMonthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      const totalGiven = userTransactions.reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
+      const thisYearGiven = thisYearTransactions.reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
+      const thisMonthGiven = thisMonthTransactions.reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
       
-      // Separate tithes and donations
+      // Separate tithes and donations using donationType field
       const thisMonthTithes = thisMonthTransactions
-        .filter(t => t.transactionType === 'tithe')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .filter(t => t.donationType === 'tithe')
+        .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
       
       const thisMonthDonations = thisMonthTransactions
-        .filter(t => t.transactionType === 'donation')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .filter(t => t.donationType === 'general' || t.donationType === 'offering')
+        .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
 
       const averageGift = userTransactions.length > 0 ? (totalGiven / userTransactions.length) : 0;
-      const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown';
 
       // Calculate goal progress (assuming R 10,000 annual goal)
       const annualGoal = 10000;
@@ -241,14 +242,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Debug session endpoint for Super Admin
   app.get('/api/super-admin/debug-session', async (req, res) => {
     console.log('🔍 Session Debug:', {
-      superAdminId: req.session?.superAdminId,
-      adminId: req.session?.adminId,
+      superAdminId: (req.session as any)?.superAdminId,
+      adminId: (req.session as any)?.adminId,
       sessionID: req.sessionID,
       session: req.session
     });
     res.json({
-      superAdminId: req.session?.superAdminId,
-      adminId: req.session?.adminId,
+      superAdminId: (req.session as any)?.superAdminId,
+      adminId: (req.session as any)?.adminId,
       sessionID: req.sessionID,
       hasSession: !!req.session
     });
@@ -259,8 +260,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const superAdmin = await storage.getSuperAdminByEmail('mzizi.mzwakhe@churpay.com');
       if (superAdmin && superAdmin.isActive) {
-        req.session.superAdminId = superAdmin.id;
-        req.session.superAdminEmail = superAdmin.email;
+        (req.session as any).superAdminId = superAdmin.id;
+        (req.session as any).superAdminEmail = superAdmin.email;
         req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 24 hours
         
         console.log(`🔍 TEST: Super Admin session created for ${superAdmin.email}`);
@@ -283,8 +284,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', async (req: any, res) => {
     try {
       // Check super admin session first
-      if (req.session.superAdminId) {
-        const superAdmin = await storage.getSuperAdminById(req.session.superAdminId);
+      if ((req.session as any).superAdminId) {
+        const superAdmin = await storage.getSuperAdminById((req.session as any).superAdminId);
         if (superAdmin && superAdmin.isActive) {
           return res.json({
             id: superAdmin.id,
@@ -540,25 +541,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { limit = 50, offset = 0, churchId } = req.query;
       
-      let query = db.select({
-        id: users.id,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        email: users.email,
-        role: users.role,
-        churchId: users.churchId,
-        isActive: users.isActive,
-        createdAt: users.createdAt
-      }).from(users);
+      let members;
       
       if (churchId) {
-        query = query.where(eq(users.churchId, churchId as string));
-      }
-      
-      const members = await query
+        members = await db.select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+          churchId: users.churchId,
+          isActive: users.isActive,
+          createdAt: users.createdAt
+        }).from(users)
+        .where(eq(users.churchId, churchId as string))
         .orderBy(desc(users.createdAt))
         .limit(Number(limit))
         .offset(Number(offset));
+      } else {
+        members = await db.select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+          churchId: users.churchId,
+          isActive: users.isActive,
+          createdAt: users.createdAt
+        }).from(users)
+        .orderBy(desc(users.createdAt))
+        .limit(Number(limit))
+        .offset(Number(offset));
+      }
       
       res.json(members);
     } catch (error) {
