@@ -206,6 +206,10 @@ export class DatabaseStorage implements IStorage {
     return church;
   }
 
+  async deleteChurch(id: string): Promise<void> {
+    await db.delete(churches).where(eq(churches.id, id));
+  }
+
   async getAllChurches(limit = 50, offset = 0): Promise<Church[]> {
     return await db
       .select()
@@ -1266,9 +1270,7 @@ export class DatabaseStorage implements IStorage {
     return achievements;
   }
 
-  async deleteSuperAdminByEmail_OLD(email: string): Promise<void> {
-    await db.delete(superAdmins).where(eq(superAdmins.email, email));
-  }
+
 }
 
 export const storage = new DatabaseStorage();

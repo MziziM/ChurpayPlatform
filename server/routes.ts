@@ -536,6 +536,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete Church
+  app.delete('/api/super-admin/churches/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      // Get church details before deletion for logging
+      const church = await storage.getChurch(id);
+      if (!church) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      // Delete the church
+      await storage.deleteChurch(id);
+      
+      // Log the deletion
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: null, // Church no longer exists
+        action: 'church_deleted',
+        entity: 'church',
+        entityId: id,
+        details: { 
+          churchName: church.name,
+          deletedBy: superAdminId,
+          memberCount: church.memberCount 
+        },
+      });
+      
+      res.json({ message: "Church deleted successfully", churchName: church.name });
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error deleting church:", error);
+      res.status(500).json({ message: "Failed to delete church" });
+    }
+  });
+
   // Member Management APIs
   app.get('/api/super-admin/members', requireAdminAuth, async (req, res) => {
     try {
