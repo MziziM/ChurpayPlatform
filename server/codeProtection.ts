@@ -195,45 +195,49 @@ export function logProtectedFileAccess(filePath: string, action: string): void {
 }
 
 /**
- * Admin authentication middleware - requires valid admin session
+ * Admin authentication middleware - Updated for Super Admin session support
  */
 export async function requireAdminAuth(req: any, res: any, next: any): Promise<void> {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Support both super admin and regular admin sessions
+    const superAdminId = req.session?.superAdminId;
+    const adminId = req.session?.adminId;
+    
+    console.log(`🔍 Auth Check - SuperAdminId: ${superAdminId}, AdminId: ${adminId}, Session: ${!!req.session}`);
+    
+    if (!superAdminId && !adminId) {
       return res.status(401).json({ 
         error: "Admin authentication required",
-        message: "Valid admin token must be provided"
-      });
-    }
-    
-    const token = authHeader.substring(7);
-    const decoded = Buffer.from(token, 'base64').toString('utf-8');
-    const [adminId, timestamp] = decoded.split(':');
-    
-    // Check token age (24 hours max)
-    const tokenAge = Date.now() - parseInt(timestamp);
-    if (tokenAge > 24 * 60 * 60 * 1000) {
-      return res.status(401).json({ 
-        error: "Admin session expired",
-        message: "Please sign in again"
+        message: "Access denied. Super admin login required."
       });
     }
     
     // Verify admin exists and is active
     const { DatabaseStorage } = await import('./storage');
     const storage = new DatabaseStorage();
-    const admin = await storage.getAdminById(adminId);
     
-    if (!admin || !admin.isActive) {
-      return res.status(401).json({ 
-        error: "Invalid admin session",
-        message: "Admin account not found or inactive"
-      });
+    let admin;
+    if (superAdminId) {
+      // Handle Super Admin authentication
+      admin = await storage.getSuperAdminById(superAdminId);
+      if (!admin || !admin.isActive) {
+        return res.status(401).json({ 
+          error: "Invalid super admin session",
+          message: "Super admin account not found or inactive"
+        });
+      }
+      console.log(`🔐 Super Admin access: ${admin.email} accessing ${req.path} at ${new Date().toISOString()}`);
+    } else if (adminId) {
+      // Handle regular Admin authentication
+      admin = await storage.getAdminById(adminId);
+      if (!admin || !admin.isActive) {
+        return res.status(401).json({ 
+          error: "Invalid admin session",
+          message: "Admin account not found or inactive"
+        });
+      }
+      console.log(`🔐 Admin access: ${admin.email} accessing ${req.path} at ${new Date().toISOString()}`);
     }
-    
-    // Log admin access for security monitoring
-    console.log(`🔐 Admin access: ${admin.email} accessing ${req.path} at ${new Date().toISOString()}`);
     
     req.admin = admin;
     next();
@@ -241,7 +245,7 @@ export async function requireAdminAuth(req: any, res: any, next: any): Promise<v
     console.error('Admin authentication error:', error);
     return res.status(401).json({ 
       error: "Invalid admin authentication",
-      message: "Token validation failed"
+      message: "Authentication validation failed"
     });
   }
 }
