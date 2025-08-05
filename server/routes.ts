@@ -489,6 +489,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Temporary endpoint to delete admin account (for development)
+  app.delete('/api/admin/delete/:email', async (req, res) => {
+    try {
+      const { email } = req.params;
+      await storage.deleteAdminByEmail(email);
+      console.log(`🗑️ Deleted admin account: ${email} for fresh signup`);
+      res.json({ message: "Admin account deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting admin:", error);
+      res.status(500).json({ message: "Failed to delete admin account" });
+    }
+  });
+
   // Verify 2FA code during signup (no auth required)
   app.post('/api/admin/verify-signup-2fa', async (req, res) => {
     try {
