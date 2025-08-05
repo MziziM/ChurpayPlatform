@@ -87,8 +87,44 @@ export default function PublicChurchRegistration() {
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
     defaultValues: {
+      // Church Information
+      name: "",
+      denomination: "",
+      registrationNumber: "",
+      taxNumber: "",
+      yearEstablished: "",
+      
+      // Contact Information
+      contactEmail: "",
+      contactPhone: "",
+      alternativePhone: "",
+      website: "",
+      
+      // Address Information
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
       country: "South Africa",
+      
+      // Administrative Contact
+      adminFirstName: "",
+      adminLastName: "",
+      adminEmail: "",
+      adminPhone: "",
+      adminPosition: "",
+      
+      // Church Details
       memberCount: 1,
+      description: "",
+      
+      // Banking Information
+      bankName: "",
+      accountHolder: "",
+      accountNumber: "",
+      branchCode: "",
+      
+      // Documents (required for verification)
       hasNpoRegistration: false,
       hasTaxClearance: false,
       hasBankConfirmation: false,
@@ -367,6 +403,392 @@ export default function PublicChurchRegistration() {
                         </FormItem>
                       )}
                     />
+                  </div>
+                )}
+
+                {/* Step 2: Contact & Address */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="contactEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contact Email *</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="info@yourchurch.org" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="contactPhone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contact Phone *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+27 11 123 4567" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="alternativePhone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Alternative Phone (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+27 82 123 4567" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Website (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://yourchurch.org" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Street Address *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="123 Church Street" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Cape Town" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="province"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Province *</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select province" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="western_cape">Western Cape</SelectItem>
+                                <SelectItem value="gauteng">Gauteng</SelectItem>
+                                <SelectItem value="kwazulu_natal">KwaZulu-Natal</SelectItem>
+                                <SelectItem value="eastern_cape">Eastern Cape</SelectItem>
+                                <SelectItem value="limpopo">Limpopo</SelectItem>
+                                <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+                                <SelectItem value="north_west">North West</SelectItem>
+                                <SelectItem value="northern_cape">Northern Cape</SelectItem>
+                                <SelectItem value="free_state">Free State</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="postalCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Postal Code *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="8001" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Administrative Details */}
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="adminFirstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Admin First Name *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="John" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="adminLastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Admin Last Name *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Smith" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="adminEmail"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Admin Email *</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="admin@yourchurch.org" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="adminPhone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Admin Phone *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+27 82 123 4567" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="adminPosition"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Position/Title *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Pastor, Administrator, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: Banking Information */}
+                {currentStep === 4 && (
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="bankName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bank Name *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your bank" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="standard_bank">Standard Bank</SelectItem>
+                              <SelectItem value="fnb">FNB</SelectItem>
+                              <SelectItem value="absa">ABSA</SelectItem>
+                              <SelectItem value="nedbank">Nedbank</SelectItem>
+                              <SelectItem value="capitec">Capitec Bank</SelectItem>
+                              <SelectItem value="investec">Investec</SelectItem>
+                              <SelectItem value="discovery_bank">Discovery Bank</SelectItem>
+                              <SelectItem value="african_bank">African Bank</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="accountHolder"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Account Holder Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Church or organization name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="accountNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Account Number *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Account number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="branchCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Branch Code *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Branch code" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 5: Document Verification */}
+                {currentStep === 5 && (
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-blue-800 text-sm">
+                        Please confirm that you have the following required documents ready for upload and verification:
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="hasNpoRegistration"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={field.value}
+                                onChange={field.onChange}
+                                className="mt-1"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">
+                                NPO/PBO Registration Certificate *
+                              </FormLabel>
+                              <p className="text-sm text-gray-600">
+                                I confirm that I have the NPO/PBO registration certificate ready for verification.
+                              </p>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="hasTaxClearance"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={field.value}
+                                onChange={field.onChange}
+                                className="mt-1"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">
+                                Tax Clearance Certificate *
+                              </FormLabel>
+                              <p className="text-sm text-gray-600">
+                                I confirm that I have a valid tax clearance certificate ready for verification.
+                              </p>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="hasBankConfirmation"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                checked={field.value}
+                                onChange={field.onChange}
+                                className="mt-1"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">
+                                Bank Confirmation Letter *
+                              </FormLabel>
+                              <p className="text-sm text-gray-600">
+                                I confirm that I have an official bank confirmation letter ready for verification.
+                              </p>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                 )}
 
