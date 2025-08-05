@@ -92,34 +92,34 @@ export default function SuperAdminDashboard() {
         {/* Action Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Give Now Card */}
-          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Shield className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Admin Panel</h3>
-            <p className="text-sm opacity-90 mb-4">Manage platform operations</p>
-            <button className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+            <p className="text-sm opacity-90 mb-4">Make a donation</p>
+            <button className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium transition-colors">
               Open Panel
             </button>
           </div>
 
           {/* My Wallet Card */}
-          <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-blue-500/10 rounded-full mx-auto mb-4 flex items-center justify-center">
               <BarChart3 className="w-6 h-6 text-blue-400" />
             </div>
             <h3 className="text-lg font-semibold mb-2">System Stats</h3>
-            <p className="text-xl font-bold text-blue-400">99.9%</p>
+            <p className="text-xl font-bold text-gray-300">R 0</p>
             <p className="text-xs text-gray-400">System uptime</p>
           </div>
 
           {/* Tithe Card */}
-          <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 text-white text-center">
-            <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6 text-white text-center">
+            <div className="w-12 h-12 bg-green-500/10 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Building2 className="w-6 h-6 text-green-400" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Churches</h3>
-            <p className="text-xl font-bold text-green-400">247</p>
+            <p className="text-xl font-bold text-gray-300">Support your church</p>
             <p className="text-xs text-gray-400">Active churches</p>
           </div>
         </div>
@@ -127,59 +127,59 @@ export default function SuperAdminDashboard() {
         {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* This Month Card */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
             <div className="flex items-center mb-4">
-              <TrendingUp className="w-5 h-5 mr-2" />
+              <TrendingUp className="w-4 h-4 mr-2" />
               <h3 className="text-lg font-semibold">This Month</h3>
             </div>
-            <p className="text-sm opacity-90 mb-6">Platform activity summary</p>
+            <p className="text-sm opacity-90 mb-6">Your giving summary</p>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Total Revenue</span>
+                  <span className="text-sm">Total Given</span>
                 </div>
-                <span className="font-semibold">R 2,400,000</span>
+                <span className="font-semibold">R 2,400</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Transactions</span>
+                  <span className="text-sm">Tithes</span>
                 </div>
-                <span className="font-semibold">R 180,000</span>
+                <span className="font-semibold">R 1,800</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Platform Fees</span>
+                  <span className="text-sm">Donations</span>
                 </div>
-                <span className="font-semibold">R 60,000</span>
+                <span className="font-semibold">R 600</span>
               </div>
             </div>
           </div>
 
           {/* Wallet Balance Card */}
-          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Platform Overview</h3>
+              <h3 className="text-lg font-semibold">Wallet Balance</h3>
               <button className="text-sm opacity-75 hover:opacity-100">Manage →</button>
             </div>
-            <p className="text-sm opacity-90 mb-6">Your administrative control</p>
+            <p className="text-sm opacity-90 mb-6">Your available funds</p>
             
             <div className="text-center">
-              <p className="text-4xl font-bold mb-2">247</p>
-              <p className="text-sm opacity-75 mb-4">Active churches</p>
+              <p className="text-4xl font-bold mb-2">R 0</p>
+              <p className="text-sm opacity-75 mb-4">Available balance</p>
               
               <div className="flex items-center justify-center text-sm">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
                 <span>Active & Secured</span>
               </div>
               
-              <button className="mt-4 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-sm font-medium transition-colors w-full">
-                + Manage Platform
+              <button className="mt-4 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium transition-colors w-full">
+                + Add Funds
               </button>
             </div>
           </div>
