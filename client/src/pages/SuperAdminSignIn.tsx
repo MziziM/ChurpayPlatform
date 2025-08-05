@@ -13,6 +13,7 @@ import { useLocation } from 'wouter';
 import { useSuperAdminAuth } from '@/hooks/useSuperAdminAuth';
 import { z } from 'zod';
 import { Eye, EyeOff, Shield, Lock, Mail, LogIn, ArrowRight, Crown } from 'lucide-react';
+import churpayLogo from '@assets/Churpay Logo tuesd_1754387201756.png';
 
 const superAdminSignInSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -96,10 +97,10 @@ export default function SuperAdminSignIn() {
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl mb-4">
-            <Crown className="h-8 w-8 text-yellow-400" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={churpayLogo} alt="ChurPay" className="h-16 w-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">ChurPay Owner</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Owner Access</h1>
           <p className="text-gray-600">Sign in to your super admin account</p>
         </div>
 
