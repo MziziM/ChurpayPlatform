@@ -54,8 +54,8 @@ export default function ProfessionalMemberDashboard() {
     queryKey: ['/api/churches']
   });
 
-  // User stats query
-  const { data: userStats } = useQuery<{
+  // User stats query - forcing fresh data (no cache)
+  const { data: userStats, isLoading: statsLoading } = useQuery<{
     memberSince: string;
     totalGiven: string;
     thisYearGiven: string;
@@ -67,7 +67,11 @@ export default function ProfessionalMemberDashboard() {
     transactionCount: number;
     averageGift: string;
   }>({
-    queryKey: ['/api/user/stats']
+    queryKey: ['/api/user/stats', 'fresh-data-v3'], // Force cache refresh
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0 // Don't cache the response
   });
 
   // Recent activity query
@@ -285,21 +289,27 @@ export default function ProfessionalMemberDashboard() {
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Total Given</span>
                       </div>
-                      <span className="font-bold text-xl text-gray-900">R {userStats?.thisMonthGiven || '0.00'}</span>
+                      <span className="font-bold text-xl text-gray-900">
+                        {statsLoading ? 'Loading...' : `R ${userStats?.thisMonthGiven || '0.00'}`}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Tithes</span>
                       </div>
-                      <span className="font-bold text-lg text-gray-900">R {userStats?.thisMonthTithes || '0.00'}</span>
+                      <span className="font-bold text-lg text-gray-900">
+                        {statsLoading ? 'Loading...' : `R ${userStats?.thisMonthTithes || '0.00'}`}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                         <span className="text-gray-700 font-medium">Donations</span>
                       </div>
-                      <span className="font-bold text-lg text-gray-900">R {userStats?.thisMonthDonations || '0.00'}</span>
+                      <span className="font-bold text-lg text-gray-900">
+                        {statsLoading ? 'Loading...' : `R ${userStats?.thisMonthDonations || '0.00'}`}
+                      </span>
                     </div>
                   </div>
                 </CardContent>

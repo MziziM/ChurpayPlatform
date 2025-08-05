@@ -143,10 +143,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/user/stats', async (req: any, res) => {
     try {
       const userId = req.session?.userId;
+      console.log(`🔍 User Stats Request - UserId: ${userId}, Session: ${!!req.session}`);
       
       if (!userId) {
         // Return zero values for unauthenticated users - no mock data
-        return res.json({
+        const notLoggedInResponse = {
           memberSince: 'Not logged in',
           totalGiven: '0.00',
           thisYearGiven: '0.00',
@@ -159,7 +160,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           averageGift: '0.00',
           recentAchievements: [],
           upcomingEvents: []
-        });
+        };
+        console.log('📊 Returning not-logged-in stats:', notLoggedInResponse);
+        return res.json(notLoggedInResponse);
       }
 
       // Get real user data from database
@@ -222,6 +225,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]
       };
 
+      console.log(`📊 Returning real stats for user ${userId}:`, {
+        thisMonthGiven: realStats.thisMonthGiven,
+        thisMonthTithes: realStats.thisMonthTithes,
+        thisMonthDonations: realStats.thisMonthDonations,
+        transactionCount: realStats.transactionCount
+      });
       res.json(realStats);
     } catch (error) {
       console.error('Error fetching user stats:', error);
