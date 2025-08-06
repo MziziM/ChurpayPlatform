@@ -35,15 +35,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public registration endpoints (NO AUTHENTICATION REQUIRED)
   app.post('/api/churches/register', async (req, res) => {
     try {
-      const validatedData = insertChurchSchema.parse(req.body);
+      console.log('📋 Church registration data received:', req.body);
       
-      const churchData = {
+      // Extract document URLs if provided
+      const { logo, cipcDocument, bankConfirmationLetter, taxClearanceCertificate, ...churchData } = req.body;
+      
+      const validatedData = insertChurchSchema.parse(churchData);
+      
+      // Create church data including document URLs
+      const completeChurchData = {
         ...validatedData,
         status: 'pending' as const,
         adminUserId: 'pending',
+        logoUrl: logo || null,
+        cipcDocument: cipcDocument || null,
+        bankConfirmationLetter: bankConfirmationLetter || null,
+        taxClearanceCertificate: taxClearanceCertificate || null,
       };
 
-      const church = await storage.createChurch(churchData);
+      console.log('📄 Including documents in church registration:', {
+        logoUrl: completeChurchData.logoUrl,
+        cipcDocument: completeChurchData.cipcDocument,
+        bankConfirmationLetter: completeChurchData.bankConfirmationLetter,
+        taxClearanceCertificate: completeChurchData.taxClearanceCertificate
+      });
+
+      const church = await storage.createChurch(completeChurchData);
       
       await storage.logActivity({
         userId: null,
@@ -51,9 +68,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: 'church_registered',
         entity: 'church',
         entityId: church.id,
-        details: { churchName: church.name, status: 'pending_approval' },
+        details: { 
+          churchName: church.name, 
+          status: 'pending_approval',
+          documentsUploaded: {
+            logo: !!logo,
+            cipcDocument: !!cipcDocument,
+            bankConfirmationLetter: !!bankConfirmationLetter,
+            taxClearanceCertificate: !!taxClearanceCertificate
+          }
+        },
       });
 
+      console.log('✅ Church registered successfully with documents:', church.id);
       res.json(church);
     } catch (error: any) {
       console.error("Error creating church:", error);

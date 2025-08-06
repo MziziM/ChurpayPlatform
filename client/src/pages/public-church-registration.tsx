@@ -205,8 +205,18 @@ export default function PublicChurchRegistration() {
       // Include uploaded document URLs in the submission
       const submissionData = {
         ...data,
-        ...uploadedDocuments
+        logo: uploadedDocuments.logo,
+        cipcDocument: uploadedDocuments.cipcDocument,
+        bankConfirmationLetter: uploadedDocuments.bankConfirmationLetter,
+        taxClearanceCertificate: uploadedDocuments.taxClearanceCertificate
       };
+      
+      console.log('📄 Submitting church registration with documents:', {
+        logo: submissionData.logo,
+        cipcDocument: submissionData.cipcDocument,
+        bankConfirmationLetter: submissionData.bankConfirmationLetter,
+        taxClearanceCertificate: submissionData.taxClearanceCertificate
+      });
       
       const response = await fetch("/api/churches/register", {
         method: "POST",
@@ -519,13 +529,13 @@ export default function PublicChurchRegistration() {
                           maxNumberOfFiles={1}
                           maxFileSize={5242880} // 5MB
                           onGetUploadParameters={getUploadParameters}
-                          onComplete={(result) => handleFileUpload("logoUrl", result)}
+                          onComplete={(result) => handleFileUpload("logo", result)}
                           buttonClassName="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
                         >
                           <Image className="h-4 w-4 mr-2" />
                           Upload Logo
                         </ObjectUploader>
-                        {uploadedDocuments.logoUrl && (
+                        {uploadedDocuments.logo && (
                           <div className="flex items-center text-green-600">
                             <CheckCircle2 className="h-4 w-4 mr-1" />
                             <span className="text-sm">Logo uploaded</span>
