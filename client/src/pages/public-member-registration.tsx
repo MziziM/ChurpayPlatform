@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { z } from "zod";
@@ -73,42 +74,18 @@ const memberRegistrationSchema = z.object({
 
 type MemberRegistrationForm = z.infer<typeof memberRegistrationSchema>;
 
-// Static church data for public registration (connected to API data)
-const sampleChurches = [
-  {
-    id: "1",
-    name: "Grace Baptist Church",
-    denomination: "Baptist",
-    city: "Cape Town",
-    province: "Western Cape",
-    contactEmail: "info@gracebaptist.org.za",
-    contactPhone: "+27 21 123 4567",
-    memberCount: 450,
-    status: "approved"
-  },
-  {
-    id: "2",
-    name: "New Life Methodist Church", 
-    denomination: "Methodist",
-    city: "Johannesburg",
-    province: "Gauteng",
-    contactEmail: "connect@newlifemethodist.co.za",
-    contactPhone: "+27 11 987 6543",
-    memberCount: 320,
-    status: "approved"
-  },
-  {
-    id: "3",
-    name: "Faith Assembly Church",
-    denomination: "Assembly", 
-    city: "Durban",
-    province: "KwaZulu-Natal",
-    contactEmail: "welcome@faithassembly.org.za",
-    contactPhone: "+27 31 456 7890",
-    memberCount: 275,
-    status: "approved"
-  }
-];
+// Church interface for type safety
+interface Church {
+  id: string;
+  name: string;
+  denomination: string;
+  city: string;
+  province: string;
+  contactEmail: string;
+  contactPhone: string;
+  memberCount: number;
+  status: string;
+}
 
 const membershipSteps = [
   { id: 1, title: "Church Selection", icon: Church },
@@ -149,12 +126,26 @@ const howDidYouHearOptions = [
 export default function PublicMemberRegistration() {
   const [currentStep, setCurrentStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedChurch, setSelectedChurch] = useState<typeof sampleChurches[0] | null>(null);
+  const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
+  
+  // Fetch real churches from the API
+  const { data: churches = [], isLoading: loadingChurches } = useQuery({
+    queryKey: ["/api/churches/approved"],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Filter churches based on search query
+  const filteredChurches = churches.filter((church: Church) =>
+    church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    church.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    church.denomination.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    church.province.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const form = useForm<MemberRegistrationForm>({
     resolver: zodResolver(memberRegistrationSchema),
@@ -230,17 +221,13 @@ export default function PublicMemberRegistration() {
     }
   };
 
-  const filteredChurches = sampleChurches.filter(church =>
-    church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    church.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (church.denomination && church.denomination.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+
 
   const onSubmit = (data: MemberRegistrationForm) => {
     submitRegistration(data);
   };
 
-  const handleChurchSelect = (church: typeof sampleChurches[0]) => {
+  const handleChurchSelect = (church: Church) => {
     setSelectedChurch(church);
     form.setValue("churchId", church.id);
     
@@ -411,8 +398,14 @@ export default function PublicMemberRegistration() {
                   </div>
                 )}
 
-                <div className="grid gap-4 max-h-96 overflow-y-auto">
-                  {filteredChurches.map((church) => (
+                {loadingChurches ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                    <p className="text-gray-500 mt-2">Loading churches...</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 max-h-96 overflow-y-auto">
+                    {filteredChurches.map((church) => (
                     <Card 
                       key={church.id} 
                       className={`cursor-pointer hover:shadow-md transition-all duration-200 ${
@@ -461,10 +454,11 @@ export default function PublicMemberRegistration() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
-                {filteredChurches.length === 0 && (
+                {!loadingChurches && filteredChurches.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <Church className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No churches found matching your search.</p>
