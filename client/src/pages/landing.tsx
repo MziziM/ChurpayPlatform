@@ -56,9 +56,20 @@ export default function Landing() {
     enabled: true,
   });
 
-  // Optional redirection for authenticated users - allow staying on landing page
-  // Users can manually navigate to their dashboards using the navigation buttons
-  // This prevents automatic redirection when users explicitly want to visit the home page
+  // Redirect authenticated users to their appropriate dashboard
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const userRole = (user as any)?.role;
+      
+      if (userRole === 'superadmin') {
+        setLocation('/super-admin');
+      } else if (userRole === 'church_admin' || userRole === 'church_staff') {
+        setLocation('/church-dashboard');
+      } else if (userRole === 'member') {
+        setLocation('/member-dashboard');
+      }
+    }
+  }, [isAuthenticated, user, setLocation]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
