@@ -996,6 +996,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Payout not found" });
       }
 
+      // Check if payout can be completed
+      if (payout.status !== 'approved' && payout.status !== 'processing') {
+        return res.status(400).json({ 
+          message: `Cannot complete payout with status '${payout.status}'. Only approved or processing payouts can be completed.` 
+        });
+      }
+
       // Get church bank details for PayFast transfer
       const church = await storage.getChurch(payout.churchId);
       if (!church) {
