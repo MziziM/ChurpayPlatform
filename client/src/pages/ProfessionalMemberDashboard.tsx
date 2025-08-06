@@ -10,11 +10,11 @@ import {
   Activity, CreditCard, Banknote, Shield,
   Search, Bell, User, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus,
-  Heart, Church, Target, TrendingUp
+  Heart, Church, Target, TrendingUp, Star
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
 import { ProjectsModal } from '@/components/ProjectsModal';
-
+import { WalletModal } from '@/components/WalletModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { ChurchModal } from '@/components/ChurchModal';
 import { NotificationModal } from '@/components/NotificationModal';
@@ -49,14 +49,23 @@ export default function ProfessionalMemberDashboard() {
   // Get authenticated user data
   const { user, isLoading: userLoading } = useAuth();
 
-  // Data queries - removed wallet since church members don't need wallets
-
+  // Data queries
   const { data: donationHistory } = useQuery<DonationHistory[]>({
     queryKey: ['/api/donations/history']
   });
 
   const { data: churches = [] } = useQuery<any[]>({
     queryKey: ['/api/churches']
+  });
+
+  // Wallet data query
+  const { data: walletData } = useQuery<{
+    balance: number;
+    rewardPoints: number;
+    transactions: any[];
+  }>({
+    queryKey: ['/api/user/wallet'],
+    refetchOnMount: true
   });
 
   // User stats query - forcing fresh data (no cache)
@@ -353,6 +362,32 @@ export default function ProfessionalMemberDashboard() {
                     <div className="flex items-center justify-between text-sm text-gray-600">
                       <span>Total transactions: {userStats?.transactionCount || 0}</span>
                       <span>Avg gift: R {userStats?.averageGift || '0.00'}</span>
+                    </div>
+                    
+                    {/* Wallet Balance and Top-Up Section */}
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Wallet className="h-5 w-5 text-purple-600" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Wallet Balance</p>
+                            <p className="text-lg font-bold text-purple-600">R {walletData?.balance?.toLocaleString() || '0.00'}</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => setShowWalletModal(true)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Top Up
+                        </Button>
+                      </div>
+                      {walletData?.rewardPoints && (
+                        <div className="flex items-center space-x-1 mt-2">
+                          <Star className="h-4 w-4 text-yellow-500" />
+                          <span className="text-sm text-gray-600">{walletData.rewardPoints} reward points</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -683,6 +718,23 @@ export default function ProfessionalMemberDashboard() {
           setShowProjectsModal(false);
           setDonationType('project');
           setShowDonationModal(true);
+        }}
+      />
+
+      <WalletModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        walletBalance={walletData?.balance || 0}
+        rewardPoints={walletData?.rewardPoints || 0}
+        transactions={walletData?.transactions || []}
+        onTopUp={() => {
+          setShowWalletModal(false);
+          setDonationType('donation');
+          setShowDonationModal(true);
+        }}
+        onSend={() => {
+          // Handle send functionality
+          console.log('Send money functionality');
         }}
       />
     </div>
