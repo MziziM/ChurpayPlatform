@@ -916,7 +916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Database query failed for sponsored projects, using sample data');
       }
 
-      // Fallback to sample sponsored projects data
+      // Fallback to sample sponsored projects data with images
       const sampleProjects = [
         {
           id: 'project-1',
@@ -924,7 +924,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: 'Building a modern, safe learning environment for our growing Sunday school program. This facility will serve 200+ children weekly and include interactive learning spaces, a library, and outdoor play areas.',
           targetAmount: '75000.00',
           currentAmount: '42350.00',
-          imageUrl: null,
+          imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop&crop=center',
           endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(), // 45 days from now
           priority: 10,
           churchId: 'church-1',
@@ -938,7 +938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: 'Expanding our weekly food distribution program to serve 150 additional families in need. Funds will go toward storage facilities, refrigeration, and monthly food supplies.',
           targetAmount: '25000.00',
           currentAmount: '18750.00',
-          imageUrl: null,
+          imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=600&fit=crop&crop=center',
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
           priority: 8,
           churchId: 'church-2',
@@ -952,13 +952,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: 'Providing instruments and sound equipment for our youth worship team. This will enable 25+ young people to develop their musical talents while serving in ministry.',
           targetAmount: '15000.00',
           currentAmount: '8925.00',
-          imageUrl: null,
+          imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop&crop=center',
           endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days from now
           priority: 6,
           churchId: 'church-3',
           churchName: 'Faith Community Center',
           donorCount: 19,
           createdAt: new Date('2024-12-15')
+        },
+        {
+          id: 'project-4',
+          name: 'Clean Water Initiative for Rural Communities',
+          description: 'Installing water purification systems and drilling boreholes to provide clean, safe drinking water to 5 rural communities in the Eastern Cape. This project will benefit over 1,200 families.',
+          targetAmount: '120000.00',
+          currentAmount: '67800.00',
+          imageUrl: 'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=800&h=600&fit=crop&crop=center',
+          endDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: 9,
+          churchId: 'church-4',
+          churchName: 'Hope Community Church',
+          donorCount: 89,
+          createdAt: new Date('2024-10-20')
+        },
+        {
+          id: 'project-5',
+          name: 'Mobile Medical Clinic Outreach',
+          description: 'Purchasing and equipping a mobile medical unit to bring healthcare services to underserved communities. Includes medical equipment, staffing, and monthly operational costs.',
+          targetAmount: '85000.00',
+          currentAmount: '51200.00',
+          imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop&crop=center',
+          endDate: new Date(Date.now() + 50 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: 7,
+          churchId: 'church-5',
+          churchName: 'Unity Christian Fellowship',
+          donorCount: 63,
+          createdAt: new Date('2024-11-05')
+        },
+        {
+          id: 'project-6',
+          name: 'School Scholarship Fund for Orphans',
+          description: 'Providing full scholarships including school fees, uniforms, books, and meals for 50 orphaned children to complete their primary and secondary education.',
+          targetAmount: '45000.00',
+          currentAmount: '32100.00',
+          imageUrl: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=800&h=600&fit=crop&crop=center',
+          endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: 8,
+          churchId: 'church-6',
+          churchName: 'Blessed Assurance Ministry',
+          donorCount: 102,
+          createdAt: new Date('2024-09-10')
         }
       ];
 
@@ -966,6 +1008,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching sponsored projects:', error);
       res.status(500).json({ message: 'Failed to fetch sponsored projects' });
+    }
+  });
+
+  // Public project donation endpoint - no authentication required
+  app.post('/api/projects/:projectId/donate', async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const { amount, donorName, donorEmail, isAnonymous, message } = req.body;
+
+      // Validate required fields
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Valid donation amount is required' });
+      }
+
+      if (!isAnonymous && (!donorName || !donorEmail)) {
+        return res.status(400).json({ message: 'Donor name and email are required for non-anonymous donations' });
+      }
+
+      // Create donation record (simplified for demo)
+      const donation = {
+        id: randomUUID(),
+        projectId,
+        amount: parseFloat(amount),
+        donorName: isAnonymous ? 'Anonymous' : donorName,
+        donorEmail: isAnonymous ? null : donorEmail,
+        isAnonymous: isAnonymous || false,
+        message: message || null,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // In a real implementation, this would:
+      // 1. Create payment processing record
+      // 2. Update project current amount
+      // 3. Send confirmation emails
+      // 4. Generate tax receipt
+      
+      res.status(201).json({
+        success: true,
+        donationId: donation.id,
+        amount: donation.amount,
+        message: 'Thank you for your generous donation! You will receive a confirmation email shortly.',
+        redirectUrl: `/projects?donation=success&id=${donation.id}`
+      });
+    } catch (error) {
+      console.error('Error processing donation:', error);
+      res.status(500).json({ message: 'Failed to process donation' });
     }
   });
 
