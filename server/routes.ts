@@ -147,6 +147,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get donation history for authenticated user
+  app.get('/api/donations/history', async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        // Return empty array for unauthenticated users
+        return res.json([]);
+      }
+
+      // Get real transaction data for this user
+      const userTransactions = await storage.getUserTransactions(userId);
+      
+      // Transform transactions to donation history format
+      const donationHistory = userTransactions.map(transaction => ({
+        id: transaction.id,
+        amount: `R ${parseFloat(transaction.amount || '0').toFixed(2)}`,
+        type: transaction.donationType || 'donation',
+        churchName: transaction.churchName || 'Unknown Church',
+        projectTitle: transaction.projectTitle || null,
+        createdAt: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : 'Unknown',
+        status: transaction.status || 'completed'
+      }));
+
+      res.json(donationHistory);
+    } catch (error) {
+      console.error('Error fetching donation history:', error);
+      res.status(500).json({ message: 'Failed to fetch donation history' });
+    }
+  });
+
+  // Create donation with PayFast integration
+  app.post('/api/donations/create', async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const { amount, donationType, churchId, projectId, note, paymentMethod } = req.body;
+
+      // Validate required fields
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Valid donation amount is required' });
+      }
+
+      if (!donationType || !['donation', 'tithe', 'project'].includes(donationType)) {
+        return res.status(400).json({ message: 'Valid donation type is required' });
+      }
+
+      // Get user details
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Create donation record
+      const donationId = randomUUID();
+      const donation = {
+        id: donationId,
+        userId,
+        amount: parseFloat(amount),
+        donationType,
+        churchId: churchId || user.churchId,
+        projectId: projectId || null,
+        note: note || null,
+        paymentMethod: paymentMethod || 'payfast',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // Handle PayFast payment
+      if (paymentMethod === 'payfast' || paymentMethod === 'card') {
+        const merchantId = process.env.PAYFAST_MERCHANT_ID;
+        const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+        
+        if (!merchantId || !merchantKey) {
+          return res.status(500).json({ message: 'PayFast merchant credentials not configured' });
+        }
+
+        // Generate PayFast payment URL
+        const payfastData = {
+          merchant_id: merchantId,
+          merchant_key: merchantKey,
+          return_url: `${req.protocol}://${req.get('host')}/member?donation=success&id=${donationId}`,
+          cancel_url: `${req.protocol}://${req.get('host')}/member?donation=cancelled`,
+          notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
+          name_first: user.firstName || 'Member',
+          name_last: user.lastName || 'User',
+          email_address: user.email,
+          m_payment_id: donationId,
+          amount: parseFloat(amount).toFixed(2),
+          item_name: `${donationType.charAt(0).toUpperCase() + donationType.slice(1)} - ChurPay`,
+          item_description: note || `${donationType} payment via ChurPay`,
+          custom_str1: donationType,
+          custom_str2: projectId || '',
+          custom_str3: churchId || user.churchId || ''
+        };
+
+        // Create payment URL
+        const payfastUrl = 'https://sandbox.payfast.co.za/eng/process';
+        const queryString = Object.entries(payfastData)
+          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value || '')}`)
+          .join('&');
+        const paymentUrl = `${payfastUrl}?${queryString}`;
+
+        // Store pending donation
+        await storage.createTransaction({
+          ...donation,
+          paymentUrl
+        });
+
+        return res.json({
+          success: true,
+          donationId,
+          paymentUrl,
+          message: 'Redirecting to PayFast payment gateway'
+        });
+      }
+
+      // Handle wallet payment
+      if (paymentMethod === 'wallet') {
+        // Check wallet balance
+        const walletData = await storage.getUserWallet(userId);
+        if (!walletData || walletData.balance < parseFloat(amount)) {
+          return res.status(400).json({ message: 'Insufficient wallet balance' });
+        }
+
+        // Process wallet payment
+        await storage.processWalletPayment(userId, parseFloat(amount), donationType);
+        await storage.createTransaction({
+          ...donation,
+          status: 'completed'
+        });
+
+        return res.json({
+          success: true,
+          donationId,
+          message: 'Donation processed successfully using wallet balance'
+        });
+      }
+
+      return res.status(400).json({ message: 'Invalid payment method' });
+    } catch (error) {
+      console.error('Error creating donation:', error);
+      res.status(500).json({ message: 'Failed to process donation' });
+    }
+  });
+
   // System health check
   app.get('/api/health', async (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

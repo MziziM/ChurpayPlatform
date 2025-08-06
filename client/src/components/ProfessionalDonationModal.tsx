@@ -97,7 +97,7 @@ export function ProfessionalDonationModal({
       let endpoint = '/api/donations/create';
       if (type === 'donation') endpoint = '/api/donations/create';
       else if (type === 'tithe') endpoint = '/api/donations/create';
-      else if (type === 'project') endpoint = '/api/projects/sponsor';
+      else if (type === 'project') endpoint = '/api/donations/create';
       else if (type === 'topup' && selectedPaymentMethod === 'payfast') endpoint = '/api/wallet/topup/payfast';
       else if (type === 'topup') endpoint = '/api/wallet/topup';
       
@@ -108,6 +108,10 @@ export function ProfessionalDonationModal({
       
       // Handle PayFast redirection
       if (data.paymentUrl && (selectedPaymentMethod === 'payfast' || selectedPaymentMethod === 'card')) {
+        toast({
+          title: "Redirecting to PayFast",
+          description: "You will be redirected to complete your payment securely.",
+        });
         window.location.href = data.paymentUrl;
         return;
       }
@@ -121,6 +125,7 @@ export function ProfessionalDonationModal({
       queryClient.invalidateQueries({ queryKey: ['/api/user/wallet'] });
       queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/stats/fresh-data-v3'] });
       handleClose();
     },
     onError: (error: Error) => {
