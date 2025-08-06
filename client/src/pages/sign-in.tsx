@@ -65,6 +65,7 @@ export default function SignIn() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(data),
       });
       
@@ -81,7 +82,10 @@ export default function SignIn() {
           title: "Welcome back!",
           description: "Successfully signed in to your member account.",
         });
-        setLocation('/member');
+        // Force a page reload to ensure session cookie is properly set
+        setTimeout(() => {
+          window.location.href = '/member';
+        }, 1000);
       }
     },
     onError: (error: Error) => {
