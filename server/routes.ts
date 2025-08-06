@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users } from "@shared/schema";
+import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users, churches } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
 import { generateTwoFactorSecret, validateTwoFactorToken, removeUsedBackupCode } from "./googleAuth";
 import { churchApprovalService } from "./churchApprovalService";
