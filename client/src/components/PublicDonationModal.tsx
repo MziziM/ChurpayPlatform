@@ -49,19 +49,22 @@ export function PublicDonationModal({ isOpen, onClose, project }: PublicDonation
   const donationMutation = useMutation({
     mutationFn: async (donationData: any) => {
       if (project) {
-        return await apiRequest(`/api/projects/${project.id}/donate`, {
-          method: "POST",
-          body: JSON.stringify(donationData),
-        });
+        return await apiRequest(`/api/projects/${project.id}/donate`, "POST", donationData);
       }
       throw new Error("No project selected");
     },
     onSuccess: (data) => {
       toast({
-        title: "Thank You! 🙏",
-        description: data.message || "Your donation has been submitted successfully.",
+        title: "Thank You!",
+        description: data.message || "Redirecting to secure payment gateway...",
         variant: "default",
       });
+      
+      // Redirect to PayFast payment gateway
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      }
+      
       onClose();
       // Reset form
       setAmount("");
@@ -240,14 +243,15 @@ export function PublicDonationModal({ isOpen, onClose, project }: PublicDonation
             />
           </div>
 
-          {/* Security Notice */}
+          {/* PayFast Security Notice */}
           <div className="bg-blue-50 p-3 rounded-lg">
             <div className="flex items-start gap-2">
               <Shield className="h-4 w-4 text-blue-600 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium">Secure Transaction</p>
+                <p className="font-medium">Secure PayFast Payment</p>
                 <p className="text-xs text-blue-600">
-                  Your payment is protected by bank-grade encryption and processed securely.
+                  Payments are processed securely by PayFast, South Africa's leading payment gateway. 
+                  Your payment information is protected with bank-grade encryption.
                 </p>
               </div>
             </div>
@@ -276,7 +280,7 @@ export function PublicDonationModal({ isOpen, onClose, project }: PublicDonation
               ) : (
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
-                  Donate R{amount === "custom" ? customAmount || "0" : amount || "0"}
+                  Pay R{amount === "custom" ? customAmount || "0" : amount || "0"} via PayFast
                 </div>
               )}
             </Button>
