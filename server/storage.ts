@@ -493,6 +493,17 @@ export class DatabaseStorage implements IStorage {
     const [newPayout] = await db.insert(payouts).values(payoutRequest).returning();
     return newPayout;
   }
+
+  // Update payout payment reference
+  async updatePayoutReference(payoutId: string, paymentReference: string): Promise<void> {
+    await db
+      .update(payouts)
+      .set({ 
+        paymentReference: paymentReference,
+        updatedAt: new Date() 
+      })
+      .where(eq(payouts.id, payoutId));
+  }
   
   // Activity logging
   async logActivity(activity: InsertActivityLog): Promise<ActivityLog> {

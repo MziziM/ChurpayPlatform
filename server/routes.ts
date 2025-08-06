@@ -916,6 +916,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Super Admin: Approve payout request
+  app.post('/api/super-admin/payouts/:payoutId/approve', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { processingNotes } = req.body;
+      const adminId = req.admin.id;
+
+      const payout = await storage.updatePayoutStatus(payoutId, 'approved', adminId);
+      
+      // Log the approval
+      await storage.logActivity({
+        userId: adminId,
+        churchId: payout.churchId,
+        action: 'payout_approved',
+        entity: 'payout',
+        entityId: payout.id,
+        details: { 
+          amount: payout.amount,
+          approvedBy: req.admin.email,
+          processingNotes 
+        },
+      });
+
+      console.log(`💰 Payout approved: ${payout.amount} for church ${payout.churchId} by ${req.admin.email}`);
+      res.json({ message: "Payout request approved successfully", payout });
+    } catch (error) {
+      console.error("Error approving payout:", error);
+      res.status(500).json({ message: "Failed to approve payout request" });
+    }
+  });
+
+  // Super Admin: Reject payout request
+  app.post('/api/super-admin/payouts/:payoutId/reject', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { rejectionReason, processingNotes } = req.body;
+      const adminId = req.admin.id;
+
+      if (!rejectionReason) {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+
+      const payout = await storage.updatePayoutStatus(payoutId, 'rejected', adminId, rejectionReason);
+      
+      // Log the rejection
+      await storage.logActivity({
+        userId: adminId,
+        churchId: payout.churchId,
+        action: 'payout_rejected',
+        entity: 'payout',
+        entityId: payout.id,
+        details: { 
+          amount: payout.amount,
+          rejectedBy: req.admin.email,
+          rejectionReason,
+          processingNotes 
+        },
+      });
+
+      console.log(`❌ Payout rejected: ${payout.amount} for church ${payout.churchId} by ${req.admin.email}`);
+      res.json({ message: "Payout request rejected successfully", payout });
+    } catch (error) {
+      console.error("Error rejecting payout:", error);
+      res.status(500).json({ message: "Failed to reject payout request" });
+    }
+  });
+
+  // Super Admin: Complete payout request
+  app.post('/api/super-admin/payouts/:payoutId/complete', requireAdminAuth, async (req: any, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { paymentReference, processingNotes } = req.body;
+      const adminId = req.admin.id;
+
+      if (!paymentReference) {
+        return res.status(400).json({ message: "Payment reference is required" });
+      }
+
+      const payout = await storage.updatePayoutStatus(payoutId, 'completed', adminId);
+      
+      // Update payout with payment reference
+      await storage.updatePayoutReference(payoutId, paymentReference);
+      
+      // Log the completion
+      await storage.logActivity({
+        userId: adminId,
+        churchId: payout.churchId,
+        action: 'payout_completed',
+        entity: 'payout',
+        entityId: payout.id,
+        details: { 
+          amount: payout.amount,
+          completedBy: req.admin.email,
+          paymentReference,
+          processingNotes 
+        },
+      });
+
+      console.log(`✅ Payout completed: ${payout.amount} for church ${payout.churchId} by ${req.admin.email}`);
+      res.json({ message: "Payout request completed successfully", payout });
+    } catch (error) {
+      console.error("Error completing payout:", error);
+      res.status(500).json({ message: "Failed to complete payout request" });
+    }
+  });
+
   // Payout Request API (for churches)
   app.post('/api/payouts/request', async (req, res) => {
     try {
