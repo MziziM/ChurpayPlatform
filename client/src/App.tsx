@@ -68,6 +68,7 @@ function Router() {
       <Route path="/super-admin/signup" component={SuperAdminSignUp} />
       <Route path="/super-admin/signin" component={SuperAdminSignIn} />
       <Route path="/sign-in" component={SignIn} />
+      <Route path="/church-signin" component={SignIn} />
       <Route path="/payout-demo" component={ChurchPayoutDemo} />
       <Route component={NotFound} />
     </Switch>

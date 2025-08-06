@@ -117,7 +117,7 @@ export default function SignIn() {
           title: "Welcome back!",
           description: "Successfully signed in to your church account.",
         });
-        setLocation('/professional-church-dashboard');
+        setLocation('/church-dashboard');
       }
     },
     onError: (error: Error) => {
