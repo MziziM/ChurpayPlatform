@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
 import { generateTwoFactorSecret, validateTwoFactorToken, removeUsedBackupCode } from "./googleAuth";
+import { churchApprovalService } from "./churchApprovalService";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -543,29 +544,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Approve/Reject Church Applications
-  app.post('/api/super-admin/churches/:id/process', requireAdminAuth, async (req, res) => {
+  // Approve Church Application with Email Setup
+  app.post('/api/super-admin/churches/:id/approve', requireAdminAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const { action, notes } = req.body;
       const superAdminId = (req.session as any).superAdminId;
       
-      const status = action === 'approve' ? 'approved' : 'rejected';
-      const church = await storage.updateChurchStatus(id, status, superAdminId);
+      const result = await churchApprovalService.approveChurch(id, superAdminId);
       
-      await storage.logActivity({
-        userId: superAdminId,
-        churchId: id,
-        action: `church_${action}`,
-        entity: 'church',
-        entityId: id,
-        details: { notes, previousStatus: 'pending' },
-      });
-      
-      res.json(church);
+      if (result.success) {
+        await storage.logActivity({
+          userId: superAdminId,
+          churchId: id,
+          action: 'church_approved',
+          entity: 'church',
+          entityId: id,
+          details: { action: 'approved', emailSent: true },
+        });
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
     } catch (error) {
-      console.error("🔒 PROTECTED: Error processing church:", error);
-      res.status(500).json({ message: "Failed to process church application" });
+      console.error("🔒 PROTECTED: Error approving church:", error);
+      res.status(500).json({ message: "Failed to approve church application" });
+    }
+  });
+
+  // Reject Church Application
+  app.post('/api/super-admin/churches/:id/reject', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      const result = await churchApprovalService.rejectChurch(id, superAdminId, reason);
+      
+      if (result.success) {
+        await storage.logActivity({
+          userId: superAdminId,
+          churchId: id,
+          action: 'church_rejected',
+          entity: 'church',
+          entityId: id,
+          details: { action: 'rejected', reason },
+        });
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error rejecting church:", error);
+      res.status(500).json({ message: "Failed to reject church application" });
     }
   });
 

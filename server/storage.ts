@@ -44,6 +44,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, count, sql, or, ilike } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -57,12 +58,15 @@ export interface IStorage {
   createChurch(church: InsertChurch): Promise<Church>;
   getChurch(id: string): Promise<Church | undefined>;
   getChurchByAdminId(adminId: string): Promise<Church | undefined>;
+  getChurchByPasswordToken(token: string): Promise<Church | undefined>;
+  updateChurch(id: string, updates: Partial<Church>): Promise<Church>;
   updateChurchStatus(id: string, status: string, processedBy?: string): Promise<Church>;
   updateChurchDocument(churchId: string, documentType: string, documentPath: string): Promise<Church>;
   getAllChurches(limit?: number, offset?: number): Promise<Church[]>;
   getPendingChurches(): Promise<Church[]>;
   getApprovedChurches(): Promise<Church[]>;
   getChurchStats(): Promise<{ total: number; pending: number; approved: number; active: number }>;
+  createChurchAdmin(adminData: { email: string; firstName: string; lastName: string; password: string; churchId: string; role: string }): Promise<User>;
   
   // Project operations
   createProject(project: InsertProject): Promise<Project>;
@@ -198,6 +202,20 @@ export class DatabaseStorage implements IStorage {
     return church;
   }
 
+  async getChurchByPasswordToken(token: string): Promise<Church | undefined> {
+    const [church] = await db.select().from(churches).where(eq(churches.passwordSetupToken, token));
+    return church;
+  }
+
+  async updateChurch(id: string, updates: Partial<Church>): Promise<Church> {
+    const [church] = await db
+      .update(churches)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(churches.id, id))
+      .returning();
+    return church;
+  }
+
   async updateChurchStatus(id: string, status: string, processedBy?: string): Promise<Church> {
     const [church] = await db
       .update(churches)
@@ -205,6 +223,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(churches.id, id))
       .returning();
     return church;
+  }
+
+  async createChurchAdmin(adminData: { email: string; firstName: string; lastName: string; password: string; churchId: string; role: string }): Promise<User> {
+    const [admin] = await db.insert(users).values({
+      id: randomUUID(),
+      email: adminData.email,
+      firstName: adminData.firstName,
+      lastName: adminData.lastName,
+      password: adminData.password, // This should be hashed
+      churchId: adminData.churchId,
+      role: adminData.role as any,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return admin;
   }
 
   async updateChurchDocument(churchId: string, documentType: string, documentPath: string): Promise<Church> {
