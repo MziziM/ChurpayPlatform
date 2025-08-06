@@ -20,7 +20,8 @@ import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 import ChurchPayoutDemo from "@/pages/ChurchPayoutDemo";
-
+import ChurchRegistrationStepOne from "@/pages/ChurchRegistrationStepOne";
+import ChurchLogin from "@/pages/ChurchLogin";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
@@ -28,7 +29,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
-      <Route path="/church-registration" component={PublicChurchRegistration} />
+      <Route path="/church-registration" component={ChurchRegistrationStepOne} />
+      <Route path="/church-registration/step-one" component={ChurchRegistrationStepOne} />
+      <Route path="/church-login" component={ChurchLogin} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
       <Route path="/public-church-registration" component={PublicChurchRegistration} />
       <Route path="/public-member-registration" component={PublicMemberRegistration} />
