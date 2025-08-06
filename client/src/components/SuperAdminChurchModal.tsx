@@ -129,9 +129,10 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Church approval mutation
   const approveChurchMutation = useMutation({
     mutationFn: async (churchId: string) => {
-      return apiRequest(`/api/super-admin/churches/${churchId}/approve`, 'POST');
+      return apiRequest('POST', `/api/super-admin/churches/${churchId}/approve`);
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (response: Response) => {
+      const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
       toast({
         title: "Church Approved",
@@ -156,9 +157,10 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Church rejection mutation
   const rejectChurchMutation = useMutation({
     mutationFn: async ({ churchId, reason }: { churchId: string; reason: string }) => {
-      return apiRequest(`/api/super-admin/churches/${churchId}/reject`, 'POST', { reason });
+      return apiRequest('POST', `/api/super-admin/churches/${churchId}/reject`, { reason });
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (response: Response) => {
+      const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
       toast({
         title: "Church Rejected",
