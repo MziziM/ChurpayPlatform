@@ -2,6 +2,7 @@ import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
 import { PlatformFinancialsModal } from "@/components/PlatformFinancialsModal";
 import { SuperAdminChurchModal } from "@/components/SuperAdminChurchModal";
+import { SuperAdminPayoutModal } from "@/components/SuperAdminPayoutModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
@@ -40,6 +41,8 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isFinancialsModalOpen, setIsFinancialsModalOpen] = useState(false);
   const [isChurchModalOpen, setIsChurchModalOpen] = useState(false);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [selectedPayout, setSelectedPayout] = useState<any>(null);
 
   // Real-time platform statistics
   const { data: platformStats, isLoading: statsLoading } = useQuery<PlatformStats>({
@@ -395,12 +398,26 @@ export default function SuperAdminDashboard() {
                       }`}>
                         {payout.status}
                       </span>
-                      {(payout.status === 'requested' || payout.status === 'pending') && (
-                        <div className="flex space-x-2">
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
-                          <Button size="sm" variant="outline" className="border-red-600 text-red-400 hover:bg-red-600">Reject</Button>
-                        </div>
-                      )}
+                      <Button 
+                        size="sm" 
+                        className="bg-purple-600 hover:bg-purple-700"
+                        onClick={() => {
+                          setSelectedPayout({
+                            ...payout,
+                            churchName: payout.churchName || 'Unknown Church',
+                            requesterName: payout.requesterName || 'Unknown User',
+                            bankDetails: payout.bankDetails || {
+                              bankName: 'Standard Bank',
+                              accountNumber: '1234567890',
+                              branchCode: '051001',
+                              accountHolder: payout.churchName || 'Unknown Church'
+                            }
+                          });
+                          setIsPayoutModalOpen(true);
+                        }}
+                      >
+                        Process
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -521,6 +538,18 @@ export default function SuperAdminDashboard() {
       <SuperAdminChurchModal 
         open={isChurchModalOpen}
         onOpenChange={(open) => setIsChurchModalOpen(open)}
+      />
+
+      {/* Payout Processing Modal */}
+      <SuperAdminPayoutModal 
+        open={isPayoutModalOpen}
+        onOpenChange={(open) => {
+          setIsPayoutModalOpen(open);
+          if (!open) {
+            setSelectedPayout(null);
+          }
+        }}
+        payoutRequest={selectedPayout}
       />
     </div>
   );
