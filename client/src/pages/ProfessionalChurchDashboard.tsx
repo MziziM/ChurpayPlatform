@@ -17,24 +17,57 @@ import { ChurchPayoutModal } from '@/components/ChurchPayoutModal';
 import { ChurchMemberModal } from '@/components/ChurchMemberModal';
 import { ChurchProjectModal } from '@/components/ChurchProjectModal';
 import { ChurchProfileModal } from '@/components/ChurchProfileModal';
+import ChurPayLogo from "@assets/Churpay Logo tuesd_1754519336175.png";
 
 interface ChurchData {
   id: string;
   name: string;
   denomination: string;
+  registrationNumber: string;
+  taxNumber: string;
+  yearEstablished: string;
+  
+  // Contact Information
+  contactEmail: string;
+  contactPhone: string;
+  alternativePhone?: string;
+  website?: string;
+  
+  // Physical Address
+  address: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  
+  // Banking Information
+  bankName: string;
+  accountNumber: string;
+  branchCode: string;
+  accountHolder: string;
+  accountType: string;
+  
+  // Church Details
+  description: string;
   memberCount: number;
+  servicesTimes: string;
+  leadPastor: string;
+  logoUrl?: string;
+  
+  // Administrative Contact
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+  adminPhone: string;
+  adminPosition: string;
+  
+  // Status and financial data
+  status: string;
   totalRevenue: string;
   monthlyRevenue: string;
   pendingPayouts: string;
   availableBalance: string;
-  address: string;
-  city: string;
-  province: string;
-  contactEmail: string;
-  contactPhone: string;
-  status: string;
   registrationDate: string;
-  logoUrl?: string; // Add logo URL for church branding
 }
 
 interface MemberData {
@@ -139,12 +172,11 @@ export default function ProfessionalChurchDashboard() {
             <div className="flex items-center space-x-4">
               {/* ChurPay Logo */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm">C</span>
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">
-                  ChurPay
-                </span>
+                <img 
+                  src={ChurPayLogo} 
+                  alt="ChurPay Logo"
+                  className="h-8 w-auto"
+                />
               </div>
               
               {/* Church Name */}
@@ -207,10 +239,10 @@ export default function ProfessionalChurchDashboard() {
               onClick={() => setShowProfileModal(true)}
             >
               <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                {churchData?.profileImageUrl ? (
+                {churchData?.logoUrl ? (
                   <img 
-                    src={churchData.profileImageUrl} 
-                    alt="Church profile" 
+                    src={churchData.logoUrl} 
+                    alt={`${churchData.name} logo`}
                     className="w-full h-full object-cover"
                   />
                 ) : (
