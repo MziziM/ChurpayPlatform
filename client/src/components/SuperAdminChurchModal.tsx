@@ -534,77 +534,216 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                     <p className="text-gray-300 text-sm mt-1">Basic church details and registration info</p>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Church Name</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.name}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Denomination</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.denomination}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">NPO/PBO Registration</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.registrationNumber}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Tax Number</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.taxNumber}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Year Established</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.yearEstablished}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Member Count</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.memberCount.toLocaleString()}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Lead Pastor</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.leadPastor}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Registration Date</span>
-                          <span className="font-bold text-gray-900">{new Date(selectedChurch.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Status</span>
-                          <Badge className={`${getStatusColor(selectedChurch.status)} border font-medium`}>
-                            {getStatusIcon(selectedChurch.status)}
-                            <span className="ml-1 capitalize">{selectedChurch.status}</span>
-                          </Badge>
-                        </div>
-                        {selectedChurch.website && (
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700 font-medium">Website</span>
-                            <a href={selectedChurch.website} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-600 hover:text-blue-800">
-                              {selectedChurch.website}
-                            </a>
+                    {isEditing ? (
+                      /* Edit Mode - Form Fields */
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Church Name</label>
+                              <input
+                                type="text"
+                                value={editedChurch.name || selectedChurch.name}
+                                onChange={(e) => setEditedChurch({...editedChurch, name: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Denomination</label>
+                              <input
+                                type="text"
+                                value={editedChurch.denomination || selectedChurch.denomination}
+                                onChange={(e) => setEditedChurch({...editedChurch, denomination: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">NPO/PBO Registration</label>
+                              <input
+                                type="text"
+                                value={editedChurch.registrationNumber || selectedChurch.registrationNumber}
+                                onChange={(e) => setEditedChurch({...editedChurch, registrationNumber: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Tax Number</label>
+                              <input
+                                type="text"
+                                value={editedChurch.taxNumber || selectedChurch.taxNumber}
+                                onChange={(e) => setEditedChurch({...editedChurch, taxNumber: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Year Established</label>
+                              <input
+                                type="number"
+                                value={editedChurch.yearEstablished || selectedChurch.yearEstablished}
+                                onChange={(e) => setEditedChurch({...editedChurch, yearEstablished: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Member Count</label>
+                              <input
+                                type="number"
+                                value={editedChurch.memberCount || selectedChurch.memberCount}
+                                onChange={(e) => setEditedChurch({...editedChurch, memberCount: parseInt(e.target.value) || 0})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
                           </div>
-                        )}
-                        {selectedChurch.logoUrl && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700 font-medium block mb-2">Church Logo</span>
-                            <img src={selectedChurch.logoUrl} alt="Church Logo" className="h-16 w-16 object-cover rounded-lg" />
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Lead Pastor</label>
+                              <input
+                                type="text"
+                                value={editedChurch.leadPastor || selectedChurch.leadPastor}
+                                onChange={(e) => setEditedChurch({...editedChurch, leadPastor: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                              <input
+                                type="url"
+                                value={editedChurch.website || selectedChurch.website || ''}
+                                onChange={(e) => setEditedChurch({...editedChurch, website: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="https://www.example.com"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
+                              <input
+                                type="url"
+                                value={editedChurch.logoUrl || selectedChurch.logoUrl || ''}
+                                onChange={(e) => setEditedChurch({...editedChurch, logoUrl: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="https://example.com/logo.png"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                              <select
+                                value={editedChurch.status || selectedChurch.status}
+                                onChange={(e) => setEditedChurch({...editedChurch, status: e.target.value as any})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="under_review">Under Review</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                              </select>
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium block mb-2">Registration Date</span>
+                              <span className="text-gray-900">{new Date(selectedChurch.createdAt).toLocaleDateString()}</span>
+                            </div>
                           </div>
-                        )}
+                        </div>
+                        
+                        {/* Church Description and Service Times */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Church Description</label>
+                            <textarea
+                              value={editedChurch.description || selectedChurch.description}
+                              onChange={(e) => setEditedChurch({...editedChurch, description: e.target.value})}
+                              rows={4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="Describe your church..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Service Times</label>
+                            <textarea
+                              value={editedChurch.servicesTimes || selectedChurch.servicesTimes}
+                              onChange={(e) => setEditedChurch({...editedChurch, servicesTimes: e.target.value})}
+                              rows={4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="e.g., Sunday: 9:00 AM, 11:00 AM\nWednesday: 7:00 PM"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Church Description and Service Times */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h4 className="text-blue-800 font-semibold mb-2">Church Description</h4>
-                        <p className="text-blue-700">{selectedChurch.description}</p>
+                    ) : (
+                      /* View Mode - Static Display */
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Church Name</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.name}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Denomination</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.denomination}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">NPO/PBO Registration</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.registrationNumber}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Tax Number</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.taxNumber}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Year Established</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.yearEstablished}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Member Count</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.memberCount.toLocaleString()}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Lead Pastor</span>
+                              <span className="font-bold text-gray-900">{selectedChurch.leadPastor}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Registration Date</span>
+                              <span className="font-bold text-gray-900">{new Date(selectedChurch.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-gray-700 font-medium">Status</span>
+                              <Badge className={`${getStatusColor(selectedChurch.status)} border font-medium`}>
+                                {getStatusIcon(selectedChurch.status)}
+                                <span className="ml-1 capitalize">{selectedChurch.status}</span>
+                              </Badge>
+                            </div>
+                            {selectedChurch.website && (
+                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span className="text-gray-700 font-medium">Website</span>
+                                <a href={selectedChurch.website} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-600 hover:text-blue-800">
+                                  {selectedChurch.website}
+                                </a>
+                              </div>
+                            )}
+                            {selectedChurch.logoUrl && (
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <span className="text-gray-700 font-medium block mb-2">Church Logo</span>
+                                <img src={selectedChurch.logoUrl} alt="Church Logo" className="h-16 w-16 object-cover rounded-lg" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Church Description and Service Times */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-4 bg-blue-50 rounded-lg">
+                            <h4 className="text-blue-800 font-semibold mb-2">Church Description</h4>
+                            <p className="text-blue-700">{selectedChurch.description}</p>
+                          </div>
+                          <div className="p-4 bg-green-50 rounded-lg">
+                            <h4 className="text-green-800 font-semibold mb-2">Service Times</h4>
+                            <p className="text-green-700 whitespace-pre-line">{selectedChurch.servicesTimes}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <h4 className="text-green-800 font-semibold mb-2">Service Times</h4>
-                        <p className="text-green-700 whitespace-pre-line">{selectedChurch.servicesTimes}</p>
-                      </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
