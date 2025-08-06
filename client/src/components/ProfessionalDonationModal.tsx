@@ -240,7 +240,14 @@ export function ProfessionalDonationModal({
   const canProceed = () => {
     if (step === 'amount') return amount && parseFloat(amount) > 0;
     if (step === 'details') return true;
-    if (step === 'payment') return selectedPaymentMethod;
+    if (step === 'payment') {
+      if (!selectedPaymentMethod) return false;
+      // Check if wallet has sufficient balance
+      if (selectedPaymentMethod === 'wallet' && parseFloat(walletBalance) < parseFloat(amount)) {
+        return false;
+      }
+      return true;
+    }
     return true;
   };
 
@@ -435,14 +442,72 @@ export function ProfessionalDonationModal({
                 <p className="text-gray-600">How would you like to complete this transaction?</p>
               </div>
               
-              <PaymentMethodSelector
-                selectedMethod={selectedPaymentMethod}
-                onMethodChange={setSelectedPaymentMethod}
-                onTypeChange={setPaymentMethodType}
-                walletBalance={parseFloat(walletBalance)}
-                paymentMethods={paymentMethods || []}
-                requiredAmount={parseFloat(amount) || 0}
-              />
+              <div className="space-y-4">
+                {/* Wallet Payment Option */}
+                <div 
+                  className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    selectedPaymentMethod === 'wallet' 
+                      ? 'border-purple-500 bg-purple-50' 
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                  onClick={() => {
+                    setSelectedPaymentMethod('wallet');
+                    setPaymentMethodType('wallet');
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Wallet className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">ChurPay Wallet</h4>
+                        <p className="text-sm text-gray-600">Available: R {parseFloat(walletBalance).toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {selectedPaymentMethod === 'wallet' && (
+                      <div className="w-4 h-4 bg-purple-600 rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PayFast Payment Option */}
+                <div 
+                  className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    selectedPaymentMethod === 'payfast' 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-blue-300'
+                  }`}
+                  onClick={() => {
+                    setSelectedPaymentMethod('payfast');
+                    setPaymentMethodType('card');
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <CreditCard className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">PayFast Payment</h4>
+                        <p className="text-sm text-gray-600">Secure card payment gateway</p>
+                      </div>
+                    </div>
+                    {selectedPaymentMethod === 'payfast' && (
+                      <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Insufficient Balance Warning */}
+                {selectedPaymentMethod === 'wallet' && parseFloat(walletBalance) < parseFloat(amount) && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-700">
+                      Insufficient wallet balance. Please select PayFast payment or top up your wallet.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
