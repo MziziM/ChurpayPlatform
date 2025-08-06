@@ -98,13 +98,7 @@ export default function PublicChurchRegistration() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if user came from step 1 registration
-  const tempId = localStorage.getItem('churchRegTempId');
-  if (!tempId) {
-    // Redirect to step one if no temporary registration
-    setLocation('/church-registration/step-one');
-    return null;
-  }
+
   const [uploadedDocuments, setUploadedDocuments] = useState<{
     logo?: string;
     cipcDocument?: string;
