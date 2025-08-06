@@ -985,10 +985,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Super Admin: Complete payout request with PayFast integration
   app.post('/api/super-admin/payouts/:payoutId/complete', requireAdminAuth, async (req: any, res) => {
+    console.log(`🔄 PayFast completion requested for payout: ${req.params.payoutId}`);
+    console.log(`📝 Request body:`, req.body);
     try {
       const { payoutId } = req.params;
       const { paymentReference, processingNotes, usePayFast = true } = req.body;
       const adminId = req.admin.id;
+      
+      console.log(`📝 Completion data:`, { payoutId, usePayFast, adminId });
 
       // Get payout details first
       const payout = await storage.getPayoutById(payoutId);
