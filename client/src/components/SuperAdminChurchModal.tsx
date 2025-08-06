@@ -184,6 +184,8 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
 
   // Document viewing function
   const handleViewDocument = (documentUrl: string, documentName: string) => {
+    console.log('handleViewDocument called:', { documentUrl, documentName });
+    
     if (!documentUrl) {
       toast({
         title: "Document Not Available",
@@ -200,12 +202,15 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
       return 'unknown';
     };
 
-    setDocumentViewer({
+    const viewerState = {
       isOpen: true,
       url: documentUrl,
       name: documentName,
       type: getDocumentType(documentUrl)
-    });
+    };
+    
+    console.log('Setting document viewer state:', viewerState);
+    setDocumentViewer(viewerState);
   };
 
   const filteredChurches = churches.filter(church => {
@@ -263,9 +268,9 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
     }
   };
 
-  if (viewMode === 'detail' && selectedChurch) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+  // Detail view JSX
+  const detailViewContent = viewMode === 'detail' && selectedChurch ? (
+    <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-50">
           <div className="bg-white border-b border-gray-200 p-6 -m-6 mb-6">
             <div className="flex items-center justify-between">
@@ -857,11 +862,11 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
             </Tabs>
           </div>
         </DialogContent>
-      </Dialog>
-    );
-  }
+    </Dialog>
+  ) : null;
 
-  return (
+  // Main list view JSX
+  const listViewContent = (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-50">
         <div className="bg-white border-b border-gray-200 p-6 -m-6 mb-6">
@@ -1072,8 +1077,14 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
           </Card>
         </div>
       </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <>
+      {detailViewContent || listViewContent}
       
-      {/* Document Viewer Modal */}
+      {/* Document Viewer Modal - Outside main dialog to avoid nesting conflicts */}
       <DocumentViewer
         isOpen={documentViewer.isOpen}
         onClose={() => setDocumentViewer(prev => ({ ...prev, isOpen: false }))}
@@ -1081,6 +1092,6 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
         documentName={documentViewer.name}
         documentType={documentViewer.type}
       />
-    </Dialog>
+    </>
   );
 }
