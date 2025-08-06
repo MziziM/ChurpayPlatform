@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Wallet, 
   Building, 
@@ -24,6 +25,14 @@ interface ChurchPayoutModalProps {
   pendingPayouts: string;
 }
 
+interface ChurchProfile {
+  bankName: string;
+  accountNumber: string;
+  branchCode: string;
+  accountHolder: string;
+  accountType: string;
+}
+
 export function ChurchPayoutModal({
   isOpen,
   onClose,
@@ -34,6 +43,12 @@ export function ChurchPayoutModal({
   const [bankAccount, setBankAccount] = useState("");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch church profile to get real banking details
+  const { data: churchProfile, isLoading: isLoadingProfile } = useQuery<ChurchProfile>({
+    queryKey: ['/api/church/profile'],
+    enabled: isOpen
+  });
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -78,6 +93,59 @@ export function ChurchPayoutModal({
             </div>
           </div>
 
+          {/* Bank Details Section */}
+          {isLoadingProfile ? (
+            <div className="bg-gray-50 rounded-lg p-4 border">
+              <div className="flex items-center space-x-2 mb-3">
+                <CreditCard className="h-5 w-5 text-gray-600" />
+                <h4 className="font-medium text-gray-900">Loading Bank Details...</h4>
+              </div>
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            </div>
+          ) : churchProfile ? (
+            <div className="bg-gray-50 rounded-lg p-4 border">
+              <div className="flex items-center space-x-2 mb-3">
+                <CreditCard className="h-5 w-5 text-gray-600" />
+                <h4 className="font-medium text-gray-900">Payout Destination</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Bank:</span>
+                  <span className="ml-2 font-medium">{churchProfile.bankName}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Account Type:</span>
+                  <span className="ml-2 font-medium">{churchProfile.accountType}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Account:</span>
+                  <span className="ml-2 font-medium">***{churchProfile.accountNumber.slice(-4)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Branch:</span>
+                  <span className="ml-2 font-medium">{churchProfile.branchCode}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-600">Account Holder:</span>
+                  <span className="ml-2 font-medium">{churchProfile.accountHolder}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+              <div className="flex items-center space-x-2 mb-3">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                <h4 className="font-medium text-red-900">Banking Details Required</h4>
+              </div>
+              <p className="text-sm text-red-700">
+                Please complete your church profile with banking details before requesting payouts.
+              </p>
+            </div>
+          )}
+
           {/* Payout Form */}
           <div className="space-y-4">
             <div>
@@ -100,20 +168,6 @@ export function ChurchPayoutModal({
                   Amount exceeds available balance
                 </p>
               )}
-            </div>
-
-            <div>
-              <Label htmlFor="bank-account">Bank Account</Label>
-              <Select value={bankAccount} onValueChange={setBankAccount}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select bank account" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fnb-123">FNB - Grace Baptist (***123)</SelectItem>
-                  <SelectItem value="absa-456">ABSA - Church Building Fund (***456)</SelectItem>
-                  <SelectItem value="standard-789">Standard Bank - Operations (***789)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div>
@@ -156,7 +210,7 @@ export function ChurchPayoutModal({
             <Button
               onClick={handleSubmit}
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={isSubmitting || !amount || !bankAccount || parseFloat(amount) > balance}
+              disabled={isSubmitting || !amount || !churchProfile || parseFloat(amount) > balance}
             >
               {isSubmitting ? (
                 <>
