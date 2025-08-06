@@ -56,26 +56,9 @@ export default function Landing() {
     enabled: true,
   });
 
-  // Redirect authenticated users to their dashboards
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      switch ((user as any)?.role) {
-        case 'superadmin':
-          setLocation('/super-admin');
-          break;
-        case 'church_admin':
-        case 'church_staff':
-          setLocation('/church-dashboard');
-          break;
-        case 'member':
-          setLocation('/member-dashboard');
-          break;
-        default:
-          // Stay on landing page for unknown roles
-          break;
-      }
-    }
-  }, [isLoading, isAuthenticated, user, setLocation]);
+  // Optional redirection for authenticated users - allow staying on landing page
+  // Users can manually navigate to their dashboards using the navigation buttons
+  // This prevents automatic redirection when users explicitly want to visit the home page
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
