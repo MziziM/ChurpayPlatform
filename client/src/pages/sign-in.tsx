@@ -81,7 +81,7 @@ export default function SignIn() {
           title: "Welcome back!",
           description: "Successfully signed in to your member account.",
         });
-        setLocation('/professional-member-dashboard');
+        setLocation('/member');
       }
     },
     onError: (error: Error) => {

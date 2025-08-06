@@ -370,25 +370,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password, rememberMe } = req.body;
       
-      // Mock authentication - in production, verify password hash
-      const mockUser = {
-        id: randomUUID(),
-        email,
-        role: 'member',
-        firstName: 'John',
-        lastName: 'Doe',
-        churchId: 'mock-church-id'
-      };
+      // Get real user from database by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
 
-      // Set session
-      (req as any).session.userId = mockUser.id;
+      // Check if user is a member
+      if (user.role !== 'member') {
+        return res.status(401).json({ message: 'This account is not a member account' });
+      }
+
+      // TODO: In production, verify password hash
+      // For now, accept any password for testing
+      
+      // Set session with real user ID
+      (req as any).session.userId = user.id;
+      (req as any).session.userRole = user.role;
       if (rememberMe) {
         (req as any).session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
       }
 
+      console.log(`✅ Member signed in: ${user.email} (ID: ${user.id})`);
+
       res.json({
         success: true,
-        user: mockUser,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          churchId: user.churchId
+        },
         message: 'Successfully signed in'
       });
     } catch (error) {
