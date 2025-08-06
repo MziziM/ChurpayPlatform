@@ -1041,10 +1041,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date().toISOString()
       };
 
+      // Validate PayFast credentials
+      const merchantId = process.env.PAYFAST_MERCHANT_ID;
+      const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+      
+      if (!merchantId || !merchantKey) {
+        return res.status(500).json({ message: 'PayFast merchant credentials not configured' });
+      }
+      
+      if (merchantKey.length !== 13) {
+        return res.status(500).json({ 
+          message: `Invalid merchant key length: ${merchantKey.length} characters. PayFast requires exactly 13 characters.` 
+        });
+      }
+
       // Generate PayFast payment URL
       const payfastData = {
-        merchant_id: process.env.PAYFAST_MERCHANT_ID || '10000100',
-        merchant_key: process.env.PAYFAST_MERCHANT_KEY || '46f0cd694581a',
+        merchant_id: merchantId,
+        merchant_key: merchantKey,
         return_url: `${req.protocol}://${req.get('host')}/projects?donation=success&id=${donationId}`,
         cancel_url: `${req.protocol}://${req.get('host')}/projects?donation=cancelled`,
         notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
