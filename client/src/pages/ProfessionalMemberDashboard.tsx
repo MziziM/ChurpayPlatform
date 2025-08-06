@@ -333,62 +333,88 @@ export default function ProfessionalMemberDashboard() {
                 </CardContent>
               </Card>
 
+              {/* Digital Wallet Card */}
               <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white pb-4">
+                <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white pb-4">
                   <CardTitle className="text-xl font-bold flex items-center space-x-2">
-                    <TrendingUp className="h-6 w-6" />
-                    <span>Giving Goals</span>
+                    <Wallet className="h-6 w-6" />
+                    <span>Digital Wallet</span>
                   </CardTitle>
-                  <p className="text-green-100 text-sm">Your annual progress</p>
+                  <p className="text-purple-100 text-sm">Your ChurPay balance & rewards</p>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-3xl font-bold text-gray-900">R {userStats?.thisYearGiven || '0.00'}</span>
-                        <p className="text-gray-500 text-sm mt-1">Given this year</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-medium text-gray-700">{userStats?.goalProgress || 0}%</span>
-                        <p className="text-gray-500 text-sm">of R {userStats?.annualGoal || '10,000.00'}</p>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div 
-                        className="bg-green-500 h-3 rounded-full transition-all duration-300" 
-                        style={{ width: `${Math.min(userStats?.goalProgress || 0, 100)}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>Total transactions: {userStats?.transactionCount || 0}</span>
-                      <span>Avg gift: R {userStats?.averageGift || '0.00'}</span>
-                    </div>
-                    
-                    {/* Wallet Balance and Top-Up Section */}
-                    <div className="pt-4 border-t border-gray-200">
+                    {/* Main Balance Display */}
+                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-100">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Wallet className="h-5 w-5 text-purple-600" />
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">Wallet Balance</p>
-                            <p className="text-lg font-bold text-purple-600">R {walletData?.balance?.toLocaleString() || '0.00'}</p>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Available Balance</p>
+                          <span className="text-3xl font-bold text-purple-700">R {walletData?.balance?.toLocaleString() || '0.00'}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                            <Wallet className="h-8 w-8 text-white" />
                           </div>
                         </div>
-                        <Button 
-                          onClick={() => setShowWalletModal(true)}
-                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Top Up
-                        </Button>
                       </div>
-                      {walletData?.rewardPoints && (
-                        <div className="flex items-center space-x-1 mt-2">
-                          <Star className="h-4 w-4 text-yellow-500" />
-                          <span className="text-sm text-gray-600">{walletData.rewardPoints} reward points</span>
-                        </div>
-                      )}
                     </div>
+
+                    {/* Reward Points */}
+                    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                          <Star className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Reward Points</p>
+                          <p className="text-xs text-gray-600">Earn 1 point per R10 donated</p>
+                        </div>
+                      </div>
+                      <span className="text-xl font-bold text-orange-600">{walletData?.rewardPoints || 0}</span>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button 
+                        onClick={() => setShowWalletModal(true)}
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white h-12 flex items-center justify-center space-x-2"
+                      >
+                        <Plus className="h-5 w-5" />
+                        <span>Top Up</span>
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setDonationType('donation');
+                          setShowDonationModal(true);
+                        }}
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-12 flex items-center justify-center space-x-2"
+                      >
+                        <Heart className="h-5 w-5" />
+                        <span>Give Now</span>
+                      </Button>
+                    </div>
+
+                    {/* Wallet Stats */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-gray-900">{userStats?.transactionCount || 0}</p>
+                        <p className="text-xs text-gray-600">Total Transactions</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-gray-900">R {userStats?.thisMonthGiven || '0.00'}</p>
+                        <p className="text-xs text-gray-600">This Month</p>
+                      </div>
+                    </div>
+
+                    {/* View Full Wallet */}
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowWalletModal(true)}
+                      className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                    >
+                      View Full Wallet
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
