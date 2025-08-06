@@ -17,7 +17,9 @@ import {
   Star,
   Gift,
   Target,
-  Award
+  Award,
+  UserCheck,
+  User
 } from 'lucide-react';
 
 interface ChurchData {
@@ -162,20 +164,22 @@ export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcome
         
         <CardContent className="p-8 relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            {/* Welcome Message & Church Info */}
+            {/* Welcome Message & Member Profile */}
             <div className="flex-1">
               <div className="flex items-center space-x-4 mb-4">
-                {/* Church Logo */}
+                {/* Member Avatar */}
                 <div className="relative">
-                  {churchData.logoUrl ? (
+                  {(user as any)?.profileImageUrl ? (
                     <img 
-                      src={churchData.logoUrl} 
-                      alt={`${churchData.name} logo`}
+                      src={(user as any).profileImageUrl} 
+                      alt={`${(user as any)?.firstName || 'Member'} profile`}
                       className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
-                      <Church className="w-8 h-8 text-white" />
+                      <div className="text-white font-bold text-xl">
+                        {((user as any)?.firstName?.[0] || 'M') + ((user as any)?.lastName?.[0] || 'U')}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -186,30 +190,30 @@ export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcome
                     {getGreeting()}!
                   </h1>
                   <p className="text-lg text-gray-600">
-                    Welcome to <span className="font-semibold text-purple-700">{churchData.name}</span>
+                    Welcome back, <span className="font-semibold text-purple-700">{(user as any)?.firstName || 'Member'}</span>
                   </p>
                   <p className="text-sm text-gray-500">{formatDate(currentTime)}</p>
                 </div>
               </div>
 
-              {/* Church Information */}
+              {/* Member Profile Information */}
               <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center space-x-2">
+                    <UserCheck className="w-4 h-4 text-purple-600" />
+                    <span className="text-gray-700">{(user as any)?.firstName || ''} {(user as any)?.lastName || ''}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
                     <Church className="w-4 h-4 text-purple-600" />
-                    <span className="text-gray-700">{churchData.denomination}</span>
+                    <span className="text-gray-700">{churchData.name}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <MapPin className="w-4 h-4 text-purple-600" />
                     <span className="text-gray-700">{churchData.city}, {churchData.province}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-purple-600" />
-                    <span className="text-gray-700">{churchData.memberCount.toLocaleString()} members</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Star className="w-4 h-4 text-purple-600" />
-                    <span className="text-gray-700">Pastor {churchData.leadPastor}</span>
+                    <Calendar className="w-4 h-4 text-purple-600" />
+                    <span className="text-gray-700">Member since {userStats?.memberSince || '2025'}</span>
                   </div>
                 </div>
               </div>
