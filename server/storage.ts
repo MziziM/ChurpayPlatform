@@ -249,6 +249,11 @@ export class DatabaseStorage implements IStorage {
     return church;
   }
 
+  async getChurchById(id: string): Promise<Church | undefined> {
+    const [church] = await db.select().from(churches).where(eq(churches.id, id));
+    return church;
+  }
+
   async getChurchByAdminId(adminId: string): Promise<Church | undefined> {
     const [church] = await db.select().from(churches).where(eq(churches.adminUserId, adminId));
     return church;

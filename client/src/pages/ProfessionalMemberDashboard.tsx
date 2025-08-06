@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,9 @@ export default function ProfessionalMemberDashboard() {
   const [donationType, setDonationType] = useState<'donation' | 'tithe' | 'project'>('donation');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentView, setCurrentView] = useState<'welcome' | 'dashboard'>('welcome');
+
+  // Get authenticated user data
+  const { user, isLoading: userLoading } = useAuth();
 
   // Data queries - removed wallet since church members don't need wallets
 
@@ -196,8 +200,10 @@ export default function ProfessionalMemberDashboard() {
                 <span className="text-lg">🙏</span>
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-900">Nomsa Mthembu</p>
-                <p className="text-xs text-gray-500">Member</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {user ? `${(user as any).firstName} ${(user as any).lastName}` : 'Loading...'}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">{(user as any)?.role || 'Member'}</p>
               </div>
             </div>
           </div>
@@ -213,7 +219,9 @@ export default function ProfessionalMemberDashboard() {
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Good afternoon, Nomsa</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    Good afternoon, {(user as any)?.firstName || 'Member'}
+                  </h1>
                   <div className="flex items-center space-x-2 text-gray-600">
                     <span>Here's your giving overview and church activity</span>
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
