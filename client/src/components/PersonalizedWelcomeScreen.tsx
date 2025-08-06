@@ -204,48 +204,40 @@ export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcome
                     <span className="text-gray-700">{(user as any)?.firstName || ''} {(user as any)?.lastName || ''}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Church className="w-4 h-4 text-purple-600" />
-                    <span className="text-gray-700">{churchData.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-purple-600" />
-                    <span className="text-gray-700">{churchData.city}, {churchData.province}</span>
+                    <Mail className="w-4 h-4 text-purple-600" />
+                    <span className="text-gray-700">{(user as any)?.email || ''}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Calendar className="w-4 h-4 text-purple-600" />
                     <span className="text-gray-700">Member since {userStats?.memberSince || '2025'}</span>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Star className="w-4 h-4 text-purple-600" />
+                    <span className="text-gray-700">Active Member</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* User Stats Card */}
+            {/* Member Stats Card */}
             {userStats && (
               <div className="bg-white/70 backdrop-blur-sm rounded-lg p-6 border border-white/50 min-w-[280px]">
-                <h3 className="font-semibold text-gray-900 mb-3">Your Giving Journey</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">My Dashboard</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">This Year</span>
-                    <span className="font-bold text-green-600">R{userStats.thisYearGiven}</span>
-                  </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Total Given</span>
                     <span className="font-bold text-purple-600">R{userStats.totalGiven}</span>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Annual Goal</span>
-                      <span className="text-gray-900">{userStats.goalProgress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(userStats.goalProgress, 100)}%` }}
-                      ></div>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">This Month</span>
+                    <span className="font-bold text-green-600">R{userStats.thisMonthGiven || '0'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Member Since</span>
+                    <span className="font-bold text-blue-600">{userStats.memberSince}</span>
                   </div>
                   <div className="text-xs text-gray-500 pt-2 border-t">
-                    Member since {userStats.memberSince}
+                    Personal giving overview
                   </div>
                 </div>
               </div>
