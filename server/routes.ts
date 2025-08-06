@@ -2049,6 +2049,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Church Cashback Management APIs
+  app.get('/api/super-admin/cashback-records', requireAdminAuth, async (req, res) => {
+    try {
+      const { churchId, year } = req.query;
+      const records = await storage.getChurchCashbackRecords(
+        churchId as string, 
+        year ? parseInt(year as string) : undefined
+      );
+      res.json(records);
+    } catch (error) {
+      console.error("Error fetching cashback records:", error);
+      res.status(500).json({ message: "Failed to fetch cashback records" });
+    }
+  });
+
+  app.post('/api/super-admin/calculate-cashback/:churchId/:year', requireAdminAuth, async (req, res) => {
+    try {
+      const { churchId, year } = req.params;
+      const cashbackRecord = await storage.calculateChurchCashback(churchId, parseInt(year));
+      
+      // Log the calculation
+      const superAdminId = (req.session as any).superAdminId;
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: churchId,
+        action: 'cashback_calculated',
+        entity: 'cashback',
+        entityId: cashbackRecord.id,
+        details: { 
+          year: parseInt(year),
+          totalPlatformFees: cashbackRecord.totalPlatformFees,
+          cashbackAmount: cashbackRecord.cashbackAmount 
+        },
+      });
+      
+      res.json(cashbackRecord);
+    } catch (error) {
+      console.error("Error calculating cashback:", error);
+      res.status(500).json({ message: "Failed to calculate cashback" });
+    }
+  });
+
+  app.post('/api/super-admin/process-cashback/:recordId/:action', requireAdminAuth, async (req, res) => {
+    try {
+      const { recordId, action } = req.params;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      if (!['approve', 'pay'].includes(action)) {
+        return res.status(400).json({ message: "Invalid action. Must be 'approve' or 'pay'" });
+      }
+      
+      const updatedRecord = await storage.processChurchCashback(recordId, superAdminId, action as 'approve' | 'pay');
+      
+      // Log the action
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: updatedRecord.churchId,
+        action: `cashback_${action}`,
+        entity: 'cashback',
+        entityId: recordId,
+        details: { 
+          year: updatedRecord.year,
+          amount: updatedRecord.cashbackAmount,
+          status: updatedRecord.status 
+        },
+      });
+      
+      res.json(updatedRecord);
+    } catch (error) {
+      console.error("Error processing cashback:", error);
+      res.status(500).json({ message: "Failed to process cashback" });
+    }
+  });
+
+  app.post('/api/super-admin/generate-annual-cashback/:year', requireAdminAuth, async (req, res) => {
+    try {
+      const { year } = req.params;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      const cashbackRecords = await storage.generateAnnualCashbackReports(parseInt(year));
+      
+      // Calculate totals
+      const totalCashback = cashbackRecords.reduce((sum, record) => 
+        sum + parseFloat(record.cashbackAmount || '0'), 0
+      );
+      
+      // Log the bulk generation
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: null,
+        action: 'annual_cashback_generated',
+        entity: 'cashback',
+        entityId: null,
+        details: { 
+          year: parseInt(year),
+          recordsGenerated: cashbackRecords.length,
+          totalCashbackAmount: totalCashback.toString()
+        },
+      });
+      
+      res.json({
+        year: parseInt(year),
+        recordsGenerated: cashbackRecords.length,
+        totalCashbackAmount: totalCashback,
+        records: cashbackRecords
+      });
+    } catch (error) {
+      console.error("Error generating annual cashback:", error);
+      res.status(500).json({ message: "Failed to generate annual cashback reports" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
