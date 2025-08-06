@@ -17,6 +17,7 @@ import { ChurchPayoutModal } from '@/components/ChurchPayoutModal';
 import { ChurchMemberModal } from '@/components/ChurchMemberModal';
 import { ChurchProjectModal } from '@/components/ChurchProjectModal';
 import { ChurchProfileModal } from '@/components/ChurchProfileModal';
+import { NotificationTest } from '@/components/NotificationTest';
 import ChurPayLogo from "@assets/Churpay Logo tuesd_1754519336175.png";
 
 interface ChurchData {
@@ -412,14 +413,17 @@ export default function ProfessionalChurchDashboard() {
                       <Building2 className="h-8 w-8 text-white" />
                     )}
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-white hover:bg-white/20 rounded-lg"
-                    onClick={() => setShowProfileModal(true)}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  <div className="flex space-x-2">
+                    <NotificationTest />
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-white hover:bg-white/20 rounded-lg"
+                      onClick={() => setShowProfileModal(true)}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="space-y-4">
