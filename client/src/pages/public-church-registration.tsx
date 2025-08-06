@@ -27,7 +27,21 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
 import { Upload, Image, CheckCircle2 } from "lucide-react";
 
+const loginSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 const churchRegistrationSchema = z.object({
+  // Step 1: Login Information (added to existing schema)
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  
   // Church Information
   name: z.string().min(1, "Church name is required"),
   denomination: z.string().min(1, "Denomination is required"),
@@ -80,16 +94,20 @@ const churchRegistrationSchema = z.object({
   hasNpoRegistration: z.boolean().refine(val => val === true, "NPO registration certificate is required"),
   hasTaxClearance: z.boolean().refine(val => val === true, "Tax clearance certificate is required"),
   hasBankConfirmation: z.boolean().refine(val => val === true, "Bank confirmation letter is required"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type ChurchRegistrationForm = z.infer<typeof churchRegistrationSchema>;
 
 const steps = [
-  { id: 1, title: "Church Information", icon: Church },
-  { id: 2, title: "Contact & Address", icon: Mail },
-  { id: 3, title: "Administrative Details", icon: Shield },
-  { id: 4, title: "Banking Information", icon: CreditCard },
-  { id: 5, title: "Document Verification", icon: FileText },
+  { id: 1, title: "Create Account", icon: Shield },
+  { id: 2, title: "Church Information", icon: Church },
+  { id: 3, title: "Contact & Address", icon: Mail },
+  { id: 4, title: "Administrative Details", icon: Shield },
+  { id: 5, title: "Banking Information", icon: CreditCard },
+  { id: 6, title: "Document Verification", icon: FileText },
 ];
 
 export default function PublicChurchRegistration() {
@@ -109,6 +127,11 @@ export default function PublicChurchRegistration() {
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
     defaultValues: {
+      // Step 1: Login Information
+      email: "",
+      password: "",
+      confirmPassword: "",
+      
       // Church Information
       name: "",
       denomination: "",
@@ -268,6 +291,99 @@ export default function PublicChurchRegistration() {
     }
   };
 
+  // Step 1: Create Account Form
+  const renderCreateAccountStep = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Church Account</h2>
+        <p className="text-gray-600">Start by creating a secure account with your email and password</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-medium">Church Email Address *</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input 
+                    {...field} 
+                    type="email"
+                    placeholder="info@yourchurch.org"
+                    className="pl-10 h-12 border-gray-300 focus:border-purple-500"
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-medium">Password *</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    {...field}
+                    type="password"
+                    placeholder="Create a strong password"
+                    className="pl-10 h-12 border-gray-300 focus:border-purple-500"
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+              <p className="text-xs text-gray-500 mt-1">
+                Must contain 8+ characters with uppercase, lowercase, number, and special character
+              </p>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-medium">Confirm Password *</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    {...field}
+                    type="password"
+                    placeholder="Confirm your password"
+                    className="pl-10 h-12 border-gray-300 focus:border-purple-500"
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <div className="flex items-start space-x-2">
+          <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-blue-900">Secure Registration</h4>
+            <p className="text-xs text-blue-700 mt-1">
+              Your information is encrypted and secure. Complete all steps to access the full platform.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -353,8 +469,11 @@ export default function PublicChurchRegistration() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 
-                {/* Step 1: Church Information */}
-                {currentStep === 1 && (
+                {/* Step 1: Create Account */}
+                {currentStep === 1 && renderCreateAccountStep()}
+
+                {/* Step 2: Church Information */}
+                {currentStep === 2 && (
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
@@ -550,7 +669,7 @@ export default function PublicChurchRegistration() {
                 )}
 
                 {/* Step 2: Contact & Address */}
-                {currentStep === 2 && (
+                {currentStep === 3 && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -688,7 +807,7 @@ export default function PublicChurchRegistration() {
                 )}
 
                 {/* Step 3: Administrative Details */}
-                {currentStep === 3 && (
+                {currentStep === 4 && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -767,7 +886,7 @@ export default function PublicChurchRegistration() {
                 )}
 
                 {/* Step 4: Banking Information */}
-                {currentStep === 4 && (
+                {currentStep === 5 && (
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
@@ -868,7 +987,7 @@ export default function PublicChurchRegistration() {
                 )}
 
                 {/* Step 5: Document Verification */}
-                {currentStep === 5 && (
+                {currentStep === 6 && (
                   <div className="space-y-6">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-blue-800 text-sm">
