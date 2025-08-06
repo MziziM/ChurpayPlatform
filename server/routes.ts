@@ -599,6 +599,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update Church Details
+  app.put('/api/super-admin/churches/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      // Get existing church
+      const existingChurch = await storage.getChurch(id);
+      if (!existingChurch) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      // Update the church
+      const updatedChurch = await storage.updateChurch(id, updateData);
+      
+      // Log the update
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: id,
+        action: 'church_updated',
+        entity: 'church',
+        entityId: id,
+        details: { 
+          churchName: updatedChurch.name,
+          updatedBy: superAdminId,
+          updatedFields: Object.keys(updateData)
+        },
+      });
+      
+      res.json({ 
+        message: "Church updated successfully", 
+        church: updatedChurch 
+      });
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error updating church:", error);
+      res.status(500).json({ message: "Failed to update church" });
+    }
+  });
+
+  // Upload/Update Church Document
+  app.put('/api/super-admin/churches/:id/documents', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { documentType, documentUrl } = req.body;
+      const superAdminId = (req.session as any).superAdminId;
+      
+      // Validate document type
+      const validDocumentTypes = ['cipcDocument', 'npoRegistration', 'taxClearanceCertificate', 'bankConfirmationLetter'];
+      if (!validDocumentTypes.includes(documentType)) {
+        return res.status(400).json({ message: "Invalid document type" });
+      }
+
+      // Get existing church
+      const existingChurch = await storage.getChurch(id);
+      if (!existingChurch) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      // Update the document
+      const updatedChurch = await storage.updateChurchDocument(id, documentType, documentUrl);
+      
+      // Log the document update
+      await storage.logActivity({
+        userId: superAdminId,
+        churchId: id,
+        action: 'church_document_updated',
+        entity: 'church',
+        entityId: id,
+        details: { 
+          churchName: updatedChurch.name,
+          documentType,
+          updatedBy: superAdminId
+        },
+      });
+      
+      res.json({ 
+        message: "Church document updated successfully", 
+        church: updatedChurch 
+      });
+    } catch (error) {
+      console.error("🔒 PROTECTED: Error updating church document:", error);
+      res.status(500).json({ message: "Failed to update church document" });
+    }
+  });
+
   // Delete Church
   app.delete('/api/super-admin/churches/:id', requireAdminAuth, async (req, res) => {
     try {

@@ -15,7 +15,8 @@ import {
   Phone, Mail, Calendar, Shield, CheckCircle,
   AlertTriangle, TrendingUp, DollarSign, 
   Activity, Eye, BarChart3, UserCheck, FileText,
-  Download, ExternalLink, Clock, UserPlus
+  Download, ExternalLink, Clock, UserPlus,
+  Edit, Trash2, Upload, Save, X
 } from 'lucide-react';
 
 interface Church {
@@ -106,6 +107,8 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   const [filterProvince, setFilterProvince] = useState<string>('all');
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedChurch, setEditedChurch] = useState<Partial<Church>>({});
   const [documentViewer, setDocumentViewer] = useState<{
     isOpen: boolean;
     url: string;
@@ -182,6 +185,76 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
     }
   });
 
+  // Update Church Mutation
+  const updateChurchMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Church> }) => {
+      return await apiRequest(`/api/super-admin/churches/${id}`, 'PUT', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      setIsEditing(false);
+      setEditedChurch({});
+      toast({
+        title: "Church Updated",
+        description: "Church details have been updated successfully.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update church details.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete Church Mutation
+  const deleteChurchMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest(`/api/super-admin/churches/${id}`, 'DELETE');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      setViewMode('list');
+      setSelectedChurch(null);
+      toast({
+        title: "Church Deleted",
+        description: "Church has been permanently deleted.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Deletion Failed",
+        description: "Failed to delete the church.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update Church Document Mutation
+  const updateDocumentMutation = useMutation({
+    mutationFn: async ({ id, documentType, documentUrl }: { id: string; documentType: string; documentUrl: string }) => {
+      return await apiRequest(`/api/super-admin/churches/${id}/documents`, 'PUT', { documentType, documentUrl });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      toast({
+        title: "Document Updated",
+        description: "Church document has been updated successfully.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update church document.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Document viewing function
   const handleViewDocument = (documentUrl: string, documentName: string) => {
     console.log('handleViewDocument called:', { documentUrl, documentName });
@@ -211,6 +284,49 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
     
     console.log('Setting document viewer state:', viewerState);
     setDocumentViewer(viewerState);
+  };
+
+  // Helper functions for edit mode
+  const handleEditStart = () => {
+    if (selectedChurch) {
+      setEditedChurch({ ...selectedChurch });
+      setIsEditing(true);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditedChurch({});
+  };
+
+  const handleEditSave = () => {
+    if (selectedChurch && editedChurch) {
+      updateChurchMutation.mutate({
+        id: selectedChurch.id,
+        data: editedChurch
+      });
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedChurch && window.confirm('Are you sure you want to permanently delete this church? This action cannot be undone.')) {
+      deleteChurchMutation.mutate(selectedChurch.id);
+    }
+  };
+
+  const handleDocumentUpload = (documentType: string) => {
+    const url = prompt('Enter the new document URL:');
+    if (url && selectedChurch) {
+      updateDocumentMutation.mutate({
+        id: selectedChurch.id,
+        documentType,
+        documentUrl: url
+      });
+    }
+  };
+
+  const updateEditedField = (field: string, value: any) => {
+    setEditedChurch(prev => ({ ...prev, [field]: value }));
   };
 
   const filteredChurches = churches.filter(church => {
@@ -283,13 +399,55 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                   <p className="text-gray-600 text-sm mt-1">Church management and analytics overview</p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                onClick={() => setViewMode('list')}
-                className="text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-              >
-                ← Back to List
-              </Button>
+              <div className="flex items-center space-x-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      onClick={handleEditSave}
+                      disabled={updateChurchMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </Button>
+                    <Button
+                      onClick={handleEditCancel}
+                      variant="outline"
+                      className="border-gray-300"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleEditStart}
+                      variant="outline"
+                      className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Church
+                    </Button>
+                    <Button
+                      onClick={handleDeleteConfirm}
+                      variant="outline"
+                      disabled={deleteChurchMutation.isPending}
+                      className="border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Church
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={() => setViewMode('list')}
+                  className="text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                >
+                  ← Back to List
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -630,17 +788,37 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 <Download className="h-4 w-4 mr-2" />
                                 Download
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('cipcDocument')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Replace
+                              </Button>
                             </>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/purple/white?text=Sample+NPO+Document', 'NPO Registration Certificate')}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Sample
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument('https://via.placeholder.com/800x600/purple/white?text=Sample+NPO+Document', 'NPO Registration Certificate')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Sample
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('cipcDocument')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -679,17 +857,37 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 <Download className="h-4 w-4 mr-2" />
                                 Download
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('taxClearanceCertificate')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Replace
+                              </Button>
                             </>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/green/white?text=Sample+Tax+Certificate', 'Tax Clearance Certificate')}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Sample
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument('https://via.placeholder.com/800x600/green/white?text=Sample+Tax+Certificate', 'Tax Clearance Certificate')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Sample
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('taxClearanceCertificate')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -728,17 +926,37 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 <Download className="h-4 w-4 mr-2" />
                                 Download
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('bankConfirmationLetter')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Replace
+                              </Button>
                             </>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/blue/white?text=Sample+Bank+Letter', 'Bank Confirmation Letter')}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Sample
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument('https://via.placeholder.com/800x600/blue/white?text=Sample+Bank+Letter', 'Bank Confirmation Letter')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Sample
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload('bankConfirmationLetter')}
+                                className="text-purple-600 hover:text-purple-800"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
