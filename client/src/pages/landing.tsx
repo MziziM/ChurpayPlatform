@@ -978,18 +978,7 @@ export default function Landing() {
         
         
         
-        <div className="relative group">
-          <Button 
-            size="lg"
-            className="bg-purple-500 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
-            onClick={() => { setDashboardUserType('church'); setDashboardModalOpen(true); }}
-          >
-            <Church className="h-5 w-5" />
-          </Button>
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Church Dashboard
-          </div>
-        </div>
+        
         
         <div className="relative group">
           <Button 
