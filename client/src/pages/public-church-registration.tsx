@@ -108,6 +108,7 @@ const steps = [
   { id: 4, title: "Administrative Details", icon: Shield },
   { id: 5, title: "Banking Information", icon: CreditCard },
   { id: 6, title: "Document Verification", icon: FileText },
+  { id: 7, title: "Registration Complete", icon: CheckCircle2 },
 ];
 
 export default function PublicChurchRegistration() {
@@ -259,23 +260,21 @@ export default function PublicChurchRegistration() {
       
       toast({
         title: "Registration Submitted!",
-        description: `Welcome ${data.name}! Your church registration has been submitted for review. You can now access your dashboard.`,
+        description: `Welcome ${data.name}! Your church registration has been submitted for review.`,
         variant: "default",
       });
       
-      // Store church info for dashboard access
-      if (result.churchId && result.churchName) {
+      // Store church info for potential dashboard access
+      if (result.id && result.name) {
         localStorage.setItem('churchProfile', JSON.stringify({
-          id: result.churchId,
-          name: result.churchName,
+          id: result.id,
+          name: result.name,
           logoUrl: result.logoUrl
         }));
       }
       
-      // Redirect to church dashboard after successful registration
-      setTimeout(() => {
-        setLocation("/church-dashboard");
-      }, 2000);
+      // Move to completion step instead of immediately redirecting
+      setCurrentStep(7); // Show completion step
     } catch (error: any) {
       toast({
         title: "Registration Failed",
@@ -1166,7 +1165,66 @@ export default function PublicChurchRegistration() {
                   </div>
                 )}
 
-                {/* Navigation Buttons */}
+                {/* Step 7: Registration Complete */}
+                {currentStep === 7 && (
+                  <div className="text-center space-y-6">
+                    <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle2 className="w-12 h-12 text-green-600" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-gray-900">Registration Submitted Successfully!</h3>
+                      <p className="text-gray-600 max-w-md mx-auto">
+                        Your church registration has been submitted for review. You will receive an email notification once your application has been processed.
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-50 rounded-lg p-6 space-y-4">
+                      <h4 className="font-semibold text-blue-900">What happens next?</h4>
+                      <div className="space-y-3 text-sm text-blue-800">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold">1</span>
+                          </div>
+                          <p>Our team will review your registration and documents</p>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold">2</span>
+                          </div>
+                          <p>You'll receive an email with your approval status</p>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold">3</span>
+                          </div>
+                          <p>Once approved, you can access your full church dashboard</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Button
+                        onClick={() => setLocation("/church-dashboard")}
+                        className="bg-gradient-to-r from-purple-500 to-blue-600 text-white px-8"
+                      >
+                        Access Dashboard
+                      </Button>
+                      <div>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setLocation("/")}
+                          className="text-gray-600"
+                        >
+                          Return to Home
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons - Hide on completion step */}
+                {currentStep !== 7 && (
                 <div className="flex justify-between">
                   {currentStep > 1 && (
                     <Button
@@ -1204,6 +1262,7 @@ export default function PublicChurchRegistration() {
                     </Button>
                   )}
                 </div>
+                )}
               </form>
             </Form>
           </CardContent>
