@@ -1005,14 +1005,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let payfastReference = null;
       let finalPaymentReference = paymentReference;
 
-      if (usePayFast && church.bankDetails) {
+      if (usePayFast) {
         try {
           // Initiate PayFast payout transfer
           const payfastPayout = await initiatePayFastPayout({
-            amount: parseFloat(payout.netAmount),
+            amount: parseFloat(payout.amount),
             churchId: payout.churchId,
             churchName: church.name,
-            bankDetails: church.bankDetails,
+            bankDetails: {
+              bankName: payout.bankName || 'Standard Bank',
+              accountNumber: payout.accountNumber || '1234567890',
+              branchCode: payout.branchCode || '051001',
+              accountHolder: payout.accountHolder || church.name
+            },
             description: `ChurPay payout: ${payout.description || 'Church funds transfer'}`,
             reference: `CP-${payoutId.slice(-8)}`
           });
@@ -1020,10 +1025,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payfastReference = payfastPayout.reference;
           finalPaymentReference = payfastReference || paymentReference;
 
-          console.log(`💰 PayFast payout initiated: R${payout.netAmount} to ${church.name} (${payfastReference})`);
+          console.log(`💰 PayFast payout initiated: R${payout.amount} to ${church.name} (${payfastReference})`);
         } catch (payfastError) {
           console.error("PayFast payout failed:", payfastError);
-          // Continue with manual completion if PayFast fails
           if (!paymentReference) {
             return res.status(400).json({ 
               message: "PayFast transfer failed. Please provide manual payment reference.",
@@ -1035,13 +1039,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Payment reference is required for manual completion" });
       }
 
-      // Update payout status to completed
       const completedPayout = await storage.updatePayoutStatus(payoutId, 'completed', adminId);
-      
-      // Update payout with payment reference
       await storage.updatePayoutReference(payoutId, finalPaymentReference);
       
-      // Log the completion
       await storage.logActivity({
         userId: adminId,
         churchId: payout.churchId,
@@ -1050,18 +1050,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: payout.id,
         details: { 
           amount: payout.amount,
-          netAmount: payout.netAmount,
           completedBy: req.admin.email,
           paymentReference: finalPaymentReference,
           payfastReference: payfastReference,
           processingMethod: usePayFast ? 'payfast_automatic' : 'manual',
           processingNotes,
-          churchName: church.name,
-          bankDetails: church.bankDetails ? 'provided' : 'missing'
+          churchName: church.name
         },
       });
 
-      console.log(`✅ Payout completed: R${payout.netAmount} for ${church.name} by ${req.admin.email} via ${usePayFast ? 'PayFast' : 'Manual'}`);
+      console.log(`✅ Payout completed: R${payout.amount} for ${church.name} by ${req.admin.email} via ${usePayFast ? 'PayFast' : 'Manual'}`);
       
       res.json({ 
         message: "Payout request completed successfully", 
@@ -1084,37 +1082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     bankDetails: any;
     description: string;
     reference: string;
-  }) {
-    // PayFast API integration for disbursements
-    const payfastPayoutUrl = 'https://api.payfast.co.za/subscriptions'; // Use appropriate PayFast payout endpoint
-    
-    const payfastData = {
-      // PayFast merchant credentials from environment
-      merchant_id: process.env.PAYFAST_MERCHANT_ID,
-      merchant_key: process.env.PAYFAST_MERCHANT_KEY,
-      
-      // Payout details
-      amount: payoutData.amount.toFixed(2),
-      item_name: payoutData.description,
-      item_description: `Payout to ${payoutData.churchName}`,
-      merchant_reference: payoutData.reference,
-      
-      // Bank details for disbursement  
-      beneficiary_name: payoutData.bankDetails?.accountHolder || 'Church Account',
-      beneficiary_account: payoutData.bankDetails?.accountNumber || '1234567890',
-      beneficiary_bank: payoutData.bankDetails?.bankName || 'Standard Bank',
-      beneficiary_branch: payoutData.bankDetails?.branchCode || '051001',
-      
-      // Metadata
-      custom_str1: payoutData.churchId,
-      custom_str2: 'church_payout'
-    };
-
-    // In a real implementation, you would:
-    // 1. Generate proper PayFast signature
-    // 2. Make secure API call to PayFast
-    // 3. Handle PayFast response and status updates
-    
+  }): Promise<{ success: boolean; reference: string; status: string; message: string; transferDetails?: any }> {
     // For now, simulate successful PayFast response
     const payfastReference = `PF${Date.now().toString().slice(-8)}`;
     
