@@ -189,6 +189,10 @@ export const churches = pgTable("churches", {
   // Status and metadata
   status: churchStatusEnum("status").default('pending'),
   adminUserId: varchar("admin_user_id"), // Foreign key to users
+  passwordSetupToken: varchar("password_setup_token"), // Token for password setup
+  passwordSetupExpiry: timestamp("password_setup_expiry"), // Token expiration
+  approvedAt: timestamp("approved_at"), // When church was approved
+  approvedBy: varchar("approved_by"), // Super admin who approved
   
   // Platform settings
   commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).default('10.00'), // Default 10%

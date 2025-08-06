@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { DocumentViewer } from './DocumentViewer';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   Building2, Users, Search, Filter, MapPin, 
   Phone, Mail, Calendar, Shield, CheckCircle,
   AlertTriangle, TrendingUp, DollarSign, 
-  Activity, Eye, BarChart3, UserCheck, FileText
+  Activity, Eye, BarChart3, UserCheck, FileText,
+  Download, ExternalLink, Clock, UserPlus
 } from 'lucide-react';
 
 interface Church {
@@ -102,11 +106,110 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   const [filterProvince, setFilterProvince] = useState<string>('all');
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [documentViewer, setDocumentViewer] = useState<{
+    isOpen: boolean;
+    url: string;
+    name: string;
+    type: 'image' | 'pdf' | 'unknown';
+  }>({
+    isOpen: false,
+    url: '',
+    name: '',
+    type: 'unknown'
+  });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: churches = [], isLoading } = useQuery<Church[]>({
     queryKey: ['/api/super-admin/churches'],
     enabled: open
   });
+
+  // Church approval mutation
+  const approveChurchMutation = useMutation({
+    mutationFn: async (churchId: string) => {
+      return apiRequest(`/api/super-admin/churches/${churchId}/approve`, {
+        method: 'POST'
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      toast({
+        title: "Church Approved",
+        description: data.message || "Church has been approved and setup email sent to admin.",
+        variant: "default",
+      });
+      // Update selected church state
+      if (selectedChurch) {
+        setSelectedChurch({ ...selectedChurch, status: 'approved' });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Approval Failed",
+        description: "Failed to approve church. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Approval error:', error);
+    }
+  });
+
+  // Church rejection mutation
+  const rejectChurchMutation = useMutation({
+    mutationFn: async ({ churchId, reason }: { churchId: string; reason: string }) => {
+      return apiRequest(`/api/super-admin/churches/${churchId}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason })
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
+      toast({
+        title: "Church Rejected",
+        description: data.message || "Church application has been rejected.",
+        variant: "default",
+      });
+      // Update selected church state
+      if (selectedChurch) {
+        setSelectedChurch({ ...selectedChurch, status: 'rejected' });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Rejection Failed",
+        description: "Failed to reject church. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Rejection error:', error);
+    }
+  });
+
+  // Document viewing function
+  const handleViewDocument = (documentUrl: string, documentName: string) => {
+    if (!documentUrl) {
+      toast({
+        title: "Document Not Available",
+        description: "This document has not been uploaded yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const getDocumentType = (url: string): 'image' | 'pdf' | 'unknown' => {
+      const extension = url.split('.').pop()?.toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) return 'image';
+      if (extension === 'pdf') return 'pdf';
+      return 'unknown';
+    };
+
+    setDocumentViewer({
+      isOpen: true,
+      url: documentUrl,
+      name: documentName,
+      type: getDocumentType(documentUrl)
+    });
+  };
 
   const filteredChurches = churches.filter(church => {
     const matchesSearch = church.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -504,17 +607,30 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                             </p>
                           </div>
                         </div>
-                        {selectedChurch.cipcDocument && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadDocument(selectedChurch.cipcDocument!, 'NPO_Registration_Certificate')}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Document
-                          </Button>
-                        )}
+                        <div className="flex space-x-2">
+                          {selectedChurch.cipcDocument && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument(selectedChurch.cipcDocument!, 'NPO Registration Certificate')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadDocument(selectedChurch.cipcDocument!, 'NPO_Registration_Certificate.pdf')}
+                                className="text-green-600 hover:text-green-800"
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
 
                       {/* Tax Clearance Certificate */}
@@ -530,17 +646,30 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                             </p>
                           </div>
                         </div>
-                        {selectedChurch.taxClearanceCertificate && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadDocument(selectedChurch.taxClearanceCertificate!, 'Tax_Clearance_Certificate')}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Document
-                          </Button>
-                        )}
+                        <div className="flex space-x-2">
+                          {selectedChurch.taxClearanceCertificate && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument(selectedChurch.taxClearanceCertificate!, 'Tax Clearance Certificate')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadDocument(selectedChurch.taxClearanceCertificate!, 'Tax_Clearance_Certificate.pdf')}
+                                className="text-green-600 hover:text-green-800"
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
 
                       {/* Bank Confirmation Letter */}
@@ -556,17 +685,30 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                             </p>
                           </div>
                         </div>
-                        {selectedChurch.bankConfirmationLetter && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadDocument(selectedChurch.bankConfirmationLetter!, 'Bank_Confirmation_Letter')}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Document
-                          </Button>
-                        )}
+                        <div className="flex space-x-2">
+                          {selectedChurch.bankConfirmationLetter && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDocument(selectedChurch.bankConfirmationLetter!, 'Bank Confirmation Letter')}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadDocument(selectedChurch.bankConfirmationLetter!, 'Bank_Confirmation_Letter.pdf')}
+                                className="text-green-600 hover:text-green-800"
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -630,27 +772,53 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                     <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">Application Management</h4>
                       <div className="flex flex-col sm:flex-row gap-4">
-                        <Button
-                          onClick={() => {
-                            // TODO: Implement approve functionality
-                            console.log('Approving church:', selectedChurch.id);
-                          }}
-                          className="bg-green-600 hover:bg-green-700 text-white flex-1"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve Application
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={() => {
-                            // TODO: Implement reject functionality
-                            console.log('Rejecting church:', selectedChurch.id);
-                          }}
-                          className="flex-1"
-                        >
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          Reject Application
-                        </Button>
+                        {selectedChurch.status === 'pending' && (
+                          <>
+                            <Button
+                              onClick={() => approveChurchMutation.mutate(selectedChurch.id)}
+                              disabled={approveChurchMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              {approveChurchMutation.isPending ? 'Approving...' : 'Approve & Send Setup Email'}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => {
+                                const reason = prompt('Please provide a reason for rejection:');
+                                if (reason) {
+                                  rejectChurchMutation.mutate({ churchId: selectedChurch.id, reason });
+                                }
+                              }}
+                              disabled={rejectChurchMutation.isPending}
+                              className="flex-1"
+                            >
+                              <AlertTriangle className="h-4 w-4 mr-2" />
+                              {rejectChurchMutation.isPending ? 'Rejecting...' : 'Reject Application'}
+                            </Button>
+                          </>
+                        )}
+                        
+                        {selectedChurch.status === 'approved' && (
+                          <div className="flex-1 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                              <span className="text-green-800 font-medium">Church Approved</span>
+                            </div>
+                            <p className="text-green-700 text-sm mt-1">
+                              Admin password setup email has been sent to {selectedChurch.adminEmail}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {selectedChurch.status === 'rejected' && (
+                          <div className="flex-1 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <AlertTriangle className="h-5 w-5 text-red-600" />
+                              <span className="text-red-800 font-medium">Application Rejected</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <p className="text-sm text-gray-600 mt-3">
                         Review all documents and information before making a decision.
@@ -877,6 +1045,15 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
           </Card>
         </div>
       </DialogContent>
+      
+      {/* Document Viewer Modal */}
+      <DocumentViewer
+        isOpen={documentViewer.isOpen}
+        onClose={() => setDocumentViewer(prev => ({ ...prev, isOpen: false }))}
+        documentUrl={documentViewer.url}
+        documentName={documentViewer.name}
+        documentType={documentViewer.type}
+      />
     </Dialog>
   );
 }
