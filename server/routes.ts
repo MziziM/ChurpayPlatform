@@ -793,15 +793,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: 'demo-church',
           name: 'Demo Church',
           denomination: 'Non-denominational',
-          memberCount: 50,
+          registrationNumber: 'NPO-123-456',
+          taxNumber: 'TAX-789-012',
+          yearEstablished: '2015',
+          
+          // Contact Information
+          contactEmail: 'info@demochurch.org',
+          contactPhone: '+27 21 123 4567',
+          alternativePhone: '+27 82 555 0123',
+          website: 'https://www.demochurch.org',
+          
+          // Physical Address
           address: '123 Church Street',
           city: 'Cape Town',
           province: 'Western Cape',
-          contactEmail: 'info@demochurch.org',
-          contactPhone: '+27 21 123 4567',
+          postalCode: '8001',
+          country: 'South Africa',
+          
+          // Banking Information
+          bankName: 'First National Bank (FNB)',
+          accountNumber: '1234567890',
+          branchCode: '250655',
+          accountHolder: 'Demo Church',
+          accountType: 'Cheque Account',
+          
+          // Church Details
+          description: 'A welcoming community church serving Cape Town since 2015.',
+          memberCount: 50,
+          servicesTimes: 'Sunday 9AM, 11AM; Wednesday 7PM',
+          leadPastor: 'Pastor John Smith',
+          logoUrl: null,
+          
+          // Administrative Contact
+          adminFirstName: 'John',
+          adminLastName: 'Smith',
+          adminEmail: 'admin@demochurch.org',
+          adminPhone: '+27 21 123 4567',
+          adminPosition: 'Lead Pastor',
+          
+          // Status and metadata
           status: 'approved',
-          registrationDate: '2024-01-15',
-          logoUrl: null
+          registrationDate: '2024-01-15'
         });
       }
       
@@ -810,15 +842,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: church.id,
         name: church.name,
         denomination: church.denomination,
-        memberCount: church.memberCount,
+        registrationNumber: church.registrationNumber,
+        taxNumber: church.taxNumber,
+        yearEstablished: church.yearEstablished,
+        
+        // Contact Information
+        contactEmail: church.contactEmail,
+        contactPhone: church.contactPhone,
+        alternativePhone: church.alternativePhone,
+        website: church.website,
+        
+        // Physical Address
         address: church.address,
         city: church.city,
         province: church.province,
-        contactEmail: church.contactEmail,
-        contactPhone: church.contactPhone,
+        postalCode: church.postalCode,
+        country: church.country || 'South Africa',
+        
+        // Banking Information
+        bankName: church.bankName,
+        accountNumber: church.accountNumber,
+        branchCode: church.branchCode,
+        accountHolder: church.accountHolder,
+        accountType: church.accountType,
+        
+        // Church Details
+        description: church.description,
+        memberCount: church.memberCount,
+        servicesTimes: church.servicesTimes,
+        leadPastor: church.leadPastor,
+        logoUrl: church.logoUrl,
+        
+        // Administrative Contact
+        adminFirstName: church.adminFirstName,
+        adminLastName: church.adminLastName,
+        adminEmail: church.adminEmail,
+        adminPhone: church.adminPhone,
+        adminPosition: church.adminPosition,
+        
+        // Status and metadata
         status: church.status,
         registrationDate: church.createdAt?.toISOString().split('T')[0] || '2024-01-15',
-        logoUrl: church.logoUrl, // Include logo from registration
+        
+        // Financial data
         totalRevenue: '45000.00',
         monthlyRevenue: '12000.00',
         pendingPayouts: '8500.00',
@@ -827,6 +893,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching church profile:', error);
       res.status(500).json({ message: 'Failed to fetch church profile' });
+    }
+  });
+
+  // Update Church Profile
+  app.put('/api/church/profile', async (req, res) => {
+    try {
+      const updateData = req.body;
+      
+      // For demo purposes, just return success
+      // In production, this would update the database
+      res.json({
+        success: true,
+        message: 'Church profile updated successfully',
+        church: updateData
+      });
+    } catch (error) {
+      console.error('Error updating church profile:', error);
+      res.status(500).json({ message: 'Failed to update church profile' });
     }
   });
 
