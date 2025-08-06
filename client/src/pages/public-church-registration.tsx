@@ -237,7 +237,7 @@ export default function PublicChurchRegistration() {
       
       // Redirect to home after successful registration
       setTimeout(() => {
-        window.location.href = "/";
+        setLocation("/");
       }, 3000);
     } catch (error: any) {
       toast({
