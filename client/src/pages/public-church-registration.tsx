@@ -230,6 +230,7 @@ export default function PublicChurchRegistration() {
       // Include uploaded document URLs in the submission
       const submissionData = {
         ...data,
+        logoUrl: uploadedDocuments.logo, // Map logo to logoUrl for church profile
         logo: uploadedDocuments.logo,
         cipcDocument: uploadedDocuments.cipcDocument,
         bankConfirmationLetter: uploadedDocuments.bankConfirmationLetter,
@@ -254,16 +255,27 @@ export default function PublicChurchRegistration() {
         throw new Error(errorData.message || "Registration failed");
       }
 
+      const result = await response.json();
+      
       toast({
         title: "Registration Submitted!",
-        description: "Your church registration has been submitted for review. You will be contacted once approved.",
+        description: `Welcome ${data.name}! Your church registration has been submitted for review. You can now access your dashboard.`,
         variant: "default",
       });
       
-      // Redirect to home after successful registration
+      // Store church info for dashboard access
+      if (result.churchId && result.churchName) {
+        localStorage.setItem('churchProfile', JSON.stringify({
+          id: result.churchId,
+          name: result.churchName,
+          logoUrl: result.logoUrl
+        }));
+      }
+      
+      // Redirect to church dashboard after successful registration
       setTimeout(() => {
-        setLocation("/");
-      }, 3000);
+        setLocation("/church-dashboard");
+      }, 2000);
     } catch (error: any) {
       toast({
         title: "Registration Failed",

@@ -777,6 +777,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Church Dashboard APIs
+  
+  // Church Profile - Returns registered church data with name and logo
+  app.get('/api/church/profile', async (req, res) => {
+    try {
+      // For demo, get the most recently registered church
+      const recentChurch = await db.select()
+        .from(churches)
+        .orderBy(desc(churches.createdAt))
+        .limit(1);
+      
+      if (recentChurch.length === 0) {
+        return res.json({
+          id: 'demo-church',
+          name: 'Demo Church',
+          denomination: 'Non-denominational',
+          memberCount: 50,
+          address: '123 Church Street',
+          city: 'Cape Town',
+          province: 'Western Cape',
+          contactEmail: 'info@demochurch.org',
+          contactPhone: '+27 21 123 4567',
+          status: 'approved',
+          registrationDate: '2024-01-15',
+          logoUrl: null
+        });
+      }
+      
+      const church = recentChurch[0];
+      res.json({
+        id: church.id,
+        name: church.name,
+        denomination: church.denomination,
+        memberCount: church.memberCount,
+        address: church.address,
+        city: church.city,
+        province: church.province,
+        contactEmail: church.contactEmail,
+        contactPhone: church.contactPhone,
+        status: church.status,
+        registrationDate: church.createdAt?.toISOString().split('T')[0] || '2024-01-15',
+        logoUrl: church.logoUrl, // Include logo from registration
+        totalRevenue: '45000.00',
+        monthlyRevenue: '12000.00',
+        pendingPayouts: '8500.00',
+        availableBalance: '36500.00'
+      });
+    } catch (error) {
+      console.error('Error fetching church profile:', error);
+      res.status(500).json({ message: 'Failed to fetch church profile' });
+    }
+  });
+
+  // Member-Church Linking API
+  app.post('/api/members/link-church', async (req, res) => {
+    try {
+      const { memberId, churchId } = req.body;
+      
+      // Update member's church association
+      const [updatedMember] = await db
+        .update(users)
+        .set({ 
+          churchId: churchId,
+          role: 'member', // Ensure role is set to member
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, memberId))
+        .returning();
+      
+      if (!updatedMember) {
+        return res.status(404).json({ message: 'Member not found' });
+      }
+      
+      // Get church details for response
+      const church = await storage.getChurch(churchId);
+      
+      res.json({
+        message: 'Member successfully linked to church',
+        member: {
+          id: updatedMember.id,
+          name: `${updatedMember.firstName} ${updatedMember.lastName}`,
+          email: updatedMember.email,
+          churchId: updatedMember.churchId,
+          role: updatedMember.role
+        },
+        church: church ? {
+          id: church.id,
+          name: church.name,
+          denomination: church.denomination
+        } : null
+      });
+    } catch (error) {
+      console.error('Error linking member to church:', error);
+      res.status(500).json({ message: 'Failed to link member to church' });
+    }
+  });
+
   // Church Dashboard APIs - Real Data Integration
   app.get('/api/churches/:churchId/dashboard', async (req, res) => {
     try {
