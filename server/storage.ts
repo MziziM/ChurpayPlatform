@@ -503,8 +503,7 @@ export class DatabaseStorage implements IStorage {
       churchId: payoutData.churchId,
       requestedBy: payoutData.requestedBy,
       amount: payoutData.amount,
-      processingFee: payoutData.processingFee,
-      netAmount: payoutData.netAmount,
+
       requestType: payoutData.requestType,
       description: payoutData.description,
       urgencyReason: payoutData.urgencyReason,
@@ -521,7 +520,7 @@ export class DatabaseStorage implements IStorage {
   // Get payout by ID
   async getPayoutById(id: string): Promise<Payout | undefined> {
     const [payout] = await db.select().from(payouts).where(eq(payouts.id, id));
-    return payout;
+    return payout || undefined;
   }
 
   // Update payout payment reference
