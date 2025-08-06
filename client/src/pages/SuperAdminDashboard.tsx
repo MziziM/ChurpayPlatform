@@ -24,15 +24,13 @@ interface PlatformStats {
   completedPayouts: string;
   platformFees: string;
   monthlyRevenue: string;
+  monthlyPlatformFees: string;
+  monthlyTransactions: number;
+  newChurchesThisMonth: number;
   revenueGrowth: number;
   transactionGrowth: number;
   churchGrowth: number;
   payoutGrowth: number;
-  // Additional properties for enhanced functionality
-  monthlyTransactions?: number;
-  newChurchesThisMonth?: number;
-  platformReserves?: string;
-  availableReserves?: string;
 }
 
 export default function SuperAdminDashboard() {
@@ -480,17 +478,27 @@ export default function SuperAdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* This Month Platform Stats Card */}
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
-            <div className="flex items-center mb-4">
-              <BarChart3 className="w-5 h-5 mr-2" />
-              <h3 className="text-lg font-semibold">This Month</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                <h3 className="text-lg font-semibold">This Month</h3>
+              </div>
+              {platformStats?.revenueGrowth !== 0 && (
+                <div className={`flex items-center text-sm px-2 py-1 rounded-full bg-white/20 ${
+                  (platformStats?.revenueGrowth || 0) >= 0 ? 'text-green-200' : 'text-red-200'
+                }`}>
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  {(platformStats?.revenueGrowth || 0) >= 0 ? '+' : ''}{platformStats?.revenueGrowth?.toFixed(1)}%
+                </div>
+              )}
             </div>
-            <p className="text-sm opacity-90 mb-6">Platform performance summary</p>
+            <p className="text-sm opacity-90 mb-6">Live monthly performance metrics</p>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Platform Revenue</span>
+                  <span className="text-sm">Monthly Revenue</span>
                 </div>
                 <span className="font-semibold">
                   {statsLoading ? '...' : `R ${platformStats?.monthlyRevenue || '0.00'}`}
@@ -503,17 +511,27 @@ export default function SuperAdminDashboard() {
                   <span className="text-sm">Platform Fees</span>
                 </div>
                 <span className="font-semibold">
-                  {statsLoading ? '...' : `R ${platformStats?.platformFees || '0.00'}`}
+                  {statsLoading ? '...' : `R ${platformStats?.monthlyPlatformFees || '0.00'}`}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
-                  <span className="text-sm">Active Churches</span>
+                  <span className="text-sm">Transactions</span>
                 </div>
                 <span className="font-semibold">
-                  {statsLoading ? '...' : (platformStats?.activeChurches || 0)}
+                  {statsLoading ? '...' : (platformStats?.monthlyTransactions || 0)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                  <span className="text-sm">New Churches</span>
+                </div>
+                <span className="font-semibold">
+                  {statsLoading ? '...' : (platformStats?.newChurchesThisMonth || 0)}
                 </span>
               </div>
             </div>
@@ -530,28 +548,43 @@ export default function SuperAdminDashboard() {
                 View Details →
               </button>
             </div>
-            <p className="text-sm opacity-90 mb-6">Platform earnings & payouts</p>
+            <p className="text-sm opacity-90 mb-6">Live platform earnings & payouts</p>
             
             <div className="text-center">
               <p className="text-4xl font-bold mb-2">
                 {statsLoading ? '...' : `R ${platformStats?.platformFees || '0.00'}`}
               </p>
-              <p className="text-sm opacity-75 mb-4">Platform earnings</p>
+              <p className="text-sm opacity-75 mb-1">Total Platform Earnings</p>
+              
+              {platformStats?.payoutGrowth !== 0 && (
+                <div className={`flex items-center justify-center text-xs mb-4 ${
+                  (platformStats?.payoutGrowth || 0) >= 0 ? 'text-green-200' : 'text-red-200'
+                }`}>
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  {(platformStats?.payoutGrowth || 0) >= 0 ? '+' : ''}{platformStats?.payoutGrowth?.toFixed(1)}% this month
+                </div>
+              )}
               
               <div className="flex items-center justify-center text-sm mb-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
                 <span>Operational & Secured</span>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="bg-white/10 rounded-lg p-2">
-                  <div>Pending Payouts</div>
+                  <div className="opacity-75">Monthly</div>
+                  <div className="font-semibold">
+                    {statsLoading ? '...' : `R ${platformStats?.monthlyPlatformFees || '0.00'}`}
+                  </div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-2">
+                  <div className="opacity-75">Pending</div>
                   <div className="font-semibold">
                     {statsLoading ? '...' : `R ${platformStats?.pendingPayouts || '0.00'}`}
                   </div>
                 </div>
                 <div className="bg-white/10 rounded-lg p-2">
-                  <div>Completed</div>
+                  <div className="opacity-75">Completed</div>
                   <div className="font-semibold">
                     {statsLoading ? '...' : `R ${platformStats?.completedPayouts || '0.00'}`}
                   </div>

@@ -1182,17 +1182,59 @@ export class DatabaseStorage implements IStorage {
         sum: sql<string>`COALESCE(SUM(${payouts.amount}), 0)` 
       }).from(payouts).where(eq(payouts.status, 'completed'));
       
-      // Calculate monthly revenue (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Get current month stats (actual calendar month)
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       
-      const monthlyRevenue = await db.select({ 
-        sum: sql<string>`COALESCE(SUM(${transactions.amount}), 0)` 
+      // Current month revenue, transactions, and platform fees
+      const currentMonthStats = await db.select({ 
+        revenue: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`,
+        fees: sql<string>`COALESCE(SUM(${transactions.platformFee}), 0)`,
+        count: sql<number>`COUNT(*)`
       }).from(transactions)
         .where(and(
           eq(transactions.status, 'completed'),
-          sql`${transactions.createdAt} >= ${thirtyDaysAgo}`
+          sql`${transactions.createdAt} >= ${currentMonthStart}`
         ));
+        
+      // Last month stats for growth calculation
+      const lastMonthStats = await db.select({ 
+        revenue: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`,
+        fees: sql<string>`COALESCE(SUM(${transactions.platformFee}), 0)`,
+        count: sql<number>`COUNT(*)`
+      }).from(transactions)
+        .where(and(
+          eq(transactions.status, 'completed'),
+          sql`${transactions.createdAt} >= ${lastMonthStart}`,
+          sql`${transactions.createdAt} < ${currentMonthStart}`
+        ));
+        
+      // New churches this month
+      const newChurchesThisMonth = await db.select({ count: count() })
+        .from(churches)
+        .where(and(
+          eq(churches.status, 'approved'),
+          sql`${churches.createdAt} >= ${currentMonthStart}`
+        ));
+
+      const monthlyRevenue = currentMonthStats;
+
+      // Calculate growth percentages
+      const currentRevenue = parseFloat(currentMonthStats[0]?.revenue || '0');
+      const lastRevenue = parseFloat(lastMonthStats[0]?.revenue || '0');
+      const revenueGrowth = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 : 0;
+      
+      const currentTransactions = currentMonthStats[0]?.count || 0;
+      const lastTransactions = lastMonthStats[0]?.count || 0;
+      const transactionGrowth = lastTransactions > 0 ? ((currentTransactions - lastTransactions) / lastTransactions) * 100 : 0;
+      
+      const newChurches = newChurchesThisMonth[0]?.count || 0;
+      const churchGrowth = newChurches; // Show actual count of new churches
+      
+      const currentFees = parseFloat(currentMonthStats[0]?.fees || '0');
+      const lastFees = parseFloat(lastMonthStats[0]?.fees || '0');
+      const payoutGrowth = lastFees > 0 ? ((currentFees - lastFees) / lastFees) * 100 : 0;
 
       return {
         totalRevenue: parseFloat(totalRevenue[0].sum || '0').toFixed(2),
@@ -1203,11 +1245,14 @@ export class DatabaseStorage implements IStorage {
         pendingPayouts: parseFloat(pendingPayouts[0].sum || '0').toFixed(2),
         completedPayouts: parseFloat(completedPayouts[0].sum || '0').toFixed(2),
         platformFees: parseFloat(platformFees[0].sum || '0').toFixed(2),
-        monthlyRevenue: parseFloat(monthlyRevenue[0].sum || '0').toFixed(2),
-        revenueGrowth: 12.5, // Calculate actual growth later
-        transactionGrowth: 8.3,
-        churchGrowth: 15.2,
-        payoutGrowth: 6.7
+        monthlyRevenue: currentRevenue.toFixed(2),
+        monthlyTransactions: currentTransactions,
+        monthlyPlatformFees: currentFees.toFixed(2),
+        newChurchesThisMonth: newChurches,
+        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+        transactionGrowth: Math.round(transactionGrowth * 10) / 10,
+        churchGrowth: churchGrowth,
+        payoutGrowth: Math.round(payoutGrowth * 10) / 10
       };
     } catch (error) {
       console.error("Error getting platform stats:", error);
