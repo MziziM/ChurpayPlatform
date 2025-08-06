@@ -129,15 +129,13 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Church approval mutation
   const approveChurchMutation = useMutation({
     mutationFn: async (churchId: string) => {
-      return apiRequest(`/api/super-admin/churches/${churchId}/approve`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/super-admin/churches/${churchId}/approve`, 'POST');
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
       toast({
         title: "Church Approved",
-        description: data.message || "Church has been approved and setup email sent to admin.",
+        description: data?.message || "Church has been approved and setup email sent to admin.",
         variant: "default",
       });
       // Update selected church state
@@ -158,16 +156,13 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Church rejection mutation
   const rejectChurchMutation = useMutation({
     mutationFn: async ({ churchId, reason }: { churchId: string; reason: string }) => {
-      return apiRequest(`/api/super-admin/churches/${churchId}/reject`, {
-        method: 'POST',
-        body: JSON.stringify({ reason })
-      });
+      return apiRequest(`/api/super-admin/churches/${churchId}/reject`, 'POST', { reason });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
       toast({
         title: "Church Rejected",
-        description: data.message || "Church application has been rejected.",
+        description: data?.message || "Church application has been rejected.",
         variant: "default",
       });
       // Update selected church state
@@ -608,7 +603,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          {selectedChurch.cipcDocument && (
+                          {selectedChurch.cipcDocument ? (
                             <>
                               <Button
                                 variant="outline"
@@ -629,6 +624,16 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 Download
                               </Button>
                             </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/purple/white?text=Sample+NPO+Document', 'NPO Registration Certificate')}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Sample
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -647,7 +652,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          {selectedChurch.taxClearanceCertificate && (
+                          {selectedChurch.taxClearanceCertificate ? (
                             <>
                               <Button
                                 variant="outline"
@@ -668,6 +673,16 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 Download
                               </Button>
                             </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/green/white?text=Sample+Tax+Certificate', 'Tax Clearance Certificate')}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Sample
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -686,7 +701,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          {selectedChurch.bankConfirmationLetter && (
+                          {selectedChurch.bankConfirmationLetter ? (
                             <>
                               <Button
                                 variant="outline"
@@ -707,6 +722,16 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                                 Download
                               </Button>
                             </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewDocument('https://via.placeholder.com/800x600/blue/white?text=Sample+Bank+Letter', 'Bank Confirmation Letter')}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Sample
+                            </Button>
                           )}
                         </div>
                       </div>
