@@ -216,7 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         note: note || null,
         paymentMethod: paymentMethod || 'payfast',
         status: 'pending',
-        createdAt: new Date().toISOString()
+        createdAt: new Date() // Use Date object instead of ISO string
       };
 
       // Handle PayFast payment
