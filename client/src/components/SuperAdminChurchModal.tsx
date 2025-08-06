@@ -188,7 +188,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Update Church Mutation
   const updateChurchMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Church> }) => {
-      return await apiRequest(`/api/super-admin/churches/${id}`, 'PUT', data);
+      return await apiRequest('PUT', `/api/super-admin/churches/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
@@ -212,7 +212,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Delete Church Mutation
   const deleteChurchMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/super-admin/churches/${id}`, 'DELETE');
+      return await apiRequest('DELETE', `/api/super-admin/churches/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
@@ -236,7 +236,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
   // Update Church Document Mutation
   const updateDocumentMutation = useMutation({
     mutationFn: async ({ id, documentType, documentUrl }: { id: string; documentType: string; documentUrl: string }) => {
-      return await apiRequest(`/api/super-admin/churches/${id}/documents`, 'PUT', { documentType, documentUrl });
+      return await apiRequest('PUT', `/api/super-admin/churches/${id}/documents`, { documentType, documentUrl });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/churches'] });
