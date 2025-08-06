@@ -211,6 +211,39 @@ export class DatabaseStorage implements IStorage {
     return newChurch;
   }
 
+  // Project operations for sponsored projects
+  async getSponsoredProjects(limit: number = 6): Promise<any[]> {
+    try {
+      const sponsoredProjects = await db.select({
+        id: projects.id,
+        name: projects.name,
+        description: projects.description,
+        targetAmount: projects.targetAmount,
+        currentAmount: projects.currentAmount,
+        imageUrl: projects.imageUrl,
+        endDate: projects.endDate,
+        priority: projects.priority,
+        churchId: projects.churchId,
+        churchName: churches.name,
+        createdAt: projects.createdAt
+      })
+      .from(projects)
+      .innerJoin(churches, eq(projects.churchId, churches.id))
+      .where(and(
+        eq(projects.isSponsored, true),
+        eq(projects.status, 'active'),
+        eq(churches.status, 'approved')
+      ))
+      .orderBy(desc(projects.priority), desc(projects.createdAt))
+      .limit(limit);
+
+      return sponsoredProjects;
+    } catch (error) {
+      console.error('Error fetching sponsored projects:', error);
+      return [];
+    }
+  }
+
   async getChurch(id: string): Promise<Church | undefined> {
     const [church] = await db.select().from(churches).where(eq(churches.id, id));
     return church;

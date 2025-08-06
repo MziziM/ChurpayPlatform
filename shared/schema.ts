@@ -215,11 +215,18 @@ export const projects = pgTable("projects", {
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   isPublic: boolean("is_public").default(false), // Can be accessed by non-members
+  isSponsored: boolean("is_sponsored").default(false), // Sponsored projects appear on landing page
+  sponsorshipAmount: decimal("sponsorship_amount", { precision: 12, scale: 2 }), // Amount paid for sponsorship
+  sponsorshipExpiryDate: timestamp("sponsorship_expiry_date"), // When sponsorship expires
+  priority: integer("priority").default(0), // Higher priority = better placement
   imageUrl: varchar("image_url"),
   createdBy: varchar("created_by"), // User ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = typeof projects.$inferInsert;
 
 // Transactions table
 export const transactions = pgTable("transactions", {
