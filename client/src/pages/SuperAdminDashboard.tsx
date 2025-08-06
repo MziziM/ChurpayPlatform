@@ -11,6 +11,7 @@ import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from "@/lib/queryClient";
 
 // Platform Statistics Type Definition
 interface PlatformStats {
@@ -378,7 +379,40 @@ export default function SuperAdminDashboard() {
 
         {activeTab === 'payouts' && (
           <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Payout Requests</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-white">Payout Requests</h3>
+              {(!payoutsData || payoutsData.length === 0) && (
+                <Button 
+                  size="sm" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/super-admin/demo-payouts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                      });
+                      if (response.ok) {
+                        // Invalidate and refetch payouts data
+                        await queryClient.invalidateQueries({ queryKey: ['/api/super-admin/payouts'] });
+                        toast({
+                          title: "Demo Data Created",
+                          description: "Sample payout requests have been created for testing.",
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Failed to create demo data:', error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to create demo data.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Create Demo Data
+                </Button>
+              )}
+            </div>
             <div className="space-y-4">
               {payoutsLoading ? (
                 <div className="text-gray-400">Loading payouts...</div>
