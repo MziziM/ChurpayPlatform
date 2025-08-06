@@ -20,7 +20,7 @@ import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 import ChurchPayoutDemo from "@/pages/ChurchPayoutDemo";
-import ChurchDashboard from "@/pages/ChurchDashboard";
+
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
