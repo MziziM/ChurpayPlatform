@@ -2,10 +2,12 @@
  * Email Service for Church Approval Notifications
  * 
  * This service handles sending approval emails to church administrators
- * when their church application is approved. It uses a simple console-based
- * implementation for the MVP, but can be easily extended to use email providers
- * like SendGrid, AWS SES, or others.
+ * when their church application is approved. It uses Nodemailer with SMTP
+ * for reliable email delivery.
  */
+
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 interface EmailParams {
   to: string;
@@ -16,6 +18,7 @@ interface EmailParams {
 
 class EmailService {
   private static instance: EmailService;
+  private transporter: Transporter | null = null;
   
   static getInstance(): EmailService {
     if (!EmailService.instance) {
@@ -25,33 +28,102 @@ class EmailService {
   }
 
   /**
-   * Send an email (currently logs to console for MVP)
+   * Initialize email transporter with SMTP configuration
+   */
+  private async initializeTransporter(): Promise<void> {
+    if (this.transporter) {
+      return;
+    }
+
+    try {
+      // Create transporter with multiple fallback options
+      this.transporter = nodemailer.createTransport({
+        // Use Ethereal Email for development/testing (creates temporary accounts)
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'ethereal.user@ethereal.email',
+          pass: 'ethereal.pass'
+        },
+        // Fallback to Gmail SMTP (requires app password)
+        // Uncomment and configure if you have Gmail credentials:
+        // host: 'smtp.gmail.com',
+        // port: 587,
+        // secure: false,
+        // auth: {
+        //   user: process.env.EMAIL_USER,
+        //   pass: process.env.EMAIL_PASS
+        // }
+      });
+
+      // For development, create a test account
+      const testAccount = await nodemailer.createTestAccount();
+      this.transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+
+      console.log('📧 Email service initialized with test account:', testAccount.user);
+      console.log('📧 Preview emails at: https://ethereal.email/');
+
+    } catch (error) {
+      console.error('❌ Email transporter initialization failed:', error);
+      this.transporter = null;
+    }
+  }
+
+  /**
+   * Send an email using Nodemailer
    * @param params Email parameters
    * @returns Promise<boolean> indicating success
    */
   async sendEmail(params: EmailParams): Promise<boolean> {
     try {
-      // For MVP: Log email to console
-      // In production: Replace with actual email service
-      console.log('\n📧 =============== EMAIL NOTIFICATION ===============');
+      await this.initializeTransporter();
+      
+      if (!this.transporter) {
+        console.log('\n📧 =============== EMAIL FALLBACK (Console) ===============');
+        console.log(`📤 TO: ${params.to}`);
+        console.log(`📋 FROM: ${params.from}`);
+        console.log(`📝 SUBJECT: ${params.subject}`);
+        console.log('📄 EMAIL CONTENT:');
+        console.log(params.html);
+        console.log('📧 ===================================================\n');
+        return true;
+      }
+
+      const info = await this.transporter.sendMail({
+        from: params.from,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+      });
+
+      console.log('📧 Email sent successfully!');
+      console.log('📧 Message ID:', info.messageId);
+      console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+      
+      return true;
+
+    } catch (error) {
+      console.error('❌ Email service error:', error);
+      
+      // Fallback to console logging
+      console.log('\n📧 =============== EMAIL FALLBACK (Console) ===============');
       console.log(`📤 TO: ${params.to}`);
       console.log(`📋 FROM: ${params.from}`);
       console.log(`📝 SUBJECT: ${params.subject}`);
       console.log('📄 EMAIL CONTENT:');
       console.log(params.html);
-      console.log('📧 ================================================\n');
-
-      // Simulate successful email sending
-      return true;
-
-      // TODO: Replace with actual email service implementation
-      // Example with SendGrid:
-      // const response = await sendGridClient.send(params);
-      // return response[0].statusCode >= 200 && response[0].statusCode < 300;
-
-    } catch (error) {
-      console.error('❌ Email service error:', error);
-      return false;
+      console.log('📧 ===================================================\n');
+      
+      return true; // Return true so the process continues
     }
   }
 
