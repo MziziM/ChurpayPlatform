@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +88,9 @@ export function AnimatedCommunityWelcome({ onQuickAction }: AnimatedCommunityWel
   const [animationStage, setAnimationStage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
+  // Get authenticated user data
+  const { user } = useAuth();
+
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -122,7 +126,7 @@ export function AnimatedCommunityWelcome({ onQuickAction }: AnimatedCommunityWel
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
-    const name = userStats?.memberSince ? 'friend' : 'there';
+    const name = (user as any)?.firstName || 'friend';
     
     if (hour < 12) return `Good morning, ${name}`;
     if (hour < 17) return `Good afternoon, ${name}`;

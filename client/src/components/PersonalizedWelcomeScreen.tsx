@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,9 @@ interface PersonalizedWelcomeScreenProps {
 export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcomeScreenProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Get authenticated user data
+  const { user } = useAuth();
+
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -76,9 +80,11 @@ export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcome
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    const name = (user as any)?.firstName || 'friend';
+    
+    if (hour < 12) return `Good morning, ${name}`;
+    if (hour < 17) return `Good afternoon, ${name}`;
+    return `Good evening, ${name}`;
   };
 
   const formatDate = (date: Date) => {
