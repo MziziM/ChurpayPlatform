@@ -23,6 +23,9 @@ import {
   Shield
 } from "lucide-react";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
+import { Upload, Image, CheckCircle2 } from "lucide-react";
 
 const churchRegistrationSchema = z.object({
   // Church Information
@@ -58,12 +61,20 @@ const churchRegistrationSchema = z.object({
   servicesTimes: z.string().min(1, "Service times are required"),
   leadPastor: z.string().min(1, "Lead pastor name is required"),
   
+  // Church logo upload
+  logoUrl: z.string().optional(),
+  
   // Banking Information
   bankName: z.string().min(1, "Bank name is required"),
   accountHolder: z.string().min(1, "Account holder name is required"),
   accountNumber: z.string().min(1, "Account number is required"),
   branchCode: z.string().min(1, "Branch code is required"),
   accountType: z.string().min(1, "Account type is required"),
+  
+  // Document file uploads
+  cipcDocument: z.string().optional(),
+  bankConfirmationLetter: z.string().optional(),
+  taxClearanceCertificate: z.string().optional(),
   
   // Documents (required for verification)
   hasNpoRegistration: z.boolean().refine(val => val === true, "NPO registration certificate is required"),
@@ -86,6 +97,12 @@ export default function PublicChurchRegistration() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedDocuments, setUploadedDocuments] = useState<{
+    logo?: string;
+    cipcDocument?: string;
+    bankConfirmationLetter?: string;
+    taxClearanceCertificate?: string;
+  }>({});
 
   const form = useForm<ChurchRegistrationForm>({
     resolver: zodResolver(churchRegistrationSchema),
@@ -122,6 +139,7 @@ export default function PublicChurchRegistration() {
       description: "",
       servicesTimes: "",
       leadPastor: "",
+      logoUrl: "",
       
       // Banking Information
       bankName: "",
@@ -130,6 +148,11 @@ export default function PublicChurchRegistration() {
       branchCode: "",
       accountType: "",
       
+      // Document file uploads
+      cipcDocument: "",
+      bankConfirmationLetter: "",
+      taxClearanceCertificate: "",
+      
       // Documents (required for verification)
       hasNpoRegistration: false,
       hasTaxClearance: false,
@@ -137,13 +160,58 @@ export default function PublicChurchRegistration() {
     },
   });
 
+  // Handle file upload completion
+  const handleFileUpload = async (documentType: string, result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      const uploadUrl = uploadedFile.uploadURL;
+      
+      setUploadedDocuments(prev => ({
+        ...prev,
+        [documentType]: uploadUrl
+      }));
+      
+      // Update form with the uploaded file URL
+      form.setValue(documentType as any, uploadUrl);
+      
+      toast({
+        title: "File uploaded successfully",
+        description: `Your ${documentType} has been uploaded.`,
+      });
+    }
+  };
+
+  // Get upload parameters for object storage
+  const getUploadParameters = async () => {
+    const response = await fetch("/api/objects/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to get upload URL");
+    }
+    
+    const data = await response.json();
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
+  };
+
   const submitRegistration = async (data: ChurchRegistrationForm) => {
     setIsSubmitting(true);
     try {
+      // Include uploaded document URLs in the submission
+      const submissionData = {
+        ...data,
+        ...uploadedDocuments
+      };
+      
       const response = await fetch("/api/churches/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submissionData),
       });
 
       if (!response.ok) {
@@ -442,6 +510,30 @@ export default function PublicChurchRegistration() {
                         </FormItem>
                       )}
                     />
+
+                    {/* Church Logo Upload */}
+                    <div className="space-y-2">
+                      <FormLabel>Church Logo (Optional)</FormLabel>
+                      <div className="flex items-center space-x-4">
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={5242880} // 5MB
+                          onGetUploadParameters={getUploadParameters}
+                          onComplete={(result) => handleFileUpload("logoUrl", result)}
+                          buttonClassName="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                        >
+                          <Image className="h-4 w-4 mr-2" />
+                          Upload Logo
+                        </ObjectUploader>
+                        {uploadedDocuments.logoUrl && (
+                          <div className="flex items-center text-green-600">
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            <span className="text-sm">Logo uploaded</span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500">Upload your church logo (PNG, JPG - max 5MB)</p>
+                    </div>
                   </div>
                 )}
 
@@ -850,6 +942,83 @@ export default function PublicChurchRegistration() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    {/* Document Upload Section */}
+                    <div className="space-y-6 mt-8">
+                      <h4 className="text-lg font-semibold text-gray-900">Upload Required Documents</h4>
+                      
+                      {/* NPO/PBO Registration Certificate */}
+                      <div className="space-y-2">
+                        <FormLabel>NPO/PBO Registration Certificate *</FormLabel>
+                        <div className="flex items-center space-x-4">
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760} // 10MB
+                            onGetUploadParameters={getUploadParameters}
+                            onComplete={(result) => handleFileUpload("cipcDocument", result)}
+                            buttonClassName="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload NPO Certificate
+                          </ObjectUploader>
+                          {uploadedDocuments.cipcDocument && (
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              <span className="text-sm">Certificate uploaded</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">Upload your NPO/PBO registration certificate (PDF - max 10MB)</p>
+                      </div>
+
+                      {/* Tax Clearance Certificate */}
+                      <div className="space-y-2">
+                        <FormLabel>Tax Clearance Certificate *</FormLabel>
+                        <div className="flex items-center space-x-4">
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760} // 10MB
+                            onGetUploadParameters={getUploadParameters}
+                            onComplete={(result) => handleFileUpload("taxClearanceCertificate", result)}
+                            buttonClassName="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Tax Certificate
+                          </ObjectUploader>
+                          {uploadedDocuments.taxClearanceCertificate && (
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              <span className="text-sm">Certificate uploaded</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">Upload your tax clearance certificate (PDF - max 10MB)</p>
+                      </div>
+
+                      {/* Bank Confirmation Letter */}
+                      <div className="space-y-2">
+                        <FormLabel>Bank Confirmation Letter *</FormLabel>
+                        <div className="flex items-center space-x-4">
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760} // 10MB
+                            onGetUploadParameters={getUploadParameters}
+                            onComplete={(result) => handleFileUpload("bankConfirmationLetter", result)}
+                            buttonClassName="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Bank Letter
+                          </ObjectUploader>
+                          {uploadedDocuments.bankConfirmationLetter && (
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              <span className="text-sm">Letter uploaded</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">Upload your bank confirmation letter (PDF - max 10MB)</p>
+                      </div>
                     </div>
                   </div>
                 )}
