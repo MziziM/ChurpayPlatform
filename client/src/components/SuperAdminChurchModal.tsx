@@ -213,7 +213,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-bold text-green-900">R{selectedChurch.monthlyRevenue}</h3>
+                    <h3 className="text-2xl font-bold text-green-900">R{selectedChurch.monthlyRevenue || '0.00'}</h3>
                     <p className="text-green-700 font-medium">Monthly Revenue</p>
                   </div>
                 </CardContent>
@@ -227,7 +227,7 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-bold text-purple-900">{selectedChurch.analytics.revenueGrowth}%</h3>
+                    <h3 className="text-2xl font-bold text-purple-900">{selectedChurch.analytics?.revenueGrowth || 0}%</h3>
                     <p className="text-purple-700 font-medium">Revenue Growth</p>
                   </div>
                 </CardContent>
@@ -741,9 +741,9 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-green-900">
-                    {filteredChurches.filter(c => c.status === 'active').length}
+                    {filteredChurches.filter(c => c.status === 'approved').length}
                   </h3>
-                  <p className="text-green-700 font-medium">Active Churches</p>
+                  <p className="text-green-700 font-medium">Approved Churches</p>
                 </div>
               </CardContent>
             </Card>
