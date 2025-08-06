@@ -43,7 +43,7 @@ function Router() {
           <ProfessionalMemberDashboard />
         </ProtectedRoute>
       </Route>
-      <Route path="/church-dashboard" component={ChurchDashboard} />
+      <Route path="/church-dashboard" component={ProfessionalChurchDashboard} />
       <Route path="/church">
         <ProtectedRoute requiredRole={['church_admin', 'church_staff']}>
           <ProfessionalChurchDashboard />
