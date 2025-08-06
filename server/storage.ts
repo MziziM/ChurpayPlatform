@@ -87,7 +87,9 @@ export interface IStorage {
   getPayout(id: string): Promise<Payout | undefined>;
   getChurchPayouts(churchId: string): Promise<Payout[]>;
   getAllPayouts(status?: string): Promise<Payout[]>;
+  getPayoutById(id: string): Promise<Payout | undefined>;
   updatePayoutStatus(id: string, status: string, processedBy?: string, rejectionReason?: string): Promise<Payout>;
+  updatePayoutReference(payoutId: string, paymentReference: string): Promise<void>;
   
   // Activity logging
   logActivity(activity: InsertActivityLog): Promise<ActivityLog>;
@@ -514,6 +516,12 @@ export class DatabaseStorage implements IStorage {
 
     const [newPayout] = await db.insert(payouts).values(payoutRequest).returning();
     return newPayout;
+  }
+
+  // Get payout by ID
+  async getPayoutById(id: string): Promise<Payout | undefined> {
+    const [payout] = await db.select().from(payouts).where(eq(payouts.id, id));
+    return payout;
   }
 
   // Update payout payment reference
