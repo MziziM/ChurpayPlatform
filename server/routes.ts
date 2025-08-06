@@ -42,15 +42,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertChurchSchema.parse(churchData);
       
-      // Create church data including document URLs
+      // Normalize document URLs for object storage access
+      const objectStorageService = new ObjectStorageService();
+      
       const completeChurchData = {
         ...validatedData,
         status: 'pending' as const,
         adminUserId: 'pending',
-        logoUrl: logo || null,
-        cipcDocument: cipcDocument || null,
-        bankConfirmationLetter: bankConfirmationLetter || null,
-        taxClearanceCertificate: taxClearanceCertificate || null,
+        logoUrl: logo ? objectStorageService.normalizeObjectEntityPath(logo) : null,
+        cipcDocument: cipcDocument ? objectStorageService.normalizeObjectEntityPath(cipcDocument) : null,
+        bankConfirmationLetter: bankConfirmationLetter ? objectStorageService.normalizeObjectEntityPath(bankConfirmationLetter) : null,
+        taxClearanceCertificate: taxClearanceCertificate ? objectStorageService.normalizeObjectEntityPath(taxClearanceCertificate) : null,
       };
 
       console.log('📄 Including documents in church registration:', {
