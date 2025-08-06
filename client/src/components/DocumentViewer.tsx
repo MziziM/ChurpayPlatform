@@ -102,8 +102,11 @@ export function DocumentViewer({
   };
 
   if (!documentUrl) {
+    console.log('DocumentViewer: No document URL provided');
     return null;
   }
+
+  console.log('DocumentViewer rendering:', { isOpen, documentUrl, documentName, documentType });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
