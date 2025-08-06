@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Wallet, 
   ArrowUp, 
@@ -19,9 +20,14 @@ import {
   EyeOff,
   Star,
   Church,
-  Heart
+  Heart,
+  Shield,
+  CheckCircle
 } from "lucide-react";
 import { WalletTransaction } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -43,8 +49,100 @@ export function WalletModal({
   onSend
 }: WalletModalProps) {
   const [showBalance, setShowBalance] = useState(true);
-  const [sendAmount] = useState("");
-  const [sendRecipient] = useState("");
+  const [sendAmount, setSendAmount] = useState("");
+  const [sendRecipient, setSendRecipient] = useState("");
+  const [topUpAmount, setTopUpAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("payfast");
+  const [activeTab, setActiveTab] = useState("transactions");
+  const { toast } = useToast();
+
+  // PayFast wallet top-up mutation
+  const topUpMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await apiRequest('/api/wallet/topup/payfast', {
+        method: 'POST',
+        body: JSON.stringify({ amount })
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      if (data.paymentUrl) {
+        // Redirect to PayFast payment page
+        window.open(data.paymentUrl, '_blank');
+        toast({
+          title: "Redirecting to PayFast",
+          description: "Please complete your payment to top up your wallet.",
+        });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Top-up Failed",
+        description: "Failed to initiate wallet top-up. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // PayFast wallet payment mutation
+  const sendMutation = useMutation({
+    mutationFn: async ({ amount, recipient }: { amount: number; recipient: string }) => {
+      const response = await apiRequest('/api/wallet/send', {
+        method: 'POST',
+        body: JSON.stringify({ amount, recipient })
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Payment Sent",
+        description: "Your payment has been sent successfully.",
+      });
+      setSendAmount("");
+      setSendRecipient("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Payment Failed",
+        description: "Failed to send payment. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTopUp = () => {
+    const amount = parseFloat(topUpAmount);
+    if (amount < 10) {
+      toast({
+        title: "Invalid Amount",
+        description: "Minimum top-up amount is R10.",
+        variant: "destructive",
+      });
+      return;
+    }
+    topUpMutation.mutate(amount);
+  };
+
+  const handleSendMoney = () => {
+    const amount = parseFloat(sendAmount);
+    if (amount <= 0 || amount > walletBalance) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount within your wallet balance.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!sendRecipient) {
+      toast({
+        title: "Missing Recipient",
+        description: "Please enter a recipient email or phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
+    sendMutation.mutate({ amount, recipient: sendRecipient });
+  };
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-ZA', {
@@ -102,14 +200,14 @@ export function WalletModal({
           {/* Wallet Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
-              onClick={onTopUp}
+              onClick={() => setActiveTab("topup")}
               className="bg-green-600 hover:bg-green-700 text-white h-16 rounded-xl flex flex-col items-center justify-center space-y-1"
             >
               <Plus className="h-5 w-5" />
-              <span className="text-sm">Top Up</span>
+              <span className="text-sm">Top Up via PayFast</span>
             </Button>
             <Button
-              onClick={onSend}
+              onClick={() => setActiveTab("send")}
               className="bg-blue-600 hover:bg-blue-700 text-white h-16 rounded-xl flex flex-col items-center justify-center space-y-1"
             >
               <Send className="h-5 w-5" />
@@ -128,9 +226,11 @@ export function WalletModal({
           </div>
 
           {/* Wallet Features Tabs */}
-          <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="transactions">Transactions</TabsTrigger>
+              <TabsTrigger value="topup">Top Up</TabsTrigger>
+              <TabsTrigger value="send">Send</TabsTrigger>
               <TabsTrigger value="rewards">Rewards</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -184,6 +284,162 @@ export function WalletModal({
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="topup" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CreditCard className="h-5 w-5 text-green-600" />
+                    <span>Top Up Wallet with PayFast</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <Shield className="h-5 w-5 text-green-600" />
+                    <span className="text-sm text-green-700">Secure payments powered by PayFast</span>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="topup-amount">Top-up Amount (Minimum R10)</Label>
+                      <Input
+                        id="topup-amount"
+                        type="number"
+                        placeholder="0.00"
+                        value={topUpAmount}
+                        onChange={(e) => setTopUpAmount(e.target.value)}
+                        min="10"
+                        step="0.01"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      {[50, 100, 200, 500].map((amount) => (
+                        <Button
+                          key={amount}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setTopUpAmount(amount.toString())}
+                          className="h-10"
+                        >
+                          R{amount}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Payment Summary:</p>
+                      <div className="flex justify-between text-sm">
+                        <span>Top-up Amount:</span>
+                        <span>R {parseFloat(topUpAmount || "0").toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>PayFast Fee:</span>
+                        <span>R {(parseFloat(topUpAmount || "0") * 0.035 + 2).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold">
+                        <span>Total to Pay:</span>
+                        <span>R {(parseFloat(topUpAmount || "0") + parseFloat(topUpAmount || "0") * 0.035 + 2).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleTopUp}
+                      disabled={!topUpAmount || parseFloat(topUpAmount) < 10 || topUpMutation.isPending}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      {topUpMutation.isPending ? "Processing..." : "Continue to PayFast"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="send" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Send className="h-5 w-5 text-blue-600" />
+                    <span>Send Money</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm text-blue-700">Available Balance: R {walletBalance.toLocaleString()}</span>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="send-recipient">Recipient (Email or Phone)</Label>
+                      <Input
+                        id="send-recipient"
+                        type="text"
+                        placeholder="email@example.com or +27123456789"
+                        value={sendRecipient}
+                        onChange={(e) => setSendRecipient(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="send-amount">Amount to Send</Label>
+                      <Input
+                        id="send-amount"
+                        type="number"
+                        placeholder="0.00"
+                        value={sendAmount}
+                        onChange={(e) => setSendAmount(e.target.value)}
+                        max={walletBalance}
+                        step="0.01"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      {[10, 50, 100, 200].map((amount) => (
+                        <Button
+                          key={amount}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSendAmount(amount.toString())}
+                          disabled={amount > walletBalance}
+                          className="h-10"
+                        >
+                          R{amount}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Transfer Summary:</p>
+                      <div className="flex justify-between text-sm">
+                        <span>Amount to Send:</span>
+                        <span>R {parseFloat(sendAmount || "0").toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Transfer Fee:</span>
+                        <span>R 0.00</span>
+                      </div>
+                      <div className="flex justify-between font-bold">
+                        <span>Total Deducted:</span>
+                        <span>R {parseFloat(sendAmount || "0").toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleSendMoney}
+                      disabled={!sendAmount || !sendRecipient || parseFloat(sendAmount) > walletBalance || sendMutation.isPending}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {sendMutation.isPending ? "Sending..." : "Send Money"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="rewards" className="space-y-4">

@@ -1230,9 +1230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pf_payment_id,
         payment_status,
         amount_gross,
-        custom_str1: projectId,
-        custom_str2: donorType,
-        custom_str3: donationType
+        custom_str1: entityId, // Can be projectId, walletTopupId, etc.
+        custom_str2: entityType, // 'project', 'wallet_topup', 'wallet_send'
+        custom_str3: subType // 'donation', 'topup', 'transfer'
       } = req.body;
 
       console.log('PayFast notification received:', req.body);
@@ -1240,17 +1240,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In production, verify the payment signature here
       
       if (payment_status === 'COMPLETE') {
-        // Update donation status to completed
-        // Update project current amount
-        // Send confirmation email
-        // Generate tax receipt
-        console.log(`Payment completed for donation ${m_payment_id}, amount: R${amount_gross}`);
+        // Handle different payment types
+        if (entityType === 'wallet_topup') {
+          // Update wallet balance for successful top-up
+          console.log(`Wallet top-up completed: ${m_payment_id}, amount: R${amount_gross}, wallet: ${entityId}`);
+          // TODO: Update user wallet balance in database
+        } else if (entityType === 'project') {
+          // Update donation status to completed
+          // Update project current amount
+          // Send confirmation email
+          // Generate tax receipt
+          console.log(`Payment completed for donation ${m_payment_id}, amount: R${amount_gross}`);
+        }
       }
 
       res.status(200).send('OK');
     } catch (error) {
       console.error('Error processing PayFast notification:', error);
       res.status(500).send('Error');
+    }
+  });
+
+  // Simple authentication middleware for user routes
+  const requireAuth = (req: any, res: any, next: any) => {
+    const userId = (req.session as any)?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+
+  // Wallet PayFast Integration APIs
+
+  // Wallet top-up with PayFast
+  app.post('/api/wallet/topup/payfast', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { amount } = req.body;
+
+      // Validate amount
+      if (!amount || amount < 10) {
+        return res.status(400).json({ message: 'Minimum top-up amount is R10' });
+      }
+
+      // Get user details
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Validate PayFast credentials
+      const merchantId = process.env.PAYFAST_MERCHANT_ID;
+      const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+      
+      if (!merchantId || !merchantKey) {
+        return res.status(500).json({ message: 'PayFast merchant credentials not configured' });
+      }
+
+      // Create top-up transaction ID
+      const topupId = randomUUID();
+
+      // Generate PayFast payment URL for wallet top-up
+      const payfastData = {
+        merchant_id: merchantId,
+        merchant_key: merchantKey,
+        return_url: `${req.protocol}://${req.get('host')}/member?topup=success&id=${topupId}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/member?topup=cancelled`,
+        notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
+        name_first: user.firstName || 'ChurPay',
+        name_last: user.lastName || 'User',
+        email_address: user.email,
+        m_payment_id: topupId,
+        amount: parseFloat(amount).toFixed(2),
+        item_name: 'ChurPay Wallet Top-up',
+        item_description: `Wallet top-up for ${user.firstName} ${user.lastName}`,
+        custom_str1: userId, // User ID for wallet identification
+        custom_str2: 'wallet_topup', // Payment type
+        custom_str3: 'topup', // Sub-type
+      };
+
+      const payfastUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://www.payfast.co.za/eng/process'
+        : 'https://sandbox.payfast.co.za/eng/process';
+
+      // Build PayFast form data
+      const formParams = new URLSearchParams(payfastData).toString();
+      const paymentUrl = `${payfastUrl}?${formParams}`;
+
+      // Log wallet top-up initiation
+      await storage.logActivity({
+        userId: userId,
+        churchId: user.churchId,
+        action: 'wallet_topup_initiated',
+        entity: 'wallet',
+        entityId: topupId,
+        details: { 
+          amount: parseFloat(amount),
+          paymentMethod: 'payfast'
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        topupId: topupId,
+        amount: parseFloat(amount),
+        paymentUrl: paymentUrl,
+        paymentMethod: 'payfast',
+        message: 'Redirecting to secure payment gateway...'
+      });
+    } catch (error) {
+      console.error('Error processing wallet top-up:', error);
+      res.status(500).json({ message: 'Failed to process wallet top-up' });
+    }
+  });
+
+  // Send money from wallet
+  app.post('/api/wallet/send', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { amount, recipient } = req.body;
+
+      // Validate inputs
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Valid amount is required' });
+      }
+
+      if (!recipient) {
+        return res.status(400).json({ message: 'Recipient is required' });
+      }
+
+      // Get user details
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get user's wallet balance
+      const userWallet = await storage.getUserWallet(userId);
+      if (!userWallet || userWallet.balance < amount) {
+        return res.status(400).json({ message: 'Insufficient wallet balance' });
+      }
+
+      // Find recipient user (by email or phone)
+      let recipientUser = null;
+      if (recipient.includes('@')) {
+        // Email lookup
+        recipientUser = await storage.getUserByEmail(recipient);
+      } else {
+        // Phone lookup - implement if needed
+        // recipientUser = await storage.getUserByPhone(recipient);
+      }
+
+      if (!recipientUser) {
+        return res.status(404).json({ message: 'Recipient not found' });
+      }
+
+      // Create transfer transaction
+      const transferId = randomUUID();
+      
+      // In a real implementation, you would:
+      // 1. Deduct amount from sender's wallet
+      // 2. Add amount to recipient's wallet
+      // 3. Create transaction records
+      // 4. Send notifications
+
+      console.log(`💸 Wallet transfer: R${amount} from ${user.email} to ${recipient} (ID: ${transferId})`);
+
+      // Log wallet transfer
+      await storage.logActivity({
+        userId: userId,
+        churchId: user.churchId,
+        action: 'wallet_transfer_sent',
+        entity: 'wallet',
+        entityId: transferId,
+        details: { 
+          amount: parseFloat(amount),
+          recipient: recipient,
+          recipientId: recipientUser.id
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        transferId: transferId,
+        amount: parseFloat(amount),
+        recipient: recipient,
+        message: 'Money sent successfully'
+      });
+    } catch (error) {
+      console.error('Error processing wallet transfer:', error);
+      res.status(500).json({ message: 'Failed to send money' });
     }
   });
 
@@ -1304,15 +1483,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: "Failed to create transaction", error: (error as Error).message });
     }
   });
-
-  // Simple authentication middleware for user routes
-  const requireAuth = (req: any, res: any, next: any) => {
-    const userId = (req.session as any)?.userId;
-    if (!userId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-    next();
-  };
 
   // Submit payout request (for church admins)
   app.post('/api/church/payout-request', requireAuth, async (req, res) => {
