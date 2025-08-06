@@ -966,23 +966,6 @@ export default function Landing() {
         <div className="relative group">
           <Button 
             size="lg"
-            className="bg-churpay-gradient text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110"
-            onClick={() => setRegistrationModalOpen(true)}
-          >
-            <ArrowRight className="h-6 w-6" />
-          </Button>
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Get Started
-          </div>
-        </div>
-        
-        
-        
-        
-        
-        <div className="relative group">
-          <Button 
-            size="lg"
             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
             onClick={() => setLocation('/super-admin/signin')}
           >
