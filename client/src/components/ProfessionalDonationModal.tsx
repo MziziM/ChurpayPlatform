@@ -73,28 +73,54 @@ export function ProfessionalDonationModal({
     : ['100', '250', '500', '1000'];
 
   // Fetch user's saved payment methods
-  const { data: paymentMethods = [] } = useQuery({
+  const { data: paymentMethods = [] } = useQuery<Array<{
+    id: string;
+    type: string;
+    cardLast4: string | null;
+    cardBrand: string | null;
+    bankName: string | null;
+    accountType: string | null;
+    userId: string;
+    isActive: boolean | null;
+    lastUsed: Date | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    expiryDate: string | null;
+    cardholderName: string | null;
+  }>>({
     queryKey: ['/api/payment-methods'],
     enabled: isOpen,
   });
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      let endpoint = '/api/donations/give';
-      if (type === 'donation') endpoint = '/api/donations/give';
-      else if (type === 'tithe') endpoint = '/api/donations/tithe';
+      let endpoint = '/api/donations/create';
+      if (type === 'donation') endpoint = '/api/donations/create';
+      else if (type === 'tithe') endpoint = '/api/donations/create';
       else if (type === 'project') endpoint = '/api/projects/sponsor';
+      else if (type === 'topup' && selectedPaymentMethod === 'payfast') endpoint = '/api/wallet/topup/payfast';
       else if (type === 'topup') endpoint = '/api/wallet/topup';
       
-      return await apiRequest(endpoint, 'POST', data);
+      return await apiRequest('POST', endpoint, data);
     },
-    onSuccess: () => {
+    onSuccess: async (response) => {
+      const data = await response.json();
+      
+      // Handle PayFast redirection
+      if (data.paymentUrl && (selectedPaymentMethod === 'payfast' || selectedPaymentMethod === 'card')) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+      
+      // Handle successful wallet transactions
       toast({
         title: "Success!",
         description: `Your ${type} has been processed successfully.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/wallet'] });
       queryClient.invalidateQueries({ queryKey: ['/api/donations/history'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/stats'] });
       handleClose();
     },
     onError: (error: Error) => {
@@ -195,13 +221,14 @@ export function ProfessionalDonationModal({
     
     const submitData = {
       amount: parseFloat(amount),
-      churchId: selectedChurch || "grace-chapel-jburg",
-      projectId: selectedProject || undefined,
-      note: note || undefined,
-      paymentMethodId: selectedPaymentMethod,
-      paymentType: paymentMethodType,
+      donationType: type,
+      paymentMethod: selectedPaymentMethod,
+      note: note.trim() || null,
+      churchId: null, // Will use user's church
+      projectId: selectedProject || null
     };
 
+    console.log('🎯 Submitting donation data:', submitData);
     mutation.mutate(submitData);
   };
 
