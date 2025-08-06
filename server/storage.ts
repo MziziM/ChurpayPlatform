@@ -423,7 +423,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Transaction operations
-  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+  async createTransaction(transaction: InsertTransaction | any): Promise<Transaction | any> {
     const [newTransaction] = await db.insert(transactions).values(transaction).returning();
     
     // Update project amount if it's a project donation
@@ -436,6 +436,34 @@ export class DatabaseStorage implements IStorage {
     }
     
     return newTransaction;
+  }
+
+  async processWalletPayment(userId: string, amount: number, type: string): Promise<any> {
+    // Get user wallet
+    const wallet = await this.getUserWallet(userId);
+    if (!wallet || wallet.availableBalance < amount) {
+      throw new Error('Insufficient wallet balance');
+    }
+
+    // Deduct from wallet
+    await this.updateWalletBalance(wallet.id, wallet.availableBalance - amount);
+
+    // Create wallet transaction record
+    return await this.createWalletTransaction({
+      id: randomUUID(),
+      walletId: wallet.id,
+      type: 'debit',
+      amount: amount.toString(),
+      description: `${type} payment`,
+      status: 'completed',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  }
+
+  async getChurchById(churchId: string): Promise<Church | undefined> {
+    const [church] = await db.select().from(churches).where(eq(churches.id, churchId));
+    return church;
   }
 
   async getTransaction(id: string): Promise<Transaction | undefined> {
