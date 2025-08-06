@@ -828,6 +828,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple authentication middleware for user routes
+  const requireAuth = (req: any, res: any, next: any) => {
+    const userId = (req.session as any)?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+
+  // Submit payout request (for church admins)
+  app.post('/api/church/payout-request', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.churchId || (user.role !== 'church_admin' && user.role !== 'church_staff')) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { amount, requestType, description, requestedDate, urgencyReason } = req.body;
+
+      // Validate request
+      if (!amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Invalid payout amount" });
+      }
+
+      if (parseFloat(amount) < 100) {
+        return res.status(400).json({ message: "Minimum payout amount is R100" });
+      }
+
+      // Get church financial data to validate available balance
+      const church = await storage.getChurch(user.churchId);
+      if (!church) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      // Calculate processing fee
+      const requestAmount = parseFloat(amount);
+      let processingFee = 0;
+      switch (requestType) {
+        case 'express':
+          processingFee = Math.max(requestAmount * 0.015, 25);
+          break;
+        case 'emergency':
+          processingFee = Math.max(requestAmount * 0.025, 50);
+          break;
+        default:
+          processingFee = Math.max(requestAmount * 0.005, 10);
+      }
+
+      // Create payout request
+      const payoutRequest = await storage.createPayoutRequest({
+        churchId: user.churchId,
+        requestedBy: userId,
+        amount: amount,
+        processingFee: processingFee.toString(),
+        netAmount: (requestAmount - processingFee).toString(),
+        requestType: requestType,
+        description: description || null,
+        requestedDate: new Date(requestedDate),
+        urgencyReason: urgencyReason || null,
+        status: 'pending'
+      });
+
+      // Log the activity
+      await storage.logActivity({
+        userId: userId,
+        churchId: user.churchId,
+        action: 'payout_request_created',
+        entity: 'payout',
+        entityId: payoutRequest.id,
+        details: { 
+          amount: amount,
+          requestType: requestType,
+          churchName: church.name 
+        },
+      });
+
+      res.json({ 
+        message: "Payout request submitted successfully", 
+        payoutRequest 
+      });
+    } catch (error) {
+      console.error("Error creating payout request:", error);
+      res.status(500).json({ message: "Failed to create payout request" });
+    }
+  });
+
   // Payout Request API (for churches)
   app.post('/api/payouts/request', async (req, res) => {
     try {

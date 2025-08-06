@@ -472,6 +472,27 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return payout;
   }
+
+  // Payout request operations (simplified version of createPayout)
+  async createPayoutRequest(payoutData: any): Promise<Payout> {
+    const payoutRequest: InsertPayout = {
+      churchId: payoutData.churchId,
+      requestedBy: payoutData.requestedBy,
+      amount: payoutData.amount,
+      processingFee: payoutData.processingFee,
+      netAmount: payoutData.netAmount,
+      requestType: payoutData.requestType,
+      description: payoutData.description,
+      urgencyReason: payoutData.urgencyReason,
+      status: 'pending',
+      requestedDate: payoutData.requestedDate,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const [newPayout] = await db.insert(payouts).values(payoutRequest).returning();
+    return newPayout;
+  }
   
   // Activity logging
   async logActivity(activity: InsertActivityLog): Promise<ActivityLog> {
