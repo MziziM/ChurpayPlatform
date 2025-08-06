@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
+
 import { 
   DollarSign, 
   Users, 
@@ -19,7 +19,7 @@ import {
   Grip,
   X,
   Eye,
-  EyeOff,
+
   Layout,
   Maximize2,
   Minimize2
@@ -134,12 +134,7 @@ const DashboardWidgets: React.FC<DashboardWidgetsProps> = ({ userType, dashboard
     localStorage.setItem(`churpay-widgets-${userType}`, JSON.stringify(newWidgets));
   };
 
-  const toggleWidgetVisibility = (widgetId: string) => {
-    const newWidgets = widgets.map(widget =>
-      widget.id === widgetId ? { ...widget, visible: !widget.visible } : widget
-    );
-    saveWidgets(newWidgets);
-  };
+
 
   const changeWidgetSize = (widgetId: string, newSize: 'small' | 'medium' | 'large') => {
     const newWidgets = widgets.map(widget =>
@@ -177,14 +172,7 @@ const DashboardWidgets: React.FC<DashboardWidgetsProps> = ({ userType, dashboard
               >
                 {widget.size === 'large' ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 bg-white/90 hover:bg-white"
-                onClick={() => toggleWidgetVisibility(widget.id)}
-              >
-                <EyeOff className="h-3 w-3" />
-              </Button>
+
             </div>
           )}
           
@@ -356,10 +344,7 @@ const DashboardWidgets: React.FC<DashboardWidgetsProps> = ({ userType, dashboard
                       </Button>
                     ))}
                   </div>
-                  <Switch
-                    checked={widget.visible}
-                    onCheckedChange={() => toggleWidgetVisibility(widget.id)}
-                  />
+
                 </div>
               </div>
             ))}
