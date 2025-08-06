@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { storage } from './storage';
-import { emailService } from './emailService';
+import { notificationService } from './notificationService';
 
 export class ChurchApprovalService {
   private static instance: ChurchApprovalService;
@@ -38,17 +38,11 @@ export class ChurchApprovalService {
         approvedBy: superAdminId
       });
 
-      // Send approval email with password setup link
-      const emailSent = await emailService.sendEmail({
-        to: church.adminEmail,
-        subject: `🎉 ${church.name} - Church Application Approved!`,
-        html: emailService.generateChurchApprovalEmail(
-          church.name,
-          church.adminEmail,
-          passwordSetupToken
-        ),
-        from: 'ChurPay Platform <noreply@churpay.com>'
-      });
+      // Send approval email with the new notification service
+      const emailSent = await notificationService.sendChurchApprovalEmail(
+        church.adminEmail,
+        church.name
+      );
 
       if (!emailSent) {
         console.error('Failed to send approval email to:', church.adminEmail);

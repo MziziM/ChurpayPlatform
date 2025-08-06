@@ -13,6 +13,7 @@ import {
   ObjectStorageService,
   ObjectNotFoundError,
 } from "./objectStorage";
+import { notificationService } from "./notificationService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
