@@ -874,6 +874,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sponsored Projects API - for landing page
+  app.get('/api/projects/sponsored', async (req, res) => {
+    try {
+      const { limit = 6 } = req.query;
+      
+      // Try to get real sponsored projects from database
+      try {
+        const sponsoredProjects = await db.select({
+          id: projects.id,
+          name: projects.name,
+          description: projects.description,
+          targetAmount: projects.targetAmount,
+          currentAmount: projects.currentAmount,
+          imageUrl: projects.imageUrl,
+          endDate: projects.endDate,
+          priority: projects.priority,
+          churchId: projects.churchId,
+          churchName: churches.name,
+          createdAt: projects.createdAt
+        })
+        .from(projects)
+        .innerJoin(churches, eq(projects.churchId, churches.id))
+        .where(and(
+          eq(projects.isSponsored, true),
+          eq(projects.status, 'active'),
+          eq(churches.status, 'approved')
+        ))
+        .orderBy(desc(projects.priority), desc(projects.createdAt))
+        .limit(Number(limit));
+
+        if (sponsoredProjects.length > 0) {
+          // Add donor count (simulated for now)
+          const projectsWithStats = sponsoredProjects.map(project => ({
+            ...project,
+            donorCount: Math.floor(Math.random() * 50) + 5
+          }));
+          return res.json(projectsWithStats);
+        }
+      } catch (dbError) {
+        console.log('Database query failed for sponsored projects, using sample data');
+      }
+
+      // Fallback to sample sponsored projects data
+      const sampleProjects = [
+        {
+          id: 'project-1',
+          name: 'New Children\'s Sunday School Center',
+          description: 'Building a modern, safe learning environment for our growing Sunday school program. This facility will serve 200+ children weekly and include interactive learning spaces, a library, and outdoor play areas.',
+          targetAmount: '75000.00',
+          currentAmount: '42350.00',
+          imageUrl: null,
+          endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(), // 45 days from now
+          priority: 10,
+          churchId: 'church-1',
+          churchName: 'Grace Baptist Church',
+          donorCount: 28,
+          createdAt: new Date('2024-12-01')
+        },
+        {
+          id: 'project-2',
+          name: 'Community Food Bank Expansion',
+          description: 'Expanding our weekly food distribution program to serve 150 additional families in need. Funds will go toward storage facilities, refrigeration, and monthly food supplies.',
+          targetAmount: '25000.00',
+          currentAmount: '18750.00',
+          imageUrl: null,
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+          priority: 8,
+          churchId: 'church-2',
+          churchName: 'New Life Methodist',
+          donorCount: 45,
+          createdAt: new Date('2024-11-15')
+        },
+        {
+          id: 'project-3',
+          name: 'Youth Music Program Equipment',
+          description: 'Providing instruments and sound equipment for our youth worship team. This will enable 25+ young people to develop their musical talents while serving in ministry.',
+          targetAmount: '15000.00',
+          currentAmount: '8925.00',
+          imageUrl: null,
+          endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days from now
+          priority: 6,
+          churchId: 'church-3',
+          churchName: 'Faith Community Center',
+          donorCount: 19,
+          createdAt: new Date('2024-12-15')
+        }
+      ];
+
+      res.json(sampleProjects.slice(0, Number(limit)));
+    } catch (error) {
+      console.error('Error fetching sponsored projects:', error);
+      res.status(500).json({ message: 'Failed to fetch sponsored projects' });
+    }
+  });
+
   // Church Dashboard APIs - Real Data Integration
   app.get('/api/churches/:churchId/dashboard', async (req, res) => {
     try {

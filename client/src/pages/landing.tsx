@@ -56,6 +56,11 @@ export default function Landing() {
     enabled: true,
   });
 
+  const { data: sponsoredProjects } = useQuery({
+    queryKey: ["/api/projects/sponsored"],
+    enabled: true,
+  });
+
   // Redirect authenticated users to their appropriate dashboard
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -463,6 +468,113 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Sponsored Projects Section */}
+      {sponsoredProjects && sponsoredProjects.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="flex items-center justify-center mb-4">
+                <Heart className="h-6 w-6 text-red-500 mr-2" />
+                <Badge className="bg-purple-100 text-purple-700 px-3 py-1">Featured Projects</Badge>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Community Impact Projects</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Support meaningful initiatives that make a real difference in communities across South Africa
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sponsoredProjects.slice(0, 6).map((project: any, index: number) => {
+                const progressPercentage = Math.min((parseFloat(project.currentAmount) / parseFloat(project.targetAmount)) * 100, 100);
+                
+                return (
+                  <Card key={project.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-200/50">
+                    {project.imageUrl && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img 
+                          src={project.imageUrl} 
+                          alt={project.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-white/90 text-gray-700 shadow-sm">
+                            {progressPercentage.toFixed(0)}% Funded
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-bold text-lg text-gray-900 line-clamp-2">{project.name}</h3>
+                        <div className="ml-2 flex-shrink-0">
+                          <Badge variant="outline" className="text-xs">
+                            {project.churchName}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{project.description}</p>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-semibold text-gray-900">
+                            R{parseFloat(project.currentAmount).toLocaleString()} / R{parseFloat(project.targetAmount).toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${progressPercentage}%` }}
+                          ></div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>{project.donorCount || 0} supporters</span>
+                          {project.endDate && (
+                            <span>
+                              Ends {new Date(project.endDate).toLocaleDateString('en-ZA', { 
+                                day: 'numeric', 
+                                month: 'short' 
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300"
+                        onClick={() => {
+                          // Redirect to project donation page or open donation modal
+                          setRegistrationModalOpen(true);
+                        }}
+                      >
+                        Support This Project
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            
+            {sponsoredProjects.length > 6 && (
+              <div className="text-center mt-8">
+                <Button 
+                  variant="outline" 
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => scrollToSection('features')}
+                >
+                  View All Projects
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Platform Features */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
