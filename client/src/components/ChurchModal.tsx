@@ -33,30 +33,46 @@ interface ChurchModalProps {
 export function ChurchModal({ isOpen, onClose, churchId }: ChurchModalProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Fetch church data
-  const { data: churches = [] } = useQuery<Church[]>({
-    queryKey: ['/api/churches'],
+  // Fetch user's actual church data
+  const { data: userChurch } = useQuery<{
+    id: string;
+    name: string;
+    denomination: string;
+    logoUrl?: string;
+    description: string;
+    leadPastor: string;
+    city: string;
+    province: string;
+    location: string;
+    memberCount: number;
+    contactEmail: string;
+    contactPhone: string;
+    website: string;
+    servicesTimes: string[];
+    status: string;
+  }>({
+    queryKey: ['/api/user/church'],
     enabled: isOpen,
   });
 
-  // Use the first church if no specific churchId is provided
-  const church = churchId ? churches.find(c => c.id === churchId) : churches[0];
+  // Use user's church data
+  const church = userChurch;
 
-  // Mock additional church data
+  // Use real church data with safe defaults
   const churchDetails = church ? {
     ...church,
-    pastorName: 'Rev. Michael Johnson',
-    founded: '1985',
-    denomination: 'Baptist',
-    services: ['Sunday 09:00', 'Sunday 18:00', 'Wednesday 19:00'],
-    website: 'www.gracebaptist.org.za',
-    phone: '+27 21 123 4567',
-    email: 'info@gracebaptist.org.za',
-    address: '123 Church Street, Cape Town, 8001',
-    yearlyGoal: 500000,
-    currentYearDonations: 325000,
-    projectsActive: 3,
-    projectsCompleted: 12,
+    pastorName: church.leadPastor || 'Pastor',
+    founded: '2020', // Could be added to church schema later
+    services: Array.isArray(church.servicesTimes) ? church.servicesTimes : ['Sunday 09:00', 'Sunday 18:00'],
+    phone: church.contactPhone || 'Not provided',
+    email: church.contactEmail || 'Not provided',
+    address: church.location || 'Location not provided',
+    yearlyGoal: 500000, // Could be added to church schema later
+    currentYearDonations: 325000, // Could be calculated from real data
+    projectsActive: 3, // Could be calculated from real data
+    projectsCompleted: 12, // Could be calculated from real data
+    totalDonations: '325000', // Could be calculated from real data
+    image: church.logoUrl, // Alias for backward compatibility
     recentActivities: [
       { type: 'donation', amount: 'R 1,500', member: 'Anonymous', time: '2 hours ago' },
       { type: 'project', name: 'Youth Camp Fund', progress: '+R 850', time: '5 hours ago' },
@@ -175,7 +191,7 @@ export function ChurchModal({ isOpen, onClose, churchId }: ChurchModalProps) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Total Donations</p>
-                      <p className="text-2xl font-bold text-green-600">R {parseInt(churchDetails.totalDonations).toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-green-600">R {parseInt(churchDetails.totalDonations || '0').toLocaleString()}</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                       <Heart className="h-6 w-6 text-green-600" />

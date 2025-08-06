@@ -173,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Church not found' });
       }
 
-      // Return real church data
+      // Return real church data with location formatted for UI
       res.json({
         id: church.id,
         name: church.name,
@@ -183,6 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         leadPastor: church.leadPastor,
         city: church.city,
         province: church.province,
+        location: `${church.city || 'Unknown City'}, ${church.province || 'South Africa'}`, // Formatted location for UI
         memberCount: church.memberCount,
         contactEmail: church.contactEmail,
         contactPhone: church.contactPhone,
