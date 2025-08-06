@@ -725,7 +725,13 @@ export default function ProfessionalMemberDashboard() {
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
         type={donationType}
-        walletBalance="0"
+        churches={userChurch ? [{
+          id: userChurch.id,
+          name: userChurch.name,
+          description: userChurch.description || '',
+          location: userChurch.location || `${userChurch.city}, ${userChurch.province}`
+        }] : []}
+        walletBalance={walletData?.balance?.toString() || "0"}
       />
 
 

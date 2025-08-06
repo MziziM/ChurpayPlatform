@@ -52,7 +52,7 @@ export function ProfessionalDonationModal({
   projects = [],
   walletBalance = "0" 
 }: ProfessionalDonationModalProps) {
-  const [selectedChurch, setSelectedChurch] = useState<string>("Grace Chapel");
+  const [selectedChurch, setSelectedChurch] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
@@ -385,7 +385,6 @@ export function ProfessionalDonationModal({
                         <SelectValue placeholder="Select your church" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Grace Chapel">Grace Chapel - Johannesburg</SelectItem>
                         {churches.map((church) => (
                           <SelectItem key={church.id} value={church.id}>
                             {church.name} - {church.location}
