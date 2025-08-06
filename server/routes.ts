@@ -8,6 +8,10 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
+import {
+  ObjectStorageService,
+  ObjectNotFoundError,
+} from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -1486,6 +1490,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching community insights:", error);
       res.status(500).json({ message: "Failed to fetch community insights" });
+    }
+  });
+
+  // Object Storage endpoints for document uploads
+  app.post("/api/objects/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error creating upload URL:", error);
+      res.status(500).json({ error: "Failed to create upload URL" });
+    }
+  });
+
+  // Endpoint to serve uploaded documents (public access for church verification)
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // Endpoint to update document URLs after upload
+  app.put("/api/churches/:churchId/documents", async (req, res) => {
+    try {
+      const { churchId } = req.params;
+      const { documentType, documentUrl } = req.body;
+      
+      if (!documentType || !documentUrl) {
+        return res.status(400).json({ error: "Document type and URL are required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeObjectEntityPath(documentUrl);
+      
+      // Update church record with document path
+      const updateData: any = {};
+      updateData[documentType] = normalizedPath;
+      
+      // Note: This is a simplified update - in a real implementation you'd want proper validation
+      await storage.updateChurchDocument(churchId, documentType, normalizedPath);
+      
+      res.json({ success: true, path: normalizedPath });
+    } catch (error) {
+      console.error("Error updating church document:", error);
+      res.status(500).json({ error: "Failed to update document" });
     }
   });
 

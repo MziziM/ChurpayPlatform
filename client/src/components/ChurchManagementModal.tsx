@@ -353,26 +353,65 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                               <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                 <div className="flex items-center mb-3">
                                   <Shield className="w-4 h-4 mr-2 text-gray-500" />
-                                  <span className="text-sm font-medium">Document Verification Status</span>
+                                  <span className="text-sm font-medium">Document Verification & Downloads</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 text-xs">
-                                  <div className="flex items-center">
-                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasNpoRegistration ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                    <span className={church.hasNpoRegistration ? 'text-green-600' : 'text-red-600'}>
-                                      NPO Registration
-                                    </span>
+                                <div className="grid grid-cols-1 gap-3 text-xs">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <div className={`w-2 h-2 rounded-full mr-2 ${church.hasNpoRegistration ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                      <span className={church.hasNpoRegistration ? 'text-green-600' : 'text-red-600'}>
+                                        NPO Registration Certificate
+                                      </span>
+                                    </div>
+                                    {church.cipcDocument && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={() => window.open(church.cipcDocument, '_blank')}
+                                      >
+                                        <FileText className="h-3 w-3 mr-1" />
+                                        View
+                                      </Button>
+                                    )}
                                   </div>
-                                  <div className="flex items-center">
-                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasTaxClearance ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                    <span className={church.hasTaxClearance ? 'text-green-600' : 'text-red-600'}>
-                                      Tax Clearance
-                                    </span>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <div className={`w-2 h-2 rounded-full mr-2 ${church.hasTaxClearance ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                      <span className={church.hasTaxClearance ? 'text-green-600' : 'text-red-600'}>
+                                        Tax Clearance Certificate
+                                      </span>
+                                    </div>
+                                    {church.taxClearanceCertificate && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={() => window.open(church.taxClearanceCertificate, '_blank')}
+                                      >
+                                        <FileText className="h-3 w-3 mr-1" />
+                                        View
+                                      </Button>
+                                    )}
                                   </div>
-                                  <div className="flex items-center">
-                                    <div className={`w-2 h-2 rounded-full mr-2 ${church.hasBankConfirmation ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                    <span className={church.hasBankConfirmation ? 'text-green-600' : 'text-red-600'}>
-                                      Bank Confirmation
-                                    </span>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <div className={`w-2 h-2 rounded-full mr-2 ${church.hasBankConfirmation ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                      <span className={church.hasBankConfirmation ? 'text-green-600' : 'text-red-600'}>
+                                        Bank Confirmation Letter
+                                      </span>
+                                    </div>
+                                    {church.bankConfirmationLetter && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={() => window.open(church.bankConfirmationLetter, '_blank')}
+                                      >
+                                        <FileText className="h-3 w-3 mr-1" />
+                                        View
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               </div>

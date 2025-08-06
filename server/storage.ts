@@ -58,6 +58,7 @@ export interface IStorage {
   getChurch(id: string): Promise<Church | undefined>;
   getChurchByAdminId(adminId: string): Promise<Church | undefined>;
   updateChurchStatus(id: string, status: string, processedBy?: string): Promise<Church>;
+  updateChurchDocument(churchId: string, documentType: string, documentPath: string): Promise<Church>;
   getAllChurches(limit?: number, offset?: number): Promise<Church[]>;
   getPendingChurches(): Promise<Church[]>;
   getApprovedChurches(): Promise<Church[]>;
@@ -204,6 +205,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(churches.id, id))
       .returning();
     return church;
+  }
+
+  async updateChurchDocument(churchId: string, documentType: string, documentPath: string): Promise<Church> {
+    const updateData: any = {};
+    updateData[documentType] = documentPath;
+    updateData.updatedAt = new Date();
+    
+    const [updatedChurch] = await db
+      .update(churches)
+      .set(updateData)
+      .where(eq(churches.id, churchId))
+      .returning();
+    
+    return updatedChurch;
   }
 
   async deleteChurch(id: string): Promise<void> {
