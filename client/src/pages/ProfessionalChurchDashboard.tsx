@@ -136,23 +136,24 @@ export default function ProfessionalChurchDashboard() {
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
-              {/* Church Logo or Default */}
-              {churchData?.logoUrl ? (
-                <img 
-                  src={churchData.logoUrl} 
-                  alt={`${churchData.name} Logo`}
-                  className="w-8 h-8 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                  <Church className="text-white h-4 w-4" />
+            <div className="flex items-center space-x-4">
+              {/* ChurPay Logo */}
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-sm">C</span>
                 </div>
-              )}
-              {/* Display Church Name or Default */}
-              <span className="text-xl font-semibold text-gray-900">
-                {churchData?.name || 'ChurPay Church'}
-              </span>
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">
+                  ChurPay
+                </span>
+              </div>
+              
+              {/* Church Name */}
+              <div className="hidden md:flex items-center space-x-2">
+                <span className="text-gray-400">|</span>
+                <span className="text-lg font-medium text-gray-700">
+                  {churchData?.name || 'Church Dashboard'}
+                </span>
+              </div>
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
