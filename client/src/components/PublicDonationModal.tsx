@@ -49,7 +49,8 @@ export function PublicDonationModal({ isOpen, onClose, project }: PublicDonation
   const donationMutation = useMutation({
     mutationFn: async (donationData: any) => {
       if (project) {
-        return await apiRequest(`/api/projects/${project.id}/donate`, "POST", donationData);
+        const res = await apiRequest("POST", `/api/projects/${project.id}/donate`, donationData);
+        return await res.json();
       }
       throw new Error("No project selected");
     },
