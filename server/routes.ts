@@ -1243,14 +1243,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Handle different payment types
         if (entityType === 'wallet_topup') {
           // Update wallet balance for successful top-up
-          console.log(`Wallet top-up completed: ${m_payment_id}, amount: R${amount_gross}, wallet: ${entityId}`);
+          console.log(`💰 Wallet top-up completed: ${m_payment_id}, amount: R${amount_gross}, user: ${entityId}`);
           // TODO: Update user wallet balance in database
+          // await storage.updateWalletBalance(entityId, parseFloat(amount_gross));
+        } else if (entityType === 'donation') {
+          // Update donation/tithe status to completed
+          console.log(`🙏 Donation completed: ${m_payment_id}, amount: R${amount_gross}, type: ${subType}`);
+          // TODO: Update transaction status and church balance
+          // await storage.updateTransactionStatus(m_payment_id, 'completed');
         } else if (entityType === 'project') {
-          // Update donation status to completed
-          // Update project current amount
-          // Send confirmation email
-          // Generate tax receipt
-          console.log(`Payment completed for donation ${m_payment_id}, amount: R${amount_gross}`);
+          // Update project donation status to completed
+          console.log(`🎯 Project donation completed: ${m_payment_id}, amount: R${amount_gross}, project: ${entityId}`);
+          // TODO: Update project current amount and donation status
+          // await storage.updateProjectAmount(entityId, parseFloat(amount_gross));
         }
       }
 
@@ -1269,6 +1274,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+
+  // Donation and Tithe PayFast Integration APIs
+
+  // Create donation/tithe with PayFast integration
+  app.post('/api/donations/create', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { amount, donationType, paymentMethod, churchId, note, projectId } = req.body;
+
+      // Validate amount
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Valid donation amount is required' });
+      }
+
+      // Get user details
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Use user's church if no churchId provided
+      const targetChurchId = churchId || user.churchId;
+      if (!targetChurchId) {
+        return res.status(400).json({ message: 'Church ID is required' });
+      }
+
+      // Get church details
+      const church = await storage.getChurch(targetChurchId);
+      if (!church) {
+        return res.status(404).json({ message: 'Church not found' });
+      }
+
+      // Handle wallet payments
+      if (paymentMethod === 'wallet') {
+        const userWallet = await storage.getUserWallet(userId);
+        const walletBalance = parseFloat(userWallet?.availableBalance || '0');
+        if (!userWallet || walletBalance < amount) {
+          return res.status(400).json({ message: 'Insufficient wallet balance' });
+        }
+
+        // Create transaction record
+        const transactionData = {
+          userId: userId,
+          churchId: targetChurchId,
+          amount: parseFloat(amount).toString(),
+          donationType: donationType || 'donation',
+          paymentMethod: 'wallet',
+          status: 'completed' as const,
+          metadata: note ? { note } : null,
+          projectId: projectId || null
+        };
+
+        const transaction = await storage.createTransaction(transactionData);
+
+        // Log transaction
+        await storage.logActivity({
+          userId: userId,
+          churchId: targetChurchId,
+          action: 'donation_completed',
+          entity: 'transaction',
+          entityId: transaction.id,
+          details: { 
+            amount: parseFloat(amount),
+            type: donationType,
+            paymentMethod: 'wallet'
+          },
+        });
+
+        return res.status(201).json({
+          success: true,
+          transactionId: transaction.id,
+          amount: parseFloat(amount),
+          paymentMethod: 'wallet',
+          message: 'Donation processed successfully from wallet'
+        });
+      }
+
+      // Handle PayFast payments
+      if (paymentMethod === 'payfast' || paymentMethod === 'card') {
+        // Validate PayFast credentials
+        const merchantId = process.env.PAYFAST_MERCHANT_ID;
+        const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+        
+        if (!merchantId || !merchantKey) {
+          return res.status(500).json({ message: 'PayFast merchant credentials not configured' });
+        }
+
+        // Create donation transaction ID
+        const donationId = randomUUID();
+
+        // Generate PayFast payment URL for donation
+        const payfastData: Record<string, string> = {
+          merchant_id: merchantId,
+          merchant_key: merchantKey,
+          return_url: `${req.protocol}://${req.get('host')}/member?donation=success&id=${donationId}`,
+          cancel_url: `${req.protocol}://${req.get('host')}/member?donation=cancelled`,
+          notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
+          name_first: user.firstName || 'ChurPay',
+          name_last: user.lastName || 'User',
+          email_address: user.email || 'member@churpay.com',
+          m_payment_id: donationId,
+          amount: parseFloat(amount).toFixed(2),
+          item_name: `${donationType === 'tithe' ? 'Tithe' : 'Donation'} to ${church.name}`,
+          item_description: note || `${donationType === 'tithe' ? 'Tithe payment' : 'Donation'} to ${church.name}`,
+          custom_str1: donationId, // Donation ID for tracking
+          custom_str2: 'donation', // Payment type
+          custom_str3: donationType || 'donation', // Sub-type
+        };
+
+        const payfastUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://www.payfast.co.za/eng/process'
+          : 'https://sandbox.payfast.co.za/eng/process';
+
+        // Build PayFast form data
+        const formParams = new URLSearchParams(payfastData).toString();
+        const paymentUrl = `${payfastUrl}?${formParams}`;
+
+        // Create pending transaction record
+        const transactionData = {
+          userId: userId,
+          churchId: targetChurchId,
+          amount: parseFloat(amount).toString(),
+          donationType: donationType || 'donation',
+          paymentMethod: 'payfast',
+          status: 'pending' as const,
+          metadata: note ? { note, paymentId: donationId } : { paymentId: donationId },
+          projectId: projectId || null
+        };
+
+        const transaction = await storage.createTransaction(transactionData);
+
+        // Log donation initiation
+        await storage.logActivity({
+          userId: userId,
+          churchId: targetChurchId,
+          action: 'donation_initiated',
+          entity: 'transaction',
+          entityId: transaction.id,
+          details: { 
+            amount: parseFloat(amount),
+            type: donationType,
+            paymentMethod: 'payfast'
+          },
+        });
+
+        return res.status(201).json({
+          success: true,
+          donationId: donationId,
+          transactionId: transaction.id,
+          amount: parseFloat(amount),
+          paymentUrl: paymentUrl,
+          paymentMethod: 'payfast',
+          message: 'Redirecting to secure payment gateway...'
+        });
+      }
+
+      return res.status(400).json({ message: 'Invalid payment method' });
+    } catch (error) {
+      console.error('Error processing donation:', error);
+      res.status(500).json({ message: 'Failed to process donation' });
+    }
+  });
 
   // Wallet PayFast Integration APIs
 
@@ -1301,7 +1468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const topupId = randomUUID();
 
       // Generate PayFast payment URL for wallet top-up
-      const payfastData = {
+      const payfastData: Record<string, string> = {
         merchant_id: merchantId,
         merchant_key: merchantKey,
         return_url: `${req.protocol}://${req.get('host')}/member?topup=success&id=${topupId}`,
@@ -1309,7 +1476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
         name_first: user.firstName || 'ChurPay',
         name_last: user.lastName || 'User',
-        email_address: user.email,
+        email_address: user.email || 'member@churpay.com',
         m_payment_id: topupId,
         amount: parseFloat(amount).toFixed(2),
         item_name: 'ChurPay Wallet Top-up',
@@ -1377,7 +1544,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get user's wallet balance
       const userWallet = await storage.getUserWallet(userId);
-      if (!userWallet || userWallet.balance < amount) {
+      const walletBalance = parseFloat(userWallet?.availableBalance || '0');
+      if (!userWallet || walletBalance < amount) {
         return res.status(400).json({ message: 'Insufficient wallet balance' });
       }
 
