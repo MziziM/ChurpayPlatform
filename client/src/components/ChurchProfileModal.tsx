@@ -126,7 +126,7 @@ export function ChurchProfileModal({
   useEffect(() => {
     if (churchProfile) {
       setFormData(churchProfile);
-      setImagePreview(churchProfile.profileImageUrl || "");
+      setImagePreview(churchProfile.logoUrl || "");
     }
   }, [churchProfile]);
 
@@ -170,7 +170,7 @@ export function ChurchProfileModal({
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview("");
-    setFormData(prev => ({ ...prev, profileImageUrl: "" }));
+    setFormData(prev => ({ ...prev, logoUrl: "" }));
   };
 
   // Update church profile mutation
@@ -228,14 +228,14 @@ export function ChurchProfileModal({
     if (imageFile) {
       const reader = new FileReader();
       reader.onload = () => {
-        profileData.profileImageUrl = reader.result as string;
+        profileData.logoUrl = reader.result as string;
         updateProfileMutation.mutate(profileData);
       };
       reader.readAsDataURL(imageFile);
     } else {
       // If preview exists but no new file, keep existing URL
       if (imagePreview && !imageFile) {
-        profileData.profileImageUrl = formData.profileImageUrl;
+        profileData.logoUrl = formData.logoUrl;
       }
       updateProfileMutation.mutate(profileData);
     }
@@ -501,8 +501,8 @@ export function ChurchProfileModal({
                 <Label htmlFor="alternatePhone">Alternate Phone</Label>
                 <Input
                   id="alternatePhone"
-                  value={formData.alternatePhone || ''}
-                  onChange={(e) => handleInputChange('alternatePhone', e.target.value)}
+                  value={formData.alternativePhone || ''}
+                  onChange={(e) => handleInputChange('alternativePhone', e.target.value)}
                   placeholder="+27 82 555 0123"
                   className="mt-1"
                 />
