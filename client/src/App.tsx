@@ -19,6 +19,7 @@ import SuperAdminSignUp from "@/pages/SuperAdminSignUp";
 import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
+import ChurchPayoutDemo from "@/pages/ChurchPayoutDemo";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/super-admin/signup" component={SuperAdminSignUp} />
       <Route path="/super-admin/signin" component={SuperAdminSignIn} />
       <Route path="/sign-in" component={SignIn} />
+      <Route path="/payout-demo" component={ChurchPayoutDemo} />
       <Route component={NotFound} />
     </Switch>
   );
