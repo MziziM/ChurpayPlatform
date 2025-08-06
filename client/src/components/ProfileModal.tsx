@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,17 +41,39 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: 'Nomsa',
-    lastName: 'Mthembu',
-    email: 'nomsa.mthembu@example.com',
-    phone: '+27 82 123 4567',
-    address: 'Cape Town, South Africa',
-    joinDate: '2020-01-15',
-    membershipTier: 'Faithful Steward',
-    churchName: 'Grace Baptist Church',
-    profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b152547b?w=100&h=100&fit=crop&crop=face',
-    profileEmoji: null
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    joinDate: '',
+    membershipTier: 'Member',
+    churchName: '',
+    profileImage: null as string | null,
+    profileEmoji: '🙏' // Default emoji
   });
+
+  // Get authenticated user data
+  const { user } = useAuth();
+
+  // Load user data when modal opens and user data is available
+  useEffect(() => {
+    if (user && isOpen) {
+      const typedUser = user as any;
+      setProfileData({
+        firstName: typedUser.firstName || '',
+        lastName: typedUser.lastName || '',
+        email: typedUser.email || '',
+        phone: typedUser.phone || '',
+        address: typedUser.address || '',
+        joinDate: typedUser.createdAt ? new Date(typedUser.createdAt).toISOString().split('T')[0] : '',
+        membershipTier: typedUser.role === 'member' ? 'Member' : typedUser.role,
+        churchName: typedUser.churchName || 'Loading...',
+        profileImage: typedUser.profileImageUrl || null,
+        profileEmoji: typedUser.profileEmoji || '🙏'
+      });
+    }
+  }, [user, isOpen]);
 
   const { toast } = useToast();
 
@@ -83,7 +106,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         setProfileData(prev => ({ 
           ...prev, 
           profileImage: e.target?.result as string,
-          profileEmoji: null // Clear emoji when uploading image
+          profileEmoji: '🙏' // Clear emoji when uploading image
         }));
       };
       reader.readAsDataURL(file);

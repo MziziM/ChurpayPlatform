@@ -155,28 +155,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Personalized Welcome Screen APIs
   app.get('/api/user/church', async (req: any, res) => {
     try {
-      // Mock session for now - in production use authenticated user ID
-      const userId = req.session?.userId || 'mock-user-id';
+      const userId = req.session?.userId;
       
-      // Mock church data for personalized welcome screen
-      const mockChurch = {
-        id: 'church-001',
-        name: 'Grace Baptist Church',
-        denomination: 'Baptist',
-        logoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center',
-        description: 'A vibrant community of believers committed to worship, fellowship, and service in the heart of Cape Town.',
-        leadPastor: 'Dr. John Smith',
-        city: 'Cape Town',
-        province: 'Western Cape',
-        memberCount: 450,
-        contactEmail: 'office@gracebaptist.org.za',
-        contactPhone: '+27 21 555 0123',
-        website: 'https://gracebaptist.org.za',
-        servicesTimes: 'Sunday: 9:00 AM & 11:00 AM\nWednesday Prayer: 7:00 PM\nYouth Service: Friday 6:30 PM',
-        status: 'approved'
-      };
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
 
-      res.json(mockChurch);
+      // Get the user to find their church ID
+      const user = await storage.getUserById(userId);
+      if (!user || !user.churchId) {
+        return res.status(404).json({ message: 'User church not found' });
+      }
+
+      // Get the real church data
+      const church = await storage.getChurchById(user.churchId);
+      if (!church) {
+        return res.status(404).json({ message: 'Church not found' });
+      }
+
+      // Return real church data
+      res.json({
+        id: church.id,
+        name: church.name,
+        denomination: church.denomination,
+        logoUrl: church.logoUrl,
+        description: church.description,
+        leadPastor: church.leadPastor,
+        city: church.city,
+        province: church.province,
+        memberCount: church.memberCount,
+        contactEmail: church.contactEmail,
+        contactPhone: church.contactPhone,
+        website: church.website,
+        servicesTimes: church.servicesTimes,
+        status: church.status
+      });
     } catch (error) {
       console.error('Error fetching user church:', error);
       res.status(500).json({ message: 'Failed to fetch church information' });
