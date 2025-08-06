@@ -124,6 +124,16 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
     },
   });
 
+  const handleDeleteChurch = (church: Church) => {
+    setDeleteConfirmation(church);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmation) {
+      deleteMutation.mutate(deleteConfirmation.id);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -147,14 +157,7 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
     });
   };
 
-  const handleDeleteChurch = (church: Church) => {
-    setDeleteConfirmation(church);
-  };
 
-  const confirmDelete = () => {
-    if (!deleteConfirmation) return;
-    deleteMutation.mutate(deleteConfirmation.id);
-  };
 
   const pendingChurches = churches?.filter(church => church.status === 'pending') || [];
   const approvedChurches = churches?.filter(church => church.status === 'approved') || [];
@@ -258,7 +261,21 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-lg font-semibold">{church.name}</h4>
+                                <div className="flex items-center space-x-3">
+                                  {/* Church Logo */}
+                                  {church.logoUrl ? (
+                                    <img 
+                                      src={church.logoUrl} 
+                                      alt={`${church.name} logo`}
+                                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+                                      <Building2 className="w-6 h-6 text-white" />
+                                    </div>
+                                  )}
+                                  <h4 className="text-lg font-semibold">{church.name}</h4>
+                                </div>
                                 {getStatusBadge(church.status)}
                               </div>
                               
@@ -425,7 +442,21 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-lg font-semibold">{church.name}</h4>
+                                <div className="flex items-center space-x-3">
+                                  {/* Church Logo */}
+                                  {church.logoUrl ? (
+                                    <img 
+                                      src={church.logoUrl} 
+                                      alt={`${church.name} logo`}
+                                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+                                      <Building2 className="w-6 h-6 text-white" />
+                                    </div>
+                                  )}
+                                  <h4 className="text-lg font-semibold">{church.name}</h4>
+                                </div>
                                 {getStatusBadge(church.status)}
                               </div>
                               
