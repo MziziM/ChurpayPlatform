@@ -39,16 +39,40 @@ export function DocumentViewer({
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(documentUrl);
-      const blob = await response.blob();
+      // Check if this is a placeholder URL (for demo purposes)
+      if (documentUrl.includes('via.placeholder.com') || documentUrl.includes('placeholder')) {
+        toast({
+          title: "Demo Document",
+          description: "This is a sample document. In production, this would download the actual file.",
+          variant: "default",
+        });
+        return;
+      }
+
+      // Check if URL is accessible
+      const response = await fetch(documentUrl, { method: 'HEAD' });
+      
+      if (!response.ok) {
+        throw new Error(`Document not accessible (${response.status})`);
+      }
+
+      // Proceed with download
+      const fullResponse = await fetch(documentUrl);
+      const blob = await fullResponse.blob();
       const url = window.URL.createObjectURL(blob);
+      
       const a = document.createElement('a');
       a.href = url;
-      a.download = documentName;
+      a.download = documentName || 'document';
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Cleanup
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
       
       toast({
         title: "Download Started",
@@ -56,9 +80,10 @@ export function DocumentViewer({
         variant: "default",
       });
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: "Download Failed",
-        description: "Unable to download the document",
+        description: error instanceof Error ? error.message : "Unable to download the document",
         variant: "destructive",
       });
     }
@@ -102,11 +127,8 @@ export function DocumentViewer({
   };
 
   if (!documentUrl) {
-    console.log('DocumentViewer: No document URL provided');
     return null;
   }
-
-  console.log('DocumentViewer rendering:', { isOpen, documentUrl, documentName, documentType });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
