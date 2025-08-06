@@ -11,7 +11,7 @@ import {
   Building2, Users, Search, Filter, MapPin, 
   Phone, Mail, Calendar, Shield, CheckCircle,
   AlertTriangle, TrendingUp, DollarSign, 
-  Activity, Eye, BarChart3, UserCheck
+  Activity, Eye, BarChart3, UserCheck, FileText
 } from 'lucide-react';
 
 interface Church {
@@ -19,24 +19,70 @@ interface Church {
   name: string;
   denomination: string;
   registrationNumber: string;
-  status: 'active' | 'inactive' | 'suspended' | 'pending';
+  taxNumber: string;
+  yearEstablished: string;
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'suspended';
   memberCount: number;
-  totalRevenue: string;
-  monthlyRevenue: string;
+  totalRevenue?: string;
+  monthlyRevenue?: string;
+  
+  // Contact Information
+  contactEmail: string;
+  contactPhone: string;
+  alternativePhone?: string;
+  website?: string;
+  
+  // Address Information
   address: string;
   city: string;
   province: string;
-  contactEmail: string;
-  contactPhone: string;
-  registrationDate: string;
-  lastActivity: string;
-  verification: {
+  postalCode: string;
+  country: string;
+  
+  // Banking Information
+  bankName: string;
+  accountNumber: string;
+  branchCode: string;
+  accountHolder: string;
+  accountType: string;
+  
+  // Church Details
+  description: string;
+  servicesTimes: string;
+  leadPastor: string;
+  logoUrl?: string;
+  
+  // Administrative Contact
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+  adminPhone: string;
+  adminPosition: string;
+  
+  // Document Verification Flags
+  hasNpoRegistration: boolean;
+  hasTaxClearance: boolean;
+  hasBankConfirmation: boolean;
+  
+  // Documents (File paths)
+  cipcDocument?: string;
+  bankConfirmationLetter?: string;
+  taxClearanceCertificate?: string;
+  
+  // System fields
+  registrationDate?: string;
+  lastActivity?: string;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Legacy fields for compatibility
+  verification?: {
     emailVerified: boolean;
     phoneVerified: boolean;
     documentsVerified: boolean;
     bankingVerified: boolean;
   };
-  analytics: {
+  analytics?: {
     totalTransactions: number;
     averageGift: string;
     topDonor: string;
@@ -71,6 +117,31 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
     
     return matchesSearch && matchesStatus && matchesProvince;
   });
+
+  // Handle document download through backend API
+  const handleDownloadDocument = async (documentPath: string, filename: string) => {
+    try {
+      const response = await fetch(documentPath);
+      if (!response.ok) {
+        throw new Error('Failed to download document');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Failed to download document. Please try again.');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -181,11 +252,13 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
 
             {/* Detailed Information Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-white border border-gray-200">
+              <TabsList className="grid w-full grid-cols-6 bg-white border border-gray-200">
                 <TabsTrigger value="overview" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Overview</TabsTrigger>
-                <TabsTrigger value="verification" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Verification</TabsTrigger>
-                <TabsTrigger value="analytics" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Analytics</TabsTrigger>
                 <TabsTrigger value="contact" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Contact</TabsTrigger>
+                <TabsTrigger value="admin" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Admin</TabsTrigger>
+                <TabsTrigger value="banking" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Banking</TabsTrigger>
+                <TabsTrigger value="documents" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Documents</TabsTrigger>
+                <TabsTrigger value="verification" className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700">Status</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6 mt-6">
@@ -209,115 +282,64 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                           <span className="font-bold text-gray-900">{selectedChurch.denomination}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Registration Number</span>
+                          <span className="text-gray-700 font-medium">NPO/PBO Registration</span>
                           <span className="font-bold text-gray-900">{selectedChurch.registrationNumber}</span>
                         </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Tax Number</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.taxNumber}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Year Established</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.yearEstablished}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Member Count</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.memberCount.toLocaleString()}</span>
+                        </div>
                       </div>
                       <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Lead Pastor</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.leadPastor}</span>
+                        </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-700 font-medium">Registration Date</span>
-                          <span className="font-bold text-gray-900">{new Date(selectedChurch.registrationDate).toLocaleDateString()}</span>
+                          <span className="font-bold text-gray-900">{new Date(selectedChurch.createdAt).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Last Activity</span>
-                          <span className="font-bold text-gray-900">{selectedChurch.lastActivity}</span>
+                          <span className="text-gray-700 font-medium">Status</span>
+                          <Badge className={`${getStatusColor(selectedChurch.status)} border font-medium`}>
+                            {getStatusIcon(selectedChurch.status)}
+                            <span className="ml-1 capitalize">{selectedChurch.status}</span>
+                          </Badge>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Total Revenue</span>
-                          <span className="font-bold text-gray-900">R{selectedChurch.totalRevenue}</span>
-                        </div>
+                        {selectedChurch.website && (
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="text-gray-700 font-medium">Website</span>
+                            <a href={selectedChurch.website} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-600 hover:text-blue-800">
+                              {selectedChurch.website}
+                            </a>
+                          </div>
+                        )}
+                        {selectedChurch.logoUrl && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <span className="text-gray-700 font-medium block mb-2">Church Logo</span>
+                            <img src={selectedChurch.logoUrl} alt="Church Logo" className="h-16 w-16 object-cover rounded-lg" />
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="verification" className="space-y-6 mt-6">
-                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
-                      <Shield className="h-6 w-6" />
-                      <span>Verification Status</span>
-                    </CardTitle>
-                    <p className="text-blue-100 text-sm mt-1">Church verification and compliance status</p>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <Mail className="h-5 w-5 text-blue-600" />
-                            <span className="text-gray-700 font-medium">Email Verified</span>
-                          </div>
-                          <Badge className={selectedChurch.verification.emailVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                            {selectedChurch.verification.emailVerified ? 'Verified' : 'Pending'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <Phone className="h-5 w-5 text-green-600" />
-                            <span className="text-gray-700 font-medium">Phone Verified</span>
-                          </div>
-                          <Badge className={selectedChurch.verification.phoneVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                            {selectedChurch.verification.phoneVerified ? 'Verified' : 'Pending'}
-                          </Badge>
-                        </div>
+                    
+                    {/* Church Description and Service Times */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="text-blue-800 font-semibold mb-2">Church Description</h4>
+                        <p className="text-blue-700">{selectedChurch.description}</p>
                       </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <Shield className="h-5 w-5 text-purple-600" />
-                            <span className="text-gray-700 font-medium">Documents Verified</span>
-                          </div>
-                          <Badge className={selectedChurch.verification.documentsVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                            {selectedChurch.verification.documentsVerified ? 'Verified' : 'Pending'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <DollarSign className="h-5 w-5 text-orange-600" />
-                            <span className="text-gray-700 font-medium">Banking Verified</span>
-                          </div>
-                          <Badge className={selectedChurch.verification.bankingVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                            {selectedChurch.verification.bankingVerified ? 'Verified' : 'Pending'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="analytics" className="space-y-6 mt-6">
-                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
-                      <BarChart3 className="h-6 w-6" />
-                      <span>Performance Analytics</span>
-                    </CardTitle>
-                    <p className="text-purple-100 text-sm mt-1">Church performance metrics and insights</p>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
-                          <span className="text-purple-700 font-medium">Total Transactions</span>
-                          <span className="font-bold text-xl text-purple-900">{selectedChurch.analytics.totalTransactions}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
-                          <span className="text-green-700 font-medium">Average Gift</span>
-                          <span className="font-bold text-xl text-green-900">R{selectedChurch.analytics.averageGift}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <span className="text-blue-700 font-medium">Top Donor</span>
-                          <span className="font-bold text-xl text-blue-900">{selectedChurch.analytics.topDonor}</span>
-                        </div>
-                        <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
-                          <span className="text-orange-700 font-medium">Member Growth</span>
-                          <span className="font-bold text-xl text-orange-900">{selectedChurch.analytics.memberGrowth}%</span>
-                        </div>
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <h4 className="text-green-800 font-semibold mb-2">Service Times</h4>
+                        <p className="text-green-700 whitespace-pre-line">{selectedChurch.servicesTimes}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -337,28 +359,302 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Email Address</span>
+                          <span className="text-gray-700 font-medium">Primary Email</span>
                           <span className="font-bold text-gray-900">{selectedChurch.contactEmail}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">Phone Number</span>
+                          <span className="text-gray-700 font-medium">Primary Phone</span>
                           <span className="font-bold text-gray-900">{selectedChurch.contactPhone}</span>
                         </div>
+                        {selectedChurch.alternativePhone && (
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="text-gray-700 font-medium">Alternative Phone</span>
+                            <span className="font-bold text-gray-900">{selectedChurch.alternativePhone}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-700 font-medium">City</span>
                           <span className="font-bold text-gray-900">{selectedChurch.city}</span>
                         </div>
-                      </div>
-                      <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-700 font-medium">Province</span>
                           <span className="font-bold text-gray-900">{selectedChurch.province}</span>
                         </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Postal Code</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.postalCode}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Country</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.country}</span>
+                        </div>
                         <div className="p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium block mb-2">Address</span>
+                          <span className="text-gray-700 font-medium block mb-2">Street Address</span>
                           <span className="font-bold text-gray-900">{selectedChurch.address}</span>
                         </div>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="admin" className="space-y-6 mt-6">
+                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
+                      <UserCheck className="h-6 w-6" />
+                      <span>Administrative Contact</span>
+                    </CardTitle>
+                    <p className="text-purple-100 text-sm mt-1">Church administrator and primary contact person</p>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">First Name</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.adminFirstName}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Last Name</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.adminLastName}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Position/Title</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.adminPosition}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Email Address</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.adminEmail}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Phone Number</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.adminPhone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="banking" className="space-y-6 mt-6">
+                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-orange-600 to-orange-700 text-white pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
+                      <DollarSign className="h-6 w-6" />
+                      <span>Banking Information</span>
+                    </CardTitle>
+                    <p className="text-orange-100 text-sm mt-1">Church banking details for donations and payouts</p>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Bank Name</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.bankName}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Account Holder</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.accountHolder}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Account Type</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.accountType}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Account Number</span>
+                          <span className="font-bold text-gray-900">****{selectedChurch.accountNumber.slice(-4)}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">Branch Code</span>
+                          <span className="font-bold text-gray-900">{selectedChurch.branchCode}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="documents" className="space-y-6 mt-6">
+                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
+                      <FileText className="h-6 w-6" />
+                      <span>Uploaded Documents</span>
+                    </CardTitle>
+                    <p className="text-blue-100 text-sm mt-1">Church verification and legal documents</p>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      {/* NPO/PBO Registration Certificate */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${selectedChurch.hasNpoRegistration ? 'bg-green-100' : 'bg-red-100'}`}>
+                            <FileText className={`h-5 w-5 ${selectedChurch.hasNpoRegistration ? 'text-green-600' : 'text-red-600'}`} />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">NPO/PBO Registration Certificate</h4>
+                            <p className="text-sm text-gray-600">
+                              Status: {selectedChurch.hasNpoRegistration ? 'Confirmed' : 'Not Confirmed'}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedChurch.cipcDocument && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadDocument(selectedChurch.cipcDocument!, 'NPO_Registration_Certificate')}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Document
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Tax Clearance Certificate */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${selectedChurch.hasTaxClearance ? 'bg-green-100' : 'bg-red-100'}`}>
+                            <FileText className={`h-5 w-5 ${selectedChurch.hasTaxClearance ? 'text-green-600' : 'text-red-600'}`} />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">Tax Clearance Certificate</h4>
+                            <p className="text-sm text-gray-600">
+                              Status: {selectedChurch.hasTaxClearance ? 'Confirmed' : 'Not Confirmed'}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedChurch.taxClearanceCertificate && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadDocument(selectedChurch.taxClearanceCertificate!, 'Tax_Clearance_Certificate')}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Document
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Bank Confirmation Letter */}
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${selectedChurch.hasBankConfirmation ? 'bg-green-100' : 'bg-red-100'}`}>
+                            <FileText className={`h-5 w-5 ${selectedChurch.hasBankConfirmation ? 'text-green-600' : 'text-red-600'}`} />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">Bank Confirmation Letter</h4>
+                            <p className="text-sm text-gray-600">
+                              Status: {selectedChurch.hasBankConfirmation ? 'Confirmed' : 'Not Confirmed'}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedChurch.bankConfirmationLetter && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadDocument(selectedChurch.bankConfirmationLetter!, 'Bank_Confirmation_Letter')}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Document
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="verification" className="space-y-6 mt-6">
+                <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center space-x-2">
+                      <Shield className="h-6 w-6" />
+                      <span>Verification Status</span>
+                    </CardTitle>
+                    <p className="text-indigo-100 text-sm mt-1">Church verification and approval status</p>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Mail className="h-5 w-5 text-blue-600" />
+                            <span className="text-gray-700 font-medium">Email Verified</span>
+                          </div>
+                          <Badge className={selectedChurch.verification?.emailVerified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                            {selectedChurch.verification?.emailVerified ? 'Verified' : 'Pending'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Phone className="h-5 w-5 text-green-600" />
+                            <span className="text-gray-700 font-medium">Phone Verified</span>
+                          </div>
+                          <Badge className={selectedChurch.verification?.phoneVerified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                            {selectedChurch.verification?.phoneVerified ? 'Verified' : 'Pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Shield className="h-5 w-5 text-purple-600" />
+                            <span className="text-gray-700 font-medium">Documents Verified</span>
+                          </div>
+                          <Badge className={selectedChurch.verification?.documentsVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {selectedChurch.verification?.documentsVerified ? 'Verified' : 'Review Required'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <DollarSign className="h-5 w-5 text-orange-600" />
+                            <span className="text-gray-700 font-medium">Banking Verified</span>
+                          </div>
+                          <Badge className={selectedChurch.verification?.bankingVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {selectedChurch.verification?.bankingVerified ? 'Verified' : 'Review Required'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons for Approval/Rejection */}
+                    <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Application Management</h4>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <Button
+                          onClick={() => {
+                            // TODO: Implement approve functionality
+                            console.log('Approving church:', selectedChurch.id);
+                          }}
+                          className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Approve Application
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            // TODO: Implement reject functionality
+                            console.log('Rejecting church:', selectedChurch.id);
+                          }}
+                          className="flex-1"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Reject Application
+                        </Button>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-3">
+                        Review all documents and information before making a decision.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
