@@ -667,6 +667,85 @@ export function SuperAdminChurchModal({ open, onOpenChange }: SuperAdminChurchMo
                             />
                           </div>
                         </div>
+
+                        {/* Contact Information */}
+                        <div className="mt-6">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                              <input
+                                type="email"
+                                value={editedChurch.contactEmail || selectedChurch.contactEmail}
+                                onChange={(e) => setEditedChurch({...editedChurch, contactEmail: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                              <input
+                                type="tel"
+                                value={editedChurch.contactPhone || selectedChurch.contactPhone}
+                                onChange={(e) => setEditedChurch({...editedChurch, contactPhone: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Alternative Phone</label>
+                              <input
+                                type="tel"
+                                value={editedChurch.alternativePhone || selectedChurch.alternativePhone || ''}
+                                onChange={(e) => setEditedChurch({...editedChurch, alternativePhone: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Address Information */}
+                        <div className="mt-6">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h4>
+                          <div className="grid grid-cols-1 gap-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                              <textarea
+                                value={editedChurch.address || selectedChurch.address}
+                                onChange={(e) => setEditedChurch({...editedChurch, address: e.target.value})}
+                                rows={2}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                <input
+                                  type="text"
+                                  value={editedChurch.city || selectedChurch.city}
+                                  onChange={(e) => setEditedChurch({...editedChurch, city: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                                <input
+                                  type="text"
+                                  value={editedChurch.province || selectedChurch.province}
+                                  onChange={(e) => setEditedChurch({...editedChurch, province: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                                <input
+                                  type="text"
+                                  value={editedChurch.postalCode || selectedChurch.postalCode}
+                                  onChange={(e) => setEditedChurch({...editedChurch, postalCode: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       /* View Mode - Static Display */

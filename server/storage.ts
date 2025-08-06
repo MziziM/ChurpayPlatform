@@ -208,9 +208,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChurch(id: string, updates: Partial<Church>): Promise<Church> {
+    // Clean the updates object to only include valid church fields
+    const validFields = [
+      'name', 'denomination', 'registrationNumber', 'taxNumber', 'yearEstablished', 
+      'contactEmail', 'contactPhone', 'alternativePhone', 'website',
+      'address', 'city', 'province', 'postalCode', 'country',
+      'bankName', 'accountNumber', 'branchCode', 'accountHolder', 'accountType',
+      'description', 'memberCount', 'servicesTimes', 'leadPastor', 'logoUrl',
+      'adminFirstName', 'adminLastName', 'adminEmail', 'adminPhone', 'adminPosition',
+      'hasNpoRegistration', 'hasTaxClearance', 'hasBankConfirmation',
+      'status', 'isActive'
+    ];
+    
+    const cleanUpdates: any = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (validFields.includes(key) && value !== undefined) {
+        // Convert yearEstablished to string if it's a number
+        if (key === 'yearEstablished' && typeof value === 'number') {
+          cleanUpdates[key] = value.toString();
+        } else {
+          cleanUpdates[key] = value;
+        }
+      }
+    }
+    
+    cleanUpdates.updatedAt = new Date();
+    
     const [church] = await db
       .update(churches)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(cleanUpdates)
       .where(eq(churches.id, id))
       .returning();
     return church;
