@@ -1011,11 +1011,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public project donation endpoint - no authentication required
+  // Public project donation endpoint with PayFast integration - no authentication required
   app.post('/api/projects/:projectId/donate', async (req, res) => {
     try {
       const { projectId } = req.params;
-      const { amount, donorName, donorEmail, isAnonymous, message } = req.body;
+      const { amount, donorName, donorEmail, isAnonymous, message, donationType } = req.body;
 
       // Validate required fields
       if (!amount || amount <= 0) {
@@ -1026,35 +1026,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Donor name and email are required for non-anonymous donations' });
       }
 
-      // Create donation record (simplified for demo)
+      // Create donation record
+      const donationId = randomUUID();
       const donation = {
-        id: randomUUID(),
+        id: donationId,
         projectId,
         amount: parseFloat(amount),
         donorName: isAnonymous ? 'Anonymous' : donorName,
         donorEmail: isAnonymous ? null : donorEmail,
         isAnonymous: isAnonymous || false,
         message: message || null,
+        donationType: donationType || 'once',
         status: 'pending',
         createdAt: new Date().toISOString()
       };
 
-      // In a real implementation, this would:
-      // 1. Create payment processing record
-      // 2. Update project current amount
-      // 3. Send confirmation emails
-      // 4. Generate tax receipt
+      // Generate PayFast payment URL
+      const payfastData = {
+        merchant_id: process.env.PAYFAST_MERCHANT_ID || '10000100',
+        merchant_key: process.env.PAYFAST_MERCHANT_KEY || '46f0cd694581a',
+        return_url: `${req.protocol}://${req.get('host')}/projects?donation=success&id=${donationId}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/projects?donation=cancelled`,
+        notify_url: `${req.protocol}://${req.get('host')}/api/payfast/notify`,
+        name_first: isAnonymous ? 'Anonymous' : donorName.split(' ')[0] || 'Donor',
+        name_last: isAnonymous ? 'Donor' : donorName.split(' ').slice(1).join(' ') || 'Supporter',
+        email_address: isAnonymous ? 'anonymous@churpay.com' : donorEmail,
+        m_payment_id: donationId,
+        amount: parseFloat(amount).toFixed(2),
+        item_name: `Donation to ${projectId}`,
+        item_description: message || `Donation to project: ${projectId}`,
+        custom_str1: projectId,
+        custom_str2: isAnonymous ? 'anonymous' : 'named',
+        custom_str3: donationType,
+      };
+
+      // In production, you would:
+      // 1. Generate proper PayFast signature
+      // 2. Store donation record in database
+      // 3. Set up proper webhook handling
       
+      const payfastUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://www.payfast.co.za/eng/process'
+        : 'https://sandbox.payfast.co.za/eng/process';
+
+      // Build PayFast form data
+      const formParams = new URLSearchParams(payfastData).toString();
+      const paymentUrl = `${payfastUrl}?${formParams}`;
+
       res.status(201).json({
         success: true,
         donationId: donation.id,
         amount: donation.amount,
-        message: 'Thank you for your generous donation! You will receive a confirmation email shortly.',
-        redirectUrl: `/projects?donation=success&id=${donation.id}`
+        paymentUrl: paymentUrl,
+        paymentMethod: 'payfast',
+        message: 'Redirecting to secure payment gateway...',
+        redirectUrl: paymentUrl
       });
     } catch (error) {
       console.error('Error processing donation:', error);
       res.status(500).json({ message: 'Failed to process donation' });
+    }
+  });
+
+  // PayFast webhook handler
+  app.post('/api/payfast/notify', async (req, res) => {
+    try {
+      const {
+        m_payment_id,
+        pf_payment_id,
+        payment_status,
+        amount_gross,
+        custom_str1: projectId,
+        custom_str2: donorType,
+        custom_str3: donationType
+      } = req.body;
+
+      console.log('PayFast notification received:', req.body);
+
+      // In production, verify the payment signature here
+      
+      if (payment_status === 'COMPLETE') {
+        // Update donation status to completed
+        // Update project current amount
+        // Send confirmation email
+        // Generate tax receipt
+        console.log(`Payment completed for donation ${m_payment_id}, amount: R${amount_gross}`);
+      }
+
+      res.status(200).send('OK');
+    } catch (error) {
+      console.error('Error processing PayFast notification:', error);
+      res.status(500).send('Error');
     }
   });
 
