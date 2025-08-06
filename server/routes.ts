@@ -1027,11 +1027,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const adminId = req.admin.id;
       
-      // Create demo payout requests with different statuses
+      // Create demo payout requests with different statuses using proper UUIDs
       const demoPayouts = [
         {
-          churchId: 'demo-church-1',
-          requestedBy: 'demo-user-1',
+          churchId: '11111111-1111-1111-1111-111111111111',
+          requestedBy: '22222222-2222-2222-2222-222222222222',
           amount: '15000.00',
           processingFee: '75.00',
           netAmount: '14925.00',
@@ -1041,8 +1041,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           requestedDate: new Date(),
         },
         {
-          churchId: 'demo-church-2', 
-          requestedBy: 'demo-user-2',
+          churchId: '33333333-3333-3333-3333-333333333333', 
+          requestedBy: '44444444-4444-4444-4444-444444444444',
           amount: '8500.00',
           processingFee: '127.50',
           netAmount: '8372.50',
@@ -1052,8 +1052,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           requestedDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
         },
         {
-          churchId: 'demo-church-3',
-          requestedBy: 'demo-user-3', 
+          churchId: '55555555-5555-5555-5555-555555555555',
+          requestedBy: '66666666-6666-6666-6666-666666666666', 
           amount: '25000.00',
           processingFee: '625.00',
           netAmount: '24375.00',
