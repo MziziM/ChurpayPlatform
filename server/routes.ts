@@ -1022,6 +1022,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Super Admin: Create demo payout data (for testing the modal)
+  app.post('/api/super-admin/demo-payouts', requireAdminAuth, async (req: any, res) => {
+    try {
+      const adminId = req.admin.id;
+      
+      // Create demo payout requests with different statuses
+      const demoPayouts = [
+        {
+          churchId: 'demo-church-1',
+          requestedBy: 'demo-user-1',
+          amount: '15000.00',
+          processingFee: '75.00',
+          netAmount: '14925.00',
+          requestType: 'standard',
+          description: 'Monthly church expenses and maintenance costs',
+          status: 'pending',
+          requestedDate: new Date(),
+        },
+        {
+          churchId: 'demo-church-2', 
+          requestedBy: 'demo-user-2',
+          amount: '8500.00',
+          processingFee: '127.50',
+          netAmount: '8372.50',
+          requestType: 'express',
+          description: 'Urgent payment for utility bills',
+          status: 'pending',
+          requestedDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+        },
+        {
+          churchId: 'demo-church-3',
+          requestedBy: 'demo-user-3', 
+          amount: '25000.00',
+          processingFee: '625.00',
+          netAmount: '24375.00',
+          requestType: 'emergency',
+          description: 'Emergency repair fund for roof damage',
+          urgencyReason: 'Severe storm damaged the church roof, need immediate repairs to prevent water damage',
+          status: 'pending',
+          requestedDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        }
+      ];
+
+      const createdPayouts = [];
+      for (const payoutData of demoPayouts) {
+        const payout = await storage.createPayoutRequest(payoutData);
+        createdPayouts.push(payout);
+      }
+
+      console.log(`🎯 Demo payouts created: ${createdPayouts.length} requests by ${req.admin.email}`);
+      res.json({ 
+        message: "Demo payout data created successfully", 
+        payouts: createdPayouts 
+      });
+    } catch (error) {
+      console.error("Error creating demo payouts:", error);
+      res.status(500).json({ message: "Failed to create demo payout data" });
+    }
+  });
+
   // Payout Request API (for churches)
   app.post('/api/payouts/request', async (req, res) => {
     try {

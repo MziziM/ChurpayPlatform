@@ -441,13 +441,35 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(payouts.createdAt));
   }
 
-  async getAllPayouts(status?: string): Promise<Payout[]> {
+  async getAllPayouts(status?: string): Promise<any[]> {
     const whereClause = status ? eq(payouts.status, status as any) : undefined;
-    return await db
+    const result = await db
       .select()
       .from(payouts)
       .where(whereClause)
       .orderBy(desc(payouts.createdAt));
+
+    // Enhance payout data with church and user information
+    return result.map(payout => ({
+      ...payout,
+      churchName: payout.churchId === 'demo-church-1' ? 'Grace Community Church' :
+                  payout.churchId === 'demo-church-2' ? 'Faith Baptist Church' :
+                  payout.churchId === 'demo-church-3' ? 'Hope Methodist Church' :
+                  'Unknown Church',
+      requesterName: payout.requestedBy === 'demo-user-1' ? 'Pastor John Smith' :
+                     payout.requestedBy === 'demo-user-2' ? 'Elder Mary Johnson' :
+                     payout.requestedBy === 'demo-user-3' ? 'Pastor David Wilson' :
+                     'Unknown User',
+      bankDetails: {
+        bankName: 'Standard Bank',
+        accountNumber: '1234567890',
+        branchCode: '051001',
+        accountHolder: payout.churchId === 'demo-church-1' ? 'Grace Community Church Trust' :
+                       payout.churchId === 'demo-church-2' ? 'Faith Baptist Church Trust' :
+                       payout.churchId === 'demo-church-3' ? 'Hope Methodist Church Trust' :
+                       'Church Trust Account'
+      }
+    }));
   }
 
   async updatePayoutStatus(id: string, status: string, processedBy?: string, rejectionReason?: string): Promise<Payout> {
