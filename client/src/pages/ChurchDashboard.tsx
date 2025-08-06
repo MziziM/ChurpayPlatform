@@ -13,17 +13,35 @@ export default function ChurchDashboard() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  // Redirect if not authenticated or not a church admin/staff
-  if (!authLoading && (!user || !['church_admin', 'church_staff'].includes(user.role))) {
-    setLocation('/');
-    return null;
-  }
+  // Mock data for demo purposes when not authenticated
+  const mockDashboardData = {
+    church: {
+      name: "Grace Community Church",
+      status: "active"
+    },
+    stats: {
+      totalRevenue: "15,250.00",
+      monthlyRevenue: "3,200.00"
+    },
+    memberCount: 125,
+    recentTransactions: [
+      { id: 1, type: "Tithe", amount: "500.00", status: "completed", createdAt: new Date().toISOString() },
+      { id: 2, type: "Donation", amount: "250.00", status: "completed", createdAt: new Date().toISOString() },
+      { id: 3, type: "Project", amount: "1000.00", status: "completed", createdAt: new Date().toISOString() }
+    ],
+    projects: [
+      { id: 1, title: "New Sound System", description: "Upgrading church audio equipment for better worship experience", status: "active", targetAmount: "25000.00", currentAmount: "18500.00" },
+      { id: 2, title: "Youth Camp Fundraiser", description: "Annual youth camp registration and activities", status: "active", targetAmount: "15000.00", currentAmount: "12300.00" }
+    ]
+  };
 
-  // Church dashboard data
+  // Use mock data if not authenticated, otherwise fetch real data
   const { data: dashboardData, isLoading: dataLoading } = useQuery({
     queryKey: ['/api/church/dashboard'],
-    enabled: !!user && ['church_admin', 'church_staff'].includes(user.role),
+    enabled: !!user && ['church_admin', 'church_staff'].includes(user?.role),
   });
+
+  const displayData = user ? dashboardData : mockDashboardData;
 
   // Logout mutation
   const logoutMutation = useMutation({
@@ -49,7 +67,7 @@ export default function ChurchDashboard() {
     },
   });
 
-  if (authLoading || dataLoading) {
+  if (user && dataLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" />
@@ -57,8 +75,8 @@ export default function ChurchDashboard() {
     );
   }
 
-  const churchData = dashboardData?.church;
-  const stats = dashboardData?.stats;
+  const churchData = displayData?.church;
+  const stats = displayData?.stats;
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -75,20 +93,29 @@ export default function ChurchDashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-white">{user?.firstName} {user?.lastName}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
-              </div>
-              <Button
-                onClick={() => logoutMutation.mutate()}
-                variant="outline"
-                size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                disabled={logoutMutation.isPending}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              {user ? (
+                <>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-white">{user?.firstName} {user?.lastName}</p>
+                    <p className="text-xs text-gray-400">{user?.email}</p>
+                  </div>
+                  <Button
+                    onClick={() => logoutMutation.mutate()}
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    disabled={logoutMutation.isPending}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <div className="text-right">
+                  <p className="text-sm font-medium text-purple-300">Demo Mode</p>
+                  <p className="text-xs text-gray-400">Church Dashboard Preview</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -99,10 +126,10 @@ export default function ChurchDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">
-            Welcome back, {user?.firstName}!
+            {user ? `Welcome back, ${user?.firstName}!` : 'Church Dashboard'}
           </h2>
           <p className="text-gray-400">
-            Manage your church's digital giving and member engagement.
+            {user ? "Manage your church's digital giving and member engagement." : "Professional church management and financial oversight dashboard."}
           </p>
         </div>
 
@@ -114,7 +141,7 @@ export default function ChurchDashboard() {
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{dashboardData?.memberCount || 0}</div>
+              <div className="text-2xl font-bold text-white">{displayData?.memberCount || 0}</div>
               <p className="text-xs text-gray-400">Registered members</p>
             </CardContent>
           </Card>
@@ -147,7 +174,7 @@ export default function ChurchDashboard() {
               <Building2 className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{dashboardData?.projects?.filter((p: any) => p.status === 'active').length || 0}</div>
+              <div className="text-2xl font-bold text-white">{displayData?.projects?.filter((p: any) => p.status === 'active').length || 0}</div>
               <p className="text-xs text-gray-400">Ongoing campaigns</p>
             </CardContent>
           </Card>
@@ -162,8 +189,8 @@ export default function ChurchDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData?.recentTransactions?.length > 0 ? (
-                  dashboardData.recentTransactions.slice(0, 5).map((transaction: any) => (
+                {displayData?.recentTransactions?.length > 0 ? (
+                  displayData.recentTransactions.slice(0, 5).map((transaction: any) => (
                     <div key={transaction.id} className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-white">{transaction.type}</p>
@@ -189,8 +216,8 @@ export default function ChurchDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData?.projects?.filter((p: any) => p.status === 'active').length > 0 ? (
-                  dashboardData.projects.filter((p: any) => p.status === 'active').slice(0, 3).map((project: any) => (
+                {displayData?.projects?.filter((p: any) => p.status === 'active').length > 0 ? (
+                  displayData.projects.filter((p: any) => p.status === 'active').slice(0, 3).map((project: any) => (
                     <div key={project.id} className="border-l-4 border-purple-500 pl-4">
                       <h4 className="text-sm font-medium text-white">{project.title}</h4>
                       <p className="text-xs text-gray-400 mb-2">{project.description?.substring(0, 60)}...</p>
