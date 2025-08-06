@@ -12,6 +12,7 @@ import {
   uuid,
   pgEnum,
   date,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -405,6 +406,26 @@ export const payfastTransactions = pgTable("payfast_transactions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Church cashback records for annual 10% revenue sharing
+export const churchCashbackRecords = pgTable("church_cashback_records", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  churchId: uuid("church_id").notNull(),
+  year: integer("year").notNull(),
+  totalPlatformFees: decimal("total_platform_fees", { precision: 12, scale: 2 }).notNull(),
+  cashbackAmount: decimal("cashback_amount", { precision: 12, scale: 2 }).notNull(),
+  cashbackRate: decimal("cashback_rate", { precision: 5, scale: 2 }).default('10.00'),
+  status: varchar("status", { length: 20 }).default('calculated'),
+  calculatedAt: timestamp("calculated_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  paidAt: timestamp("paid_at"),
+  approvedBy: varchar("approved_by"),
+  paidBy: varchar("paid_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  uniqueChurchYear: unique().on(table.churchId, table.year),
+}));
+
 // Activity logs for audit trail
 export const activityLogs = pgTable("activity_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -771,6 +792,9 @@ export type Payout = typeof payouts.$inferSelect;
 export type InsertPayout = z.infer<typeof insertPayoutSchema>;
 
 export type ActivityLog = typeof activityLogs.$inferSelect;
+
+export type InsertChurchCashbackRecord = typeof churchCashbackRecords.$inferInsert;
+export type ChurchCashbackRecord = typeof churchCashbackRecords.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
 export type Wallet = typeof wallets.$inferSelect;

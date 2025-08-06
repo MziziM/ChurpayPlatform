@@ -3,6 +3,7 @@ import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDash
 import { PlatformFinancialsModal } from "@/components/PlatformFinancialsModal";
 import { SuperAdminChurchModal } from "@/components/SuperAdminChurchModal";
 import { SuperAdminPayoutModal } from "@/components/SuperAdminPayoutModal";
+import { CashbackManagementModal } from "@/components/CashbackManagementModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
@@ -41,6 +42,7 @@ export default function SuperAdminDashboard() {
   const [isFinancialsModalOpen, setIsFinancialsModalOpen] = useState(false);
   const [isChurchModalOpen, setIsChurchModalOpen] = useState(false);
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [isCashbackModalOpen, setIsCashbackModalOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
 
   // Real-time platform statistics
@@ -164,6 +166,12 @@ export default function SuperAdminDashboard() {
           onClick={() => setActiveTab('analytics')}
         >
           Analytics
+        </div>
+        <div 
+          className={`cursor-pointer pb-2 ${activeTab === 'cashback' ? 'text-white border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('cashback')}
+        >
+          Annual Cashback
         </div>
         <div className="ml-auto">
           <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
@@ -474,6 +482,88 @@ export default function SuperAdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'cashback' && (
+          <>
+            {/* Annual Cashback Management Section */}
+            <div className="bg-gray-800/80 backdrop-blur-xl border border-gray-700/60 rounded-2xl p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center space-x-3">
+                  <TrendingUp className="h-8 w-8 text-purple-500" />
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Annual 10% Cashback System</h2>
+                    <p className="text-gray-400">Manage church revenue sharing and cashback calculations</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setIsCashbackModalOpen(true)} 
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Manage Cashback
+                </Button>
+              </div>
+
+              {/* Cashback Overview Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card className="bg-gray-700/50 border-gray-600">
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <DollarSign className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                      <div className="text-2xl font-bold text-white">R{(parseFloat(platformStats?.platformFees || '0') * 0.10).toFixed(2)}</div>
+                      <p className="text-sm text-gray-400">Estimated 2025 Cashback</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-700/50 border-gray-600">
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <Building2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                      <div className="text-2xl font-bold text-white">{platformStats?.activeChurches || 0}</div>
+                      <p className="text-sm text-gray-400">Eligible Churches</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-700/50 border-gray-600">
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <CheckCircle className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                      <div className="text-2xl font-bold text-white">10%</div>
+                      <p className="text-sm text-gray-400">Cashback Rate</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Cashback System Information */}
+              <div className="bg-gray-700/30 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">How Annual Cashback Works</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                  <div>
+                    <h4 className="font-medium text-white mb-2">Calculation Process</h4>
+                    <ul className="space-y-1 text-gray-400">
+                      <li>• Platform collects 3.9% + R3 per transaction</li>
+                      <li>• At year-end, calculate total platform fees</li>
+                      <li>• Churches receive 10% back as annual cashback</li>
+                      <li>• Cashback is calculated per church annually</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-white mb-2">Management Features</h4>
+                    <ul className="space-y-1 text-gray-400">
+                      <li>• Generate bulk annual reports</li>
+                      <li>• Individual church calculations</li>
+                      <li>• Approval and payment tracking</li>
+                      <li>• Complete audit trail</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* This Month Platform Stats Card */}
@@ -617,6 +707,13 @@ export default function SuperAdminDashboard() {
           }
         }}
         payoutRequest={selectedPayout}
+      />
+
+      {/* Cashback Management Modal */}
+      <CashbackManagementModal
+        isOpen={isCashbackModalOpen}
+        onClose={() => setIsCashbackModalOpen(false)}
+        churches={churchesData || []}
       />
     </div>
   );

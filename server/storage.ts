@@ -5,6 +5,7 @@ import {
   transactions,
   payouts,
   activityLogs,
+  churchCashbackRecords,
   wallets,
   walletTransactions,
   walletTopUpMethods,
@@ -23,6 +24,8 @@ import {
   type InsertPayout,
   type ActivityLog,
   type InsertActivityLog,
+  type ChurchCashbackRecord,
+  type InsertChurchCashbackRecord,
   type Wallet,
   type InsertWallet,
   type WalletTransaction,
@@ -146,6 +149,12 @@ export interface IStorage {
   updateSuperAdminLoginInfo(id: string, loginInfo: Partial<Pick<SuperAdmin, 'lastLoginAt' | 'failedLoginAttempts' | 'accountLockedUntil'>>): Promise<SuperAdmin>;
   updateSuperAdminTwoFactor(id: string, twoFactorData: Partial<Pick<SuperAdmin, 'twoFactorSecret' | 'twoFactorEnabled' | 'twoFactorBackupCodes'>>): Promise<SuperAdmin>;
   deleteSuperAdminByEmail(email: string): Promise<void>;
+
+  // Church cashback operations for annual 10% revenue sharing
+  calculateChurchCashback(churchId: string, year: number): Promise<ChurchCashbackRecord>;
+  getChurchCashbackRecords(churchId?: string, year?: number): Promise<ChurchCashbackRecord[]>;
+  processChurchCashback(recordId: string, adminId: string, action: 'approve' | 'pay'): Promise<ChurchCashbackRecord>;
+  generateAnnualCashbackReports(year: number): Promise<ChurchCashbackRecord[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1451,7 +1460,106 @@ export class DatabaseStorage implements IStorage {
     return achievements;
   }
 
+  // Church cashback operations for annual 10% revenue sharing
+  async calculateChurchCashback(churchId: string, year: number): Promise<ChurchCashbackRecord> {
+    // Check if record already exists for this church and year
+    const [existing] = await db
+      .select()
+      .from(churchCashbackRecords)
+      .where(and(eq(churchCashbackRecords.churchId, churchId), eq(churchCashbackRecords.year, year)));
 
+    if (existing) {
+      return existing;
+    }
+
+    // Calculate total platform fees for the year
+    const [platformFeesData] = await db
+      .select({
+        totalPlatformFees: sql<number>`COALESCE(SUM(CAST(platform_fee AS DECIMAL)), 0)`,
+        transactionCount: sql<number>`COUNT(*)`
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.churchId, churchId),
+          eq(transactions.status, 'completed'),
+          sql`EXTRACT(YEAR FROM created_at) = ${year}`
+        )
+      );
+
+    const totalPlatformFees = platformFeesData?.totalPlatformFees || 0;
+    const cashbackAmount = totalPlatformFees * 0.10; // 10% cashback
+
+    // Create cashback record
+    const [cashbackRecord] = await db
+      .insert(churchCashbackRecords)
+      .values({
+        churchId,
+        year,
+        totalPlatformFees: totalPlatformFees.toString(),
+        cashbackAmount: cashbackAmount.toString(),
+        cashbackRate: '10.00',
+        status: 'calculated'
+      })
+      .returning();
+
+    return cashbackRecord;
+  }
+
+  async getChurchCashbackRecords(churchId?: string, year?: number): Promise<ChurchCashbackRecord[]> {
+    let query = db.select().from(churchCashbackRecords);
+    
+    const conditions = [];
+    if (churchId) conditions.push(eq(churchCashbackRecords.churchId, churchId));
+    if (year) conditions.push(eq(churchCashbackRecords.year, year));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.orderBy(desc(churchCashbackRecords.year), desc(churchCashbackRecords.createdAt));
+  }
+
+  async processChurchCashback(recordId: string, adminId: string, action: 'approve' | 'pay'): Promise<ChurchCashbackRecord> {
+    const updates: Partial<ChurchCashbackRecord> = {
+      updatedAt: new Date()
+    };
+
+    if (action === 'approve') {
+      updates.status = 'approved';
+      updates.approvedAt = new Date();
+      updates.approvedBy = adminId;
+    } else if (action === 'pay') {
+      updates.status = 'paid';
+      updates.paidAt = new Date();
+      updates.paidBy = adminId;
+    }
+
+    const [updated] = await db
+      .update(churchCashbackRecords)
+      .set(updates)
+      .where(eq(churchCashbackRecords.id, recordId))
+      .returning();
+
+    return updated;
+  }
+
+  async generateAnnualCashbackReports(year: number): Promise<ChurchCashbackRecord[]> {
+    // Calculate cashback for all active churches for the given year
+    const activeChurches = await db
+      .select({ id: churches.id })
+      .from(churches)
+      .where(eq(churches.status, 'approved'));
+
+    const cashbackPromises = activeChurches.map(church => 
+      this.calculateChurchCashback(church.id, year)
+    );
+
+    await Promise.all(cashbackPromises);
+
+    // Return all cashback records for the year
+    return await this.getChurchCashbackRecords(undefined, year);
+  }
 }
 
 export const storage = new DatabaseStorage();
