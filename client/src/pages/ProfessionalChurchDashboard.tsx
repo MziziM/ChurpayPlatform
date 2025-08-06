@@ -34,6 +34,7 @@ interface ChurchData {
   contactPhone: string;
   status: string;
   registrationDate: string;
+  logoUrl?: string; // Add logo URL for church branding
 }
 
 interface MemberData {
@@ -136,10 +137,22 @@ export default function ProfessionalChurchDashboard() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <span className="text-xl font-semibold text-gray-900">ChurPay</span>
+              {/* Church Logo or Default */}
+              {churchData?.logoUrl ? (
+                <img 
+                  src={churchData.logoUrl} 
+                  alt={`${churchData.name} Logo`}
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <Church className="text-white h-4 w-4" />
+                </div>
+              )}
+              {/* Display Church Name or Default */}
+              <span className="text-xl font-semibold text-gray-900">
+                {churchData?.name || 'ChurPay Church'}
+              </span>
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">

@@ -203,8 +203,11 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Church operations
-  async createChurch(church: InsertChurch): Promise<Church> {
-    const [newChurch] = await db.insert(churches).values(church).returning();
+  async createChurch(church: any): Promise<Church> {
+    const [newChurch] = await db.insert(churches).values({
+      ...church,
+      logoUrl: church.logoUrl || church.logo, // Handle both logoUrl and logo fields from registration
+    }).returning();
     return newChurch;
   }
 
