@@ -115,6 +115,16 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Super Admin Code Lock functionality
+  const handleCodeLock = () => {
+    // Navigate to church dashboard
+    navigate('/church-dashboard');
+    toast({
+      title: "Code Locked",
+      description: "Super Admin session secured. Opening church dashboard.",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -179,7 +189,11 @@ export default function SuperAdminDashboard() {
         >
           Annual Cashback
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center space-x-2">
+          <Button onClick={handleCodeLock} variant="outline" size="sm" className="border-purple-500 text-purple-300 hover:bg-purple-900/30">
+            <Shield className="h-4 w-4 mr-2" />
+            Code Lock
+          </Button>
           <Button onClick={handleSignOut} variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800/50">
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
