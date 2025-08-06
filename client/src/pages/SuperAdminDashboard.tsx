@@ -1,7 +1,7 @@
 import { useSuperAdminAuth } from "@/hooks/useSuperAdminAuth";
 import { SuperAdminPlatformDashboard } from "@/components/SuperAdminPlatformDashboard";
 import { PlatformFinancialsModal } from "@/components/PlatformFinancialsModal";
-import { ChurchManagementModal } from "@/components/ChurchManagementModal";
+import { SuperAdminChurchModal } from "@/components/SuperAdminChurchModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from '@/components/ui/card';
 import { LogOut, Shield, Users, Building2, DollarSign, BarChart3, CheckCircle, Crown, TrendingUp } from "lucide-react";
@@ -518,9 +518,9 @@ export default function SuperAdminDashboard() {
       />
 
       {/* Church Management Modal */}
-      <ChurchManagementModal 
-        isOpen={isChurchModalOpen}
-        onClose={() => setIsChurchModalOpen(false)}
+      <SuperAdminChurchModal 
+        open={isChurchModalOpen}
+        onOpenChange={(open) => setIsChurchModalOpen(open)}
       />
     </div>
   );
