@@ -1008,10 +1008,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get church bank details for PayFast transfer
+      console.log(`🏢 Looking for church: ${payout.churchId}`);
       const church = await storage.getChurch(payout.churchId);
       if (!church) {
+        console.log(`❌ Church not found: ${payout.churchId}`);
         return res.status(404).json({ message: "Church not found" });
       }
+      console.log(`✅ Church found: ${church.name}`);
 
       let payfastReference = null;
       let finalPaymentReference = paymentReference;
