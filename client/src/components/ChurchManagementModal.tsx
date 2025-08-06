@@ -62,6 +62,7 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<Church | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const { data: churches, isLoading } = useQuery<Church[]>({
     queryKey: ['/api/super-admin/churches'],
@@ -164,6 +165,7 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
   const rejectedChurches = churches?.filter(church => church.status === 'rejected') || [];
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[1000px] max-w-[95vw] mx-2 p-0 overflow-hidden rounded-3xl border-0 shadow-2xl max-h-[90vh]">
         {/* Enhanced Header */}
@@ -415,9 +417,13 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                           <div className="flex justify-end space-x-3 mt-6">
                             <Button 
                               variant="outline" 
-                              onClick={() => setSelectedChurch(church)}
+                              onClick={() => {
+                                setSelectedChurch(church);
+                                setShowDetailsModal(true);
+                              }}
                               className="border-blue-600 text-blue-600 hover:bg-blue-50"
                             >
+                              <Eye className="w-4 h-4 mr-2" />
                               Review Details
                             </Button>
                           </div>
@@ -524,7 +530,10 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                           <div className="flex justify-end space-x-3 mt-6">
                             <Button 
                               variant="outline" 
-                              onClick={() => setSelectedChurch(church)}
+                              onClick={() => {
+                                setSelectedChurch(church);
+                                setShowDetailsModal(true);
+                              }}
                               className="border-blue-600 text-blue-600 hover:bg-blue-50"
                             >
                               <Eye className="w-4 h-4 mr-2" />
@@ -546,8 +555,8 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                 </div>
               )}
 
-              {/* Detailed Church Review Modal */}
-              {selectedChurch && (
+              {/* Show inline details when not in modal mode */}
+              {selectedChurch && !showDetailsModal && (
                 <Card className="border-2 border-blue-500 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                     <CardTitle className="flex items-center justify-between">
@@ -557,7 +566,11 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
                           Review all church details before making approval decision
                         </p>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedChurch(null)}>
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setSelectedChurch(null);
+                        setShowDetailsModal(false);
+                        setReviewNotes('');
+                      }}>
                         <XCircle className="w-5 h-5" />
                       </Button>
                     </CardTitle>
@@ -795,5 +808,145 @@ export function ChurchManagementModal({ isOpen, onClose }: ChurchManagementModal
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Church Details Modal */}
+    {selectedChurch && showDetailsModal && (
+      <Dialog open={showDetailsModal} onOpenChange={() => {
+        setShowDetailsModal(false);
+        setSelectedChurch(null);
+        setReviewNotes('');
+      }}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-3">
+              {selectedChurch.logoUrl ? (
+                <img 
+                  src={selectedChurch.logoUrl} 
+                  alt={`${selectedChurch.name} logo`}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+              )}
+              <div>
+                <span className="text-xl">{selectedChurch.name}</span>
+                <p className="text-sm text-gray-600 mt-1">{selectedChurch.denomination}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Church Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Church Information</CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="mb-2"><strong>Lead Pastor:</strong> {selectedChurch.leadPastor}</div>
+                  <div className="mb-2"><strong>Members:</strong> {selectedChurch.memberCount?.toLocaleString()}</div>
+                  <div className="mb-2"><strong>Established:</strong> {selectedChurch.yearEstablished}</div>
+                  <div className="mb-2"><strong>Service Times:</strong> {selectedChurch.servicesTimes}</div>
+                </div>
+                <div>
+                  <div className="mb-2"><strong>Registration #:</strong> {selectedChurch.registrationNumber}</div>
+                  <div className="mb-2"><strong>Tax Number:</strong> {selectedChurch.taxNumber}</div>
+                  <div className="mb-2"><strong>Bank:</strong> {selectedChurch.bankName}</div>
+                  <div className="mb-2"><strong>Account Holder:</strong> {selectedChurch.accountHolder}</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact & Location */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Contact & Location</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div><strong>Email:</strong> {selectedChurch.contactEmail}</div>
+                <div><strong>Phone:</strong> {selectedChurch.contactPhone}</div>
+                {selectedChurch.alternativePhone && (
+                  <div><strong>Alternative Phone:</strong> {selectedChurch.alternativePhone}</div>
+                )}
+                {selectedChurch.website && (
+                  <div><strong>Website:</strong> <a href={selectedChurch.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{selectedChurch.website}</a></div>
+                )}
+                <div><strong>Address:</strong> {selectedChurch.address}, {selectedChurch.city}, {selectedChurch.province} {selectedChurch.postalCode}</div>
+              </CardContent>
+            </Card>
+
+            {/* Administrative Contact */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Administrative Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="mb-2"><strong>Name:</strong> {selectedChurch.adminFirstName} {selectedChurch.adminLastName}</div>
+                  <div className="mb-2"><strong>Position:</strong> {selectedChurch.adminPosition}</div>
+                </div>
+                <div>
+                  <div className="mb-2"><strong>Email:</strong> {selectedChurch.adminEmail}</div>
+                  <div className="mb-2"><strong>Phone:</strong> {selectedChurch.adminPhone}</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {selectedChurch.description && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600">{selectedChurch.description}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Actions for pending churches */}
+            {selectedChurch.status === 'pending' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Review Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Review Notes (Optional)</label>
+                    <textarea
+                      value={reviewNotes}
+                      onChange={(e) => setReviewNotes(e.target.value)}
+                      className="w-full p-3 border rounded-lg"
+                      rows={3}
+                      placeholder="Add any notes about your review decision..."
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <Button
+                      onClick={() => handleProcess('approve')}
+                      disabled={processMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Approve Church
+                    </Button>
+                    <Button
+                      onClick={() => handleProcess('reject')}
+                      disabled={processMutation.isPending}
+                      variant="destructive"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Reject Application
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   );
 }
