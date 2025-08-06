@@ -44,97 +44,19 @@ export function ActivitiesModal({ isOpen, onClose }: ActivitiesModalProps) {
     enabled: isOpen,
   });
 
-  // Mock expanded activity data
-  const activities: TransactionActivity[] = [
-    {
-      id: '1',
-      type: 'tithe',
-      amount: '500.00',
-      description: 'Monthly tithe payment',
-      churchName: 'Grace Baptist Church',
-      status: 'completed',
-      paymentMethod: 'Wallet',
-      timestamp: '2025-01-04T10:30:00Z',
-      reference: 'TITHE_1754332149350_ixqedag9t'
-    },
-    {
-      id: '2',
-      type: 'donation',
-      amount: '100.00',
-      description: 'General donation',
-      churchName: 'Grace Baptist Church',
-      status: 'completed',
-      paymentMethod: 'Wallet',
-      timestamp: '2025-01-04T10:29:00Z',
-      reference: 'DON_1754332148220_e97jiu8yd'
-    },
-    {
-      id: '3',
-      type: 'topup',
-      amount: '1000.00',
-      description: 'PayFast wallet top-up',
-      status: 'pending',
-      paymentMethod: 'Card ending in 4532',
-      timestamp: '2025-01-04T10:29:00Z',
-      reference: 'PF_1754332150644_k32j7u8fi'
-    },
-    {
-      id: '4',
-      type: 'project',
-      amount: '250.00',
-      description: 'Project sponsorship',
-      churchName: 'Grace Baptist Church',
-      projectName: 'New Sanctuary Building',
-      status: 'completed',
-      paymentMethod: 'Card ending in 4532',
-      timestamp: '2025-01-03T15:45:00Z',
-      reference: 'PROJ_1754299874561_abc123def'
-    },
-    {
-      id: '5',
-      type: 'donation',
-      amount: '150.00',
-      description: 'Special offering',
-      churchName: 'New Life Methodist Church',
-      status: 'completed',
-      paymentMethod: 'Wallet',
-      timestamp: '2025-01-02T18:20:00Z',
-      reference: 'DON_1754213201234_xyz789ghi'
-    },
-    {
-      id: '6',
-      type: 'tithe',
-      amount: '500.00',
-      description: 'Monthly tithe payment',
-      churchName: 'Grace Baptist Church',
-      status: 'completed',
-      paymentMethod: 'Auto-deduct',
-      timestamp: '2025-01-01T09:00:00Z',
-      reference: 'TITHE_1754126400000_auto123'
-    },
-    {
-      id: '7',
-      type: 'topup',
-      amount: '500.00',
-      description: 'PayFast wallet top-up',
-      status: 'completed',
-      paymentMethod: 'Card ending in 5678',
-      timestamp: '2024-12-30T14:15:00Z',
-      reference: 'PF_1754040900000_topup456'
-    },
-    {
-      id: '8',
-      type: 'project',
-      amount: '300.00',
-      description: 'Project sponsorship',
-      churchName: 'Faith Assembly Church',
-      projectName: 'Kenya Mission Trip',
-      status: 'completed',
-      paymentMethod: 'Wallet',
-      timestamp: '2024-12-28T11:30:00Z',
-      reference: 'PROJ_1753868200000_mission789'
-    }
-  ];
+  // Transform real donation history into activity format
+  const activities: TransactionActivity[] = donations.map((donation: any) => ({
+    id: donation.id,
+    type: donation.donationType || donation.type,
+    amount: donation.amount || '0.00',
+    description: donation.note || `${(donation.donationType || 'donation').charAt(0).toUpperCase() + (donation.donationType || 'donation').slice(1)} payment`,
+    churchName: donation.churchName || 'Your Church',
+    projectName: donation.projectName,
+    status: donation.status || 'completed',
+    paymentMethod: donation.paymentMethod || 'PayFast',
+    timestamp: donation.createdAt || new Date().toISOString(),
+    reference: donation.id || `TXN_${Date.now()}`
+  }));
 
   const getActivityIcon = (type: string) => {
     switch (type) {

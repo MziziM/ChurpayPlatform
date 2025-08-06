@@ -67,47 +67,14 @@ export function ChurchModal({ isOpen, onClose, churchId }: ChurchModalProps) {
     phone: church.contactPhone || 'Not provided',
     email: church.contactEmail || 'Not provided',
     address: church.location || 'Location not provided',
-    yearlyGoal: 500000, // Could be added to church schema later
-    currentYearDonations: 325000, // Could be calculated from real data
-    projectsActive: 3, // Could be calculated from real data
-    projectsCompleted: 12, // Could be calculated from real data
-    totalDonations: '325000', // Could be calculated from real data
+    yearlyGoal: 0, // Real data needed from church analytics
+    currentYearDonations: 0, // Real data needed from church analytics
+    projectsActive: 0, // Real data needed from church analytics
+    projectsCompleted: 0, // Real data needed from church analytics
+    totalDonations: '0', // Real data needed from church analytics
     image: church.logoUrl, // Alias for backward compatibility
-    recentActivities: [
-      { type: 'donation', amount: 'R 1,500', member: 'Anonymous', time: '2 hours ago' },
-      { type: 'project', name: 'Youth Camp Fund', progress: '+R 850', time: '5 hours ago' },
-      { type: 'tithe', amount: 'R 2,200', member: 'John S.', time: '1 day ago' },
-      { type: 'donation', amount: 'R 750', member: 'Sarah M.', time: '2 days ago' }
-    ],
-    projects: [
-      {
-        id: '1',
-        name: 'New Sanctuary Building',
-        description: 'Expanding our worship space to accommodate growing congregation',
-        target: 350000,
-        current: 185000,
-        supporters: 89,
-        deadline: '2025-06-30'
-      },
-      {
-        id: '2', 
-        name: 'Kenya Mission Trip',
-        description: 'Supporting orphanages and building wells in rural Kenya',
-        target: 75000,
-        current: 45000,
-        supporters: 34,
-        deadline: '2025-03-15'
-      },
-      {
-        id: '3',
-        name: 'Youth Ministry Equipment',
-        description: 'Sound system and multimedia equipment for youth programs',
-        target: 25000,
-        current: 18500,
-        supporters: 22,
-        deadline: '2025-02-28'
-      }
-    ]
+    recentActivities: [], // Real data needed from church activity logs
+    projects: [] // Real data needed from church projects
   } : null;
 
   if (!church || !churchDetails) {
