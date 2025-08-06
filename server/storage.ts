@@ -1514,6 +1514,36 @@ export class DatabaseStorage implements IStorage {
     return result[0]?.count || 0;
   }
 
+  async getChurchDonationStats(churchId: string, startDate: Date, endDate: Date): Promise<{
+    totalDonations: number;
+    transactionCount: number;
+  }> {
+    try {
+      const result = await db.select({
+        totalAmount: sql<string>`COALESCE(SUM(${transactions.amount}), 0)`,
+        transactionCount: sql<number>`COUNT(*)`
+      })
+      .from(transactions)
+      .where(and(
+        eq(transactions.churchId, churchId),
+        eq(transactions.status, 'completed'),
+        sql`${transactions.createdAt} >= ${startDate}`,
+        sql`${transactions.createdAt} <= ${endDate}`
+      ));
+
+      return {
+        totalDonations: parseFloat(result[0]?.totalAmount || '0'),
+        transactionCount: result[0]?.transactionCount || 0
+      };
+    } catch (error) {
+      console.error("Error getting church donation stats:", error);
+      return {
+        totalDonations: 0,
+        transactionCount: 0
+      };
+    }
+  }
+
   async getUserAchievements(userId: string): Promise<any[]> {
     // Simple achievement system - can be expanded
     const achievements = [];
