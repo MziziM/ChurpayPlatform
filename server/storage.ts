@@ -155,6 +155,11 @@ export interface IStorage {
   getChurchCashbackRecords(churchId?: string, year?: number): Promise<ChurchCashbackRecord[]>;
   processChurchCashback(recordId: string, adminId: string, action: 'approve' | 'pay'): Promise<ChurchCashbackRecord>;
   generateAnnualCashbackReports(year: number): Promise<ChurchCashbackRecord[]>;
+
+  // Church multi-step registration operations
+  getChurchByEmail(email: string): Promise<any>;
+  createChurchStepOne(data: { email: string; password: string }): Promise<string>;
+  authenticateChurch(email: string, password: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1599,6 +1604,44 @@ export class DatabaseStorage implements IStorage {
 
     // Return all cashback records for the year
     return await this.getChurchCashbackRecords(undefined, year);
+  }
+
+  // Church multi-step registration operations
+  async getChurchByEmail(email: string): Promise<any> {
+    const [church] = await db.select().from(churches).where(eq(churches.email, email));
+    return church;
+  }
+
+  async createChurchStepOne(data: { email: string; password: string }): Promise<string> {
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+    
+    const [church] = await db
+      .insert(churches)
+      .values({
+        email: data.email,
+        passwordHash: hashedPassword,
+        registrationStep: 1,
+        profileComplete: false
+      })
+      .returning();
+    
+    return church.id;
+  }
+
+  async authenticateChurch(email: string, password: string): Promise<any> {
+    const church = await this.getChurchByEmail(email);
+    if (!church) {
+      return { success: false, error: "Church not found" };
+    }
+
+    const bcrypt = await import('bcryptjs');
+    const isValid = await bcrypt.compare(password, church.passwordHash);
+    if (!isValid) {
+      return { success: false, error: "Invalid password" };
+    }
+
+    return { success: true, church };
   }
 }
 

@@ -31,6 +31,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/church-registration" component={ChurchRegistrationStepOne} />
       <Route path="/church-registration/step-one" component={ChurchRegistrationStepOne} />
+      <Route path="/church-registration/step-two" component={PublicChurchRegistration} />
       <Route path="/church-login" component={ChurchLogin} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
       <Route path="/public-church-registration" component={PublicChurchRegistration} />
