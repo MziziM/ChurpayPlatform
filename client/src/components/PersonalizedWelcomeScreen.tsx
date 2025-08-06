@@ -158,7 +158,7 @@ export function PersonalizedWelcomeScreen({ onQuickAction }: PersonalizedWelcome
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-4 right-4">
-            <Church className="w-32 h-32 text-purple-600" />
+            <User className="w-32 h-32 text-purple-600" />
           </div>
         </div>
         
