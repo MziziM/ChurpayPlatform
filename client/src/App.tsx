@@ -20,6 +20,7 @@ import SuperAdminSignIn from "@/pages/SuperAdminSignIn";
 import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 import ChurchPayoutDemo from "@/pages/ChurchPayoutDemo";
+import ChurchDashboard from "@/pages/ChurchDashboard";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
@@ -42,11 +43,7 @@ function Router() {
           <ProfessionalMemberDashboard />
         </ProtectedRoute>
       </Route>
-      <Route path="/church-dashboard">
-        <ProtectedRoute requiredRole={['church_admin', 'church_staff']}>
-          <ProfessionalChurchDashboard />
-        </ProtectedRoute>
-      </Route>
+      <Route path="/church-dashboard" component={ChurchDashboard} />
       <Route path="/church">
         <ProtectedRoute requiredRole={['church_admin', 'church_staff']}>
           <ProfessionalChurchDashboard />
