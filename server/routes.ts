@@ -1037,7 +1037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           netAmount: '14925.00',
           requestType: 'standard',
           description: 'Monthly church expenses and maintenance costs',
-          status: 'pending',
+          status: 'requested',
           requestedDate: new Date(),
         },
         {
@@ -1048,7 +1048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           netAmount: '8372.50',
           requestType: 'express',
           description: 'Urgent payment for utility bills',
-          status: 'pending',
+          status: 'requested',
           requestedDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
         },
         {
@@ -1060,7 +1060,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           requestType: 'emergency',
           description: 'Emergency repair fund for roof damage',
           urgencyReason: 'Severe storm damaged the church roof, need immediate repairs to prevent water damage',
-          status: 'pending',
+          status: 'requested',
           requestedDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
         }
       ];
