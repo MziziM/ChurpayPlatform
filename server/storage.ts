@@ -506,7 +506,7 @@ export class DatabaseStorage implements IStorage {
       requestType: payoutData.requestType,
       description: payoutData.description,
       urgencyReason: payoutData.urgencyReason,
-      status: 'pending',
+      status: 'requested',
       requestedDate: payoutData.requestedDate,
       createdAt: new Date(),
       updatedAt: new Date()
