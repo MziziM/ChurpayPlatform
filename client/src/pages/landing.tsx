@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GetStartedModal } from "@/components/GetStartedModal";
+import { PublicDonationModal } from "@/components/PublicDonationModal";
 import DashboardModal from "@/components/DashboardModal";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +41,8 @@ export default function Landing() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const [dashboardModalOpen, setDashboardModalOpen] = useState(false);
   const [dashboardUserType, setDashboardUserType] = useState<'member' | 'church'>('member');
@@ -95,6 +98,12 @@ export default function Landing() {
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
+              <button 
+                onClick={() => setLocation('/projects')} 
+                className="text-gray-600 hover:text-churpay-purple transition-colors font-medium"
+              >
+                Projects
+              </button>
               <button 
                 onClick={() => scrollToSection('features')} 
                 className="text-gray-600 hover:text-churpay-purple transition-colors font-medium"
@@ -548,8 +557,8 @@ export default function Landing() {
                       <Button 
                         className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300"
                         onClick={() => {
-                          // Redirect to project donation page or open donation modal
-                          setRegistrationModalOpen(true);
+                          setSelectedProject(project);
+                          setDonationModalOpen(true);
                         }}
                       >
                         Support This Project
@@ -565,7 +574,7 @@ export default function Landing() {
                 <Button 
                   variant="outline" 
                   className="border-purple-200 text-purple-700 hover:bg-purple-50"
-                  onClick={() => scrollToSection('features')}
+                  onClick={() => setLocation('/projects')}
                 >
                   View All Projects
                 </Button>
@@ -1086,6 +1095,15 @@ export default function Landing() {
       <GetStartedModal 
         isOpen={registrationModalOpen} 
         onClose={() => setRegistrationModalOpen(false)} 
+      />
+      
+      <PublicDonationModal
+        isOpen={donationModalOpen}
+        onClose={() => {
+          setDonationModalOpen(false);
+          setSelectedProject(null);
+        }}
+        project={selectedProject}
       />
       
       <DashboardModal 

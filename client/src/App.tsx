@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "@/pages/landing";
+import ProjectsPage from "@/pages/projects";
 import ChurchRegistration from "@/pages/church-registration";
 import MemberRegistration from "@/pages/member-registration";
 import PublicChurchRegistration from "@/pages/public-church-registration";
@@ -28,6 +29,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/projects" component={ProjectsPage} />
       <Route path="/church-registration" component={PublicChurchRegistration} />
       <Route path="/member-registration" component={PublicMemberRegistration} />
       <Route path="/public-church-registration" component={PublicChurchRegistration} />

@@ -16,11 +16,14 @@ import {
   Church
 } from "lucide-react";
 import { GetStartedModal } from "@/components/GetStartedModal";
+import { PublicDonationModal } from "@/components/PublicDonationModal";
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
   const { data: sponsoredProjects, isLoading } = useQuery({
     queryKey: ["/api/projects/sponsored", { limit: 50 }],
@@ -232,13 +235,16 @@ export default function ProjectsPage() {
                   <div className="flex gap-2 mt-4">
                     <Button 
                       className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                      onClick={() => setRegistrationModalOpen(true)}
+                      onClick={() => {
+                        setSelectedProject(project);
+                        setDonationModalOpen(true);
+                      }}
                     >
                       <Heart className="h-4 w-4 mr-2" />
-                      Support
+                      Support Now
                     </Button>
                     <Button variant="outline" size="sm">
-                      Learn More
+                      Details
                     </Button>
                   </div>
                 </CardContent>
@@ -259,6 +265,15 @@ export default function ProjectsPage() {
       <GetStartedModal 
         isOpen={registrationModalOpen}
         onClose={() => setRegistrationModalOpen(false)}
+      />
+      
+      <PublicDonationModal
+        isOpen={donationModalOpen}
+        onClose={() => {
+          setDonationModalOpen(false);
+          setSelectedProject(null);
+        }}
+        project={selectedProject}
       />
     </div>
   );
