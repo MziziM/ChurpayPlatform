@@ -31,26 +31,47 @@ interface ChurchProfile {
   id: string;
   name: string;
   denomination: string;
+  registrationNumber: string;
+  taxNumber: string;
+  yearEstablished: string;
+  
+  // Contact Information
+  contactEmail: string;
+  contactPhone: string;
+  alternativePhone?: string;
+  website?: string;
+  
+  // Physical Address
   address: string;
   city: string;
   province: string;
   postalCode: string;
-  contactEmail: string;
-  contactPhone: string;
-  alternatePhone?: string;
-  website?: string;
-  registrationNumber: string;
-  taxNumber?: string;
+  country: string;
+  
+  // Banking Information
   bankName: string;
   accountNumber: string;
   branchCode: string;
+  accountHolder: string;
   accountType: string;
+  
+  // Church Details
+  description: string;
   memberCount: number;
-  foundedYear: string;
-  description?: string;
+  servicesTimes: string;
+  leadPastor: string;
+  logoUrl?: string;
+  
+  // Administrative Contact
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+  adminPhone: string;
+  adminPosition: string;
+  
+  // Status and metadata
   status: string;
   registrationDate: string;
-  profileImageUrl?: string;
 }
 
 export function ChurchProfileModal({
@@ -63,24 +84,33 @@ export function ChurchProfileModal({
   const [formData, setFormData] = useState<Partial<ChurchProfile>>({
     name: "",
     denomination: "",
+    registrationNumber: "",
+    taxNumber: "",
+    yearEstablished: "",
+    contactEmail: "",
+    contactPhone: "",
+    alternativePhone: "",
+    website: "",
     address: "",
     city: "",
     province: "",
     postalCode: "",
-    contactEmail: "",
-    contactPhone: "",
-    alternatePhone: "",
-    website: "",
-    registrationNumber: "",
-    taxNumber: "",
+    country: "South Africa",
     bankName: "",
     accountNumber: "",
     branchCode: "",
+    accountHolder: "",
     accountType: "",
-    memberCount: 0,
-    foundedYear: "",
     description: "",
-    profileImageUrl: ""
+    memberCount: 0,
+    servicesTimes: "",
+    leadPastor: "",
+    logoUrl: "",
+    adminFirstName: "",
+    adminLastName: "",
+    adminEmail: "",
+    adminPhone: "",
+    adminPosition: ""
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -351,6 +381,29 @@ export function ChurchProfileModal({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
+                <Label htmlFor="registrationNumber">Registration Number</Label>
+                <Input
+                  id="registrationNumber"
+                  value={formData.registrationNumber || ''}
+                  onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
+                  placeholder="NPO/PBO Registration Number"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="taxNumber">Tax Number</Label>
+                <Input
+                  id="taxNumber"
+                  value={formData.taxNumber || ''}
+                  onChange={(e) => handleInputChange('taxNumber', e.target.value)}
+                  placeholder="Tax Exemption Number"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
                 <Label htmlFor="memberCount">Current Member Count</Label>
                 <Input
                   id="memberCount"
@@ -362,13 +415,35 @@ export function ChurchProfileModal({
                 />
               </div>
               <div>
-                <Label htmlFor="foundedYear">Founded Year</Label>
+                <Label htmlFor="yearEstablished">Year Established</Label>
                 <Input
-                  id="foundedYear"
-                  type="number"
-                  value={formData.foundedYear || ''}
-                  onChange={(e) => handleInputChange('foundedYear', e.target.value)}
+                  id="yearEstablished"
+                  value={formData.yearEstablished || ''}
+                  onChange={(e) => handleInputChange('yearEstablished', e.target.value)}
                   placeholder="YYYY"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="leadPastor">Lead Pastor</Label>
+                <Input
+                  id="leadPastor"
+                  value={formData.leadPastor || ''}
+                  onChange={(e) => handleInputChange('leadPastor', e.target.value)}
+                  placeholder="Pastor Name"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="servicesTimes">Service Times</Label>
+                <Input
+                  id="servicesTimes"
+                  value={formData.servicesTimes || ''}
+                  onChange={(e) => handleInputChange('servicesTimes', e.target.value)}
+                  placeholder="Sunday 9AM, 11AM; Wednesday 7PM"
                   className="mt-1"
                 />
               </div>
@@ -509,31 +584,66 @@ export function ChurchProfileModal({
             </div>
           </div>
 
-          {/* Legal Information */}
+          {/* Administrative Contact */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Legal Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Administrative Contact</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="registrationNumber">NPO Registration Number *</Label>
+                <Label htmlFor="adminFirstName">Admin First Name</Label>
                 <Input
-                  id="registrationNumber"
-                  value={formData.registrationNumber || ''}
-                  onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
-                  placeholder="NPO-123-456"
+                  id="adminFirstName"
+                  value={formData.adminFirstName || ''}
+                  onChange={(e) => handleInputChange('adminFirstName', e.target.value)}
+                  placeholder="First Name"
                   className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="taxNumber">Tax Number (Optional)</Label>
+                <Label htmlFor="adminLastName">Admin Last Name</Label>
                 <Input
-                  id="taxNumber"
-                  value={formData.taxNumber || ''}
-                  onChange={(e) => handleInputChange('taxNumber', e.target.value)}
-                  placeholder="123-456-789"
+                  id="adminLastName"
+                  value={formData.adminLastName || ''}
+                  onChange={(e) => handleInputChange('adminLastName', e.target.value)}
+                  placeholder="Last Name"
                   className="mt-1"
                 />
               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="adminEmail">Admin Email</Label>
+                <Input
+                  id="adminEmail"
+                  type="email"
+                  value={formData.adminEmail || ''}
+                  onChange={(e) => handleInputChange('adminEmail', e.target.value)}
+                  placeholder="admin@church.co.za"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminPhone">Admin Phone</Label>
+                <Input
+                  id="adminPhone"
+                  value={formData.adminPhone || ''}
+                  onChange={(e) => handleInputChange('adminPhone', e.target.value)}
+                  placeholder="+27 21 555 0123"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="adminPosition">Admin Position</Label>
+              <Input
+                id="adminPosition"
+                value={formData.adminPosition || ''}
+                onChange={(e) => handleInputChange('adminPosition', e.target.value)}
+                placeholder="Pastor, Church Administrator, etc."
+                className="mt-1"
+              />
             </div>
           </div>
 
@@ -613,6 +723,17 @@ export function ChurchProfileModal({
                   className="mt-1"
                 />
               </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="accountHolder">Account Holder Name *</Label>
+              <Input
+                id="accountHolder"
+                value={formData.accountHolder || ''}
+                onChange={(e) => handleInputChange('accountHolder', e.target.value)}
+                placeholder="Church Name or Authorized Person"
+                className="mt-1"
+              />
             </div>
           </div>
 
