@@ -10,7 +10,7 @@ import {
   Activity, CreditCard, Banknote, Shield,
   Search, Bell, User, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus,
-  Heart, Church, Target, TrendingUp, Star
+  Heart, Church, Target, TrendingUp, Star, LogOut
 } from 'lucide-react';
 import { ProfessionalDonationModal } from '@/components/ProfessionalDonationModal';
 import { ProjectsModal } from '@/components/ProjectsModal';
@@ -137,6 +137,10 @@ export default function ProfessionalMemberDashboard() {
     }
   };
 
+  const handleSignOut = () => {
+    window.location.href = '/api/logout';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
@@ -213,20 +217,32 @@ export default function ProfessionalMemberDashboard() {
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
             
-            <div 
-              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors"
-              onClick={() => setShowProfileModal(true)}
-            >
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                {/* Show emoji if available, otherwise show profile image */}
-                <span className="text-lg">🙏</span>
+            <div className="flex items-center space-x-2">
+              <div 
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors"
+                onClick={() => setShowProfileModal(true)}
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                  {/* Show emoji if available, otherwise show profile image */}
+                  <span className="text-lg">🙏</span>
+                </div>
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user ? `${(user as any).firstName} ${(user as any).lastName}` : 'Loading...'}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">{(user as any)?.role || 'Member'}</p>
+                </div>
               </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-900">
-                  {user ? `${(user as any).firstName} ${(user as any).lastName}` : 'Loading...'}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">{(user as any)?.role || 'Member'}</p>
-              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-gray-500 hover:text-red-600 hover:bg-red-50"
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
