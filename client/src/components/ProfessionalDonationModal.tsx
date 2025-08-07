@@ -363,6 +363,34 @@ export function ProfessionalDonationModal({
                   <span className="text-xl font-bold text-gray-900">R {parseFloat(walletBalance).toLocaleString()}</span>
                 </div>
               </div>
+              
+              {/* Show fee preview for top-ups */}
+              {type === 'topup' && amount && parseFloat(amount) > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="text-sm text-blue-800 font-medium mb-3 flex items-center">
+                    <Info className="h-4 w-4 mr-2" />
+                    PayFast Processing Fees
+                  </div>
+                  <div className="text-sm text-blue-700 space-y-2">
+                    <div className="flex justify-between">
+                      <span>Top-up amount:</span>
+                      <span className="font-medium">R {parseFloat(amount).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Processing fee (3.9%):</span>
+                      <span>R {(parseFloat(amount) * 0.039).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Transaction fee:</span>
+                      <span>R 3.00</span>
+                    </div>
+                    <div className="flex justify-between font-semibold border-t border-blue-300 pt-2">
+                      <span>Total to pay:</span>
+                      <span className="text-blue-900">R {(parseFloat(amount) + parseFloat(amount) * 0.039 + 3).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -517,15 +545,46 @@ export function ProfessionalDonationModal({
                 <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Review your gift</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Review your {type === 'topup' ? 'top-up' : 'gift'}</h3>
                 <p className="text-gray-600">Please confirm the details below</p>
               </div>
               
               {/* Summary Card */}
               <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-gray-200">
-                  <span className="text-gray-600 font-medium">Amount</span>
-                  <span className="text-3xl font-bold text-gray-900">R {parseFloat(amount).toLocaleString()}</span>
+                {/* Amount and Fee Breakdown */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">
+                      {type === 'topup' ? 'Top-up Amount' : 'Amount'}
+                    </span>
+                    <span className="text-3xl font-bold text-gray-900">R {parseFloat(amount).toLocaleString()}</span>
+                  </div>
+                  
+                  {/* Show fee calculation for top-ups when using PayFast */}
+                  {type === 'topup' && selectedPaymentMethod === 'payfast' && (
+                    <>
+                      <div className="bg-white rounded-xl p-4 border border-gray-300 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Processing Fee (3.9%)</span>
+                          <span className="text-gray-700">R {(parseFloat(amount) * 0.039).toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Transaction Fee</span>
+                          <span className="text-gray-700">R 3.00</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-t border-gray-200 font-semibold">
+                          <span className="text-gray-900">Total to Pay</span>
+                          <span className="text-lg text-gray-900">
+                            R {(parseFloat(amount) + parseFloat(amount) * 0.039 + 3).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-green-600 font-medium">Amount Added to Wallet</span>
+                          <span className="text-green-600 font-semibold">R {parseFloat(amount).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 {type !== 'topup' && (
