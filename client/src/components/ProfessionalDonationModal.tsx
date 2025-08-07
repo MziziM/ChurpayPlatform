@@ -674,10 +674,20 @@ export function ProfessionalDonationModal({
                       <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
                       Processing...
                     </>
+                  ) : selectedPaymentMethod === 'payfast' ? (
+                    <>
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      Pay with PayFast
+                    </>
+                  ) : selectedPaymentMethod === 'wallet' ? (
+                    <>
+                      <Wallet className="h-5 w-5 mr-2" />
+                      Pay from Wallet
+                    </>
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      Complete Gift
+                      Complete Payment
                     </>
                   )}
                 </Button>
