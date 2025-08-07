@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle 
 } from '@/components/ui/dialog';
@@ -36,90 +37,28 @@ interface ProjectsModalProps {
   onSponsorProject: (projectId: string) => void;
 }
 
-// Mock projects data - in real app this would come from API
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: '1',
-    name: 'New Sanctuary Building',
-    description: 'Expanding our worship space to accommodate our growing congregation and enhance our community gatherings.',
-    church: 'Grace Baptist Church',
-    churchLogo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-    target: 350000,
-    current: 185000,
-    supporters: 89,
-    deadline: '2025-06-30',
-    category: 'Infrastructure',
-    status: 'active',
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop'
-  },
-  {
-    id: '2',
-    name: 'Kenya Mission Trip',
-    description: 'Supporting orphanages and building wells in rural Kenya to bring hope and clean water to communities.',
-    church: 'Grace Baptist Church',
-    target: 75000,
-    current: 45000,
-    supporters: 34,
-    deadline: '2025-03-15',
-    category: 'Mission',
-    status: 'urgent',
-    image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=300&h=200&fit=crop'
-  },
-  {
-    id: '3',
-    name: 'Youth Ministry Equipment',
-    description: 'Sound system and multimedia equipment for engaging youth programs and worship experiences.',
-    church: 'Grace Baptist Church',
-    target: 25000,
-    current: 18500,
-    supporters: 22,
-    deadline: '2025-02-28',
-    category: 'Equipment',
-    status: 'active',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop'
-  },
-  {
-    id: '4',
-    name: 'Community Food Bank',
-    description: 'Establishing a food bank to serve families in need within our community and surrounding areas.',
-    church: 'Hope Community Church',
-    target: 50000,
-    current: 35000,
-    supporters: 67,
-    deadline: '2025-04-20',
-    category: 'Community',
-    status: 'active',
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1593113616828-6f22bde41143?w=300&h=200&fit=crop'
-  },
-  {
-    id: '5',
-    name: 'Children\'s Playground',
-    description: 'Creating a safe and fun playground for children during church events and community programs.',
-    church: 'New Life Chapel',
-    target: 40000,
-    current: 40000,
-    supporters: 58,
-    deadline: '2024-12-31',
-    category: 'Community',
-    status: 'completed',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop'
-  }
-];
+
 
 export function ProjectsModal({ isOpen, onClose, onSponsorProject }: ProjectsModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
+  // Fetch real projects data
+  const { data: projectsData, isLoading } = useQuery({
+    queryKey: ['/api/projects/all'],
+    enabled: isOpen,
+  });
+
+  const projects = projectsData || [];
+  
   const categories = ['all', 'Infrastructure', 'Mission', 'Equipment', 'Community'];
   const statuses = ['all', 'active', 'urgent', 'completed'];
 
-  const filteredProjects = MOCK_PROJECTS.filter(project => {
+  const filteredProjects = projects.filter((project: any) => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.church.toLowerCase().includes(searchQuery.toLowerCase());
+                         project.churchName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || project.status === selectedStatus;
     
@@ -238,7 +177,7 @@ export function ProjectsModal({ isOpen, onClose, onSponsorProject }: ProjectsMod
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <Building2 className="h-4 w-4" />
-                          <span>{project.church}</span>
+                          <span>{project.churchName || project.church}</span>
                         </div>
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
@@ -282,8 +221,19 @@ export function ProjectsModal({ isOpen, onClose, onSponsorProject }: ProjectsMod
                 ? `Filtered Projects (${filteredProjects.length})` 
                 : 'All Projects'}
             </h3>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                <p className="text-gray-600">Loading projects...</p>
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="text-center py-8">
+                <Target className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600">No projects found matching your criteria.</p>
+              </div>
+            ) : (
             <div className="grid gap-4">
-              {filteredProjects.map((project) => (
+              {filteredProjects.map((project: any) => (
                 <Card key={project.id} className="border-0 shadow-md rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex gap-4">
@@ -299,7 +249,7 @@ export function ProjectsModal({ isOpen, onClose, onSponsorProject }: ProjectsMod
                             <p className="text-gray-600 text-sm mt-1">{project.description}</p>
                             <div className="flex items-center space-x-2 mt-2 text-sm text-gray-600">
                               <Building2 className="h-4 w-4" />
-                              <span>{project.church}</span>
+                              <span>{project.churchName || project.church}</span>
                               <Badge variant="outline" className="ml-2">
                                 {project.category}
                               </Badge>
@@ -345,15 +295,8 @@ export function ProjectsModal({ isOpen, onClose, onSponsorProject }: ProjectsMod
                 </Card>
               ))}
             </div>
+            )}
           </div>
-
-          {filteredProjects.length === 0 && (
-            <div className="text-center py-12">
-              <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-              <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
