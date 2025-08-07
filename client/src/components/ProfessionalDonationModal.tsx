@@ -224,8 +224,15 @@ export function ProfessionalDonationModal({
 
     setIsProcessing(true);
     
+    // Calculate total amount including fees for PayFast payments
+    const baseAmount = parseFloat(amount);
+    const totalAmount = selectedPaymentMethod === 'payfast' 
+      ? baseAmount + (baseAmount * 0.039) + 3  // Add 3.9% + R3 fees
+      : baseAmount;
+    
     const submitData = {
-      amount: parseFloat(amount),
+      amount: baseAmount, // Original amount (what goes to church/wallet)
+      totalAmount: totalAmount, // Total including fees (what user pays)
       donationType: type,
       paymentMethod: selectedPaymentMethod,
       note: note.trim() || null,
@@ -364,8 +371,8 @@ export function ProfessionalDonationModal({
                 </div>
               </div>
               
-              {/* Show fee preview for top-ups */}
-              {type === 'topup' && amount && parseFloat(amount) > 0 && (
+              {/* Show fee preview for ALL PayFast payments */}
+              {amount && parseFloat(amount) > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <div className="text-sm text-blue-800 font-medium mb-3 flex items-center">
                     <Info className="h-4 w-4 mr-2" />
@@ -373,7 +380,7 @@ export function ProfessionalDonationModal({
                   </div>
                   <div className="text-sm text-blue-700 space-y-2">
                     <div className="flex justify-between">
-                      <span>Top-up amount:</span>
+                      <span>{type === 'topup' ? 'Top-up amount:' : `${type.charAt(0).toUpperCase() + type.slice(1)} amount:`}</span>
                       <span className="font-medium">R {parseFloat(amount).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -560,8 +567,8 @@ export function ProfessionalDonationModal({
                     <span className="text-3xl font-bold text-gray-900">R {parseFloat(amount).toLocaleString()}</span>
                   </div>
                   
-                  {/* Show fee calculation for top-ups when using PayFast */}
-                  {type === 'topup' && selectedPaymentMethod === 'payfast' && (
+                  {/* Show fee calculation for ALL PayFast payments */}
+                  {selectedPaymentMethod === 'payfast' && (
                     <>
                       <div className="bg-white rounded-xl p-4 border border-gray-300 space-y-2">
                         <div className="flex items-center justify-between text-sm">
@@ -579,7 +586,9 @@ export function ProfessionalDonationModal({
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-green-600 font-medium">Amount Added to Wallet</span>
+                          <span className="text-green-600 font-medium">
+                            {type === 'topup' ? 'Amount Added to Wallet' : `Amount for ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+                          </span>
                           <span className="text-green-600 font-semibold">R {parseFloat(amount).toFixed(2)}</span>
                         </div>
                       </div>

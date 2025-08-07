@@ -1432,7 +1432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/donations/create', requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      const { amount, donationType, paymentMethod, churchId, note, projectId } = req.body;
+      const { amount, totalAmount, donationType, paymentMethod, churchId, note, projectId } = req.body;
 
       // Validate amount
       if (!amount || amount <= 0) {
@@ -1526,7 +1526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name_last: user.lastName || 'User',
           email_address: user.email || 'member@churpay.com',
           m_payment_id: donationId,
-          amount: parseFloat(amount).toFixed(2),
+          amount: (totalAmount || parseFloat(amount)).toFixed(2), // Use totalAmount for PayFast (includes fees)
           item_name: `${donationType === 'tithe' ? 'Tithe' : 'Donation'} to ${church.name}`,
           item_description: note || `${donationType === 'tithe' ? 'Tithe payment' : 'Donation'} to ${church.name}`,
           custom_str1: donationId, // Donation ID for tracking
@@ -1594,7 +1594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/wallet/topup/payfast', requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      const { amount } = req.body;
+      const { amount, totalAmount } = req.body;
 
       // Validate amount
       if (!amount || amount < 10) {
@@ -1629,7 +1629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name_last: user.lastName || 'User',
         email_address: user.email || 'member@churpay.com',
         m_payment_id: topupId,
-        amount: parseFloat(amount).toFixed(2),
+        amount: (totalAmount || parseFloat(amount)).toFixed(2), // Use totalAmount for PayFast (includes fees)
         item_name: 'ChurPay Wallet Top-up',
         item_description: `Wallet top-up for ${user.firstName} ${user.lastName}`,
         custom_str1: userId, // User ID for wallet identification
