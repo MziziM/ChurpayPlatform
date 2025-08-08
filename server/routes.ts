@@ -63,6 +63,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log("✅ Fee structure validated: 3.9% + R3 per transaction");
   console.log("   Only explicitly requested changes permitted");
 
+  // Rate limiting for sensitive endpoints (moved here before usage)
+  const payfastLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 50, // limit each IP to 50 requests per windowMs  
+    message: { error: 'Too many PayFast notifications, please wait' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const donationLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 donations per windowMs
+    message: { error: 'Too many donation attempts, please wait' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
   // Public registration endpoints (NO AUTHENTICATION REQUIRED)
   app.post('/api/churches/register', async (req, res) => {
     try {
@@ -1841,23 +1858,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error processing donation:', error);
       res.status(500).json({ message: 'Failed to process donation' });
     }
-  });
-
-  // Rate limiting for sensitive endpoints
-  const payfastLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 50, // limit each IP to 50 requests per windowMs  
-    message: { error: 'Too many PayFast notifications, please wait' },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
-  const donationLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // limit each IP to 10 donations per windowMs
-    message: { error: 'Too many donation attempts, please wait' },
-    standardHeaders: true,
-    legacyHeaders: false,
   });
 
   // Idempotency tracking for PayFast notifications
