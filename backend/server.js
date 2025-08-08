@@ -1,134 +1,84 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import crypto from "crypto";
-import { Pool } from "pg";
-import qs from "qs";
+import { useEffect, useState } from "react";
 
-dotenv.config();
+function App() {
+  const api = import.meta.env.VITE_API_URL;
+  const apiBase = api || "";
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+  const [health, setHealth] = useState(null);
+  const [amount, setAmount] = useState("10.00");
 
-// --- CORS ---
-const allowed = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "").split(",").map(s => s.trim()).filter(Boolean);
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowed.length === 0 || allowed.includes(origin)) return cb(null, true);
-    return cb(new Error("Not allowed by CORS"));
-  },
-  credentials: true
-}));
-
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Simple request logger middleware
-app.use((req, _res, next) => {
-  console.log(`[REQ] ${req.method} ${req.path}`);
-  next();
-});
-
-// --- DB ---
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-// simple table to prove DB works
-const ensureTable = async () => {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id SERIAL PRIMARY KEY,
-      pf_payment_id TEXT,
-      amount NUMERIC,
-      status TEXT,
-      created_at TIMESTAMP DEFAULT NOW()
-    )
-  `);
-};
-ensureTable().catch(console.error);
-
-// --- Health ---
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "backend" });
-});
-
-app.get("/health", async (_req, res) => {
-  try {
-    const r = await pool.query("SELECT 1 as ok");
-    res.json({ ok: true, db: r.rows[0].ok === 1 });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-// --- PayFast helpers ---
-const toSignatureString = (obj) => {
-  // PayFast requires ordered, URL-encoded query string without null/undefined fields
-  const clean = Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null && v !== ""));
-  return qs.stringify(clean, { encode: false });
-};
-
-const sign = (params) => {
-  const passphrase = process.env.PAYFAST_PASSPHRASE || process.env.PAYFAST_MERCHANT_KEY || "";
-  const base = toSignatureString(params) + (passphrase ? `&passphrase=${passphrase}` : "");
-  return crypto.createHash("md5").update(base).digest("hex");
-};
-
-// --- Initiate payment (client hits this; we return the gateway URL to redirect) ---
-app.post("/api/payfast/initiate", async (req, res) => {
-  try {
-    const { amount, item_name = "Churpay Top Up", return_url, cancel_url, notify_url } = req.body;
-
-    if (!amount) return res.status(400).json({ error: "amount required" });
-
-    const pfParams = {
-      merchant_id: process.env.PAYFAST_MERCHANT_ID,
-      merchant_key: "46f0cd694581a", // NOTE: PayFast sandbox public key; in live use your real public key
-      amount: Number(amount).toFixed(2),
-      item_name,
-      return_url: return_url || `${process.env.FRONTEND_URL}/payfast/return`,
-      cancel_url: cancel_url || `${process.env.FRONTEND_URL}/payfast/cancel`,
-      notify_url: notify_url || `${process.env.BACKEND_URL || ""}/api/payfast/ipn`
+  useEffect(() => {
+    const check = async () => {
+      try {
+        if (!apiBase) {
+          setHealth({ ok: false, error: "VITE_API_URL is missing (frontend env not set)" });
+          return;
+        }
+        const r = await fetch(`${apiBase}/api/health`);
+        const text = await r.text();
+        if (!r.ok) {
+          setHealth({ ok: false, status: r.status, body: text });
+          return;
+        }
+        try {
+          const json = JSON.parse(text);
+          setHealth(json);
+        } catch {
+          setHealth({ ok: false, status: r.status, body: text });
+        }
+      } catch (e) {
+        setHealth({ ok: false, error: String(e) });
+      }
     };
+    check();
+  }, [apiBase]);
 
-    const signature = sign(pfParams);
-    const gatewayBase = process.env.NODE_ENV === "production"
-      ? "https://www.payfast.co.za/eng/process"
-      : "https://sandbox.payfast.co.za/eng/process";
+  const handlePay = async () => {
+    if (!apiBase) {
+      alert("VITE_API_URL is missing in the frontend environment.");
+      return;
+    }
+    const r = await fetch(`${apiBase}/api/payfast/initiate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (data.redirectUrl) {
+      window.location.href = data.redirectUrl;
+    } else {
+      alert("Failed to start payment. " + JSON.stringify(data));
+    }
+  };
 
-    // You can either return a URL or a form post target. Simpler: return URL with querystring.
-    const redirectUrl = `${gatewayBase}?${toSignatureString({ ...pfParams, signature })}`;
+  return (
+    <div className="App">
+      <h1>Churpay Demo</h1>
+      <p>Top up your account with PayFast</p>
 
-    res.json({ redirectUrl });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to initiate PayFast" });
-  }
-});
+      <div style={{ marginBottom: 12, fontSize: 12, color: "#6b7280" }}>
+        API base: {apiBase || "(not set)"} 
+      </div>
 
-// --- IPN endpoint (PayFast server calls this) ---
-app.post("/api/payfast/ipn", async (req, res) => {
-  try {
-    // For demo simplicity, we’ll trust body; in production, re-POST to PayFast for validation,
-    // verify signature and source IP per docs.
-    const { pf_payment_id, amount_gross, payment_status } = req.body;
+      <div className="healthBox">
+        Health: {health ? (health.ok ? "OK" : "ERROR") : "..."}
+      </div>
+      {health && !health.ok && (
+        <pre style={{ marginTop: 8, maxWidth: 600, whiteSpace: "pre-wrap", fontSize: 12, color: "#6b7280" }}>
+          {JSON.stringify(health, null, 2)}
+        </pre>
+      )}
 
-    await pool.query(
-      "INSERT INTO payments (pf_payment_id, amount, status) VALUES ($1,$2,$3)",
-      [pf_payment_id || null, amount_gross ? Number(amount_gross) : null, payment_status || "PENDING"]
-    );
+      <input
+        type="number"
+        step="0.01"
+        value={amount}
+        onChange={e => setAmount(e.target.value)}
+        placeholder="Amount"
+      />
+      <button onClick={handlePay}>Pay</button>
+    </div>
+  );
+}
 
-    res.status(200).send("OK");
-  } catch (e) {
-    console.error(e);
-    res.status(500).send("ERR");
-  }
-});
-
-app.get("/", (_req, res) => {
-  res.json({ message: "Churpay Backend is running" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend listening on ${PORT}`);
-});
+export default App;
