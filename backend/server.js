@@ -62,21 +62,20 @@ app.get("/health", async (_req, res) => {
 
 // --- PayFast helpers ---
 const toSignatureString = (obj) => {
-  // Remove empty fields
   const clean = Object.fromEntries(
     Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null && v !== "")
   );
-  // PayFast requires parameters to be ordered alphabetically and URL-encoded like PHP's urlencode (spaces as '+')
   const sorted = Object.keys(clean).sort().reduce((acc, key) => {
     acc[key] = clean[key];
     return acc;
   }, {});
-  return qs.stringify(sorted, { encode: true, format: 'RFC1738' });
+  return qs.stringify(sorted, { encode: true }); // RFC3986 encoding (spaces as %20)
 };
 
 const sign = (params) => {
-  const passphrase = process.env.PAYFAST_PASSPHRASE; // Only include if explicitly set
-  const base = toSignatureString(params) + (passphrase ? `&passphrase=${encodeURIComponent(passphrase)}` : "");
+  const passphrase = process.env.PAYFAST_PASSPHRASE;
+  const base = toSignatureString(params) + (passphrase ? `&passphrase=${passphrase}` : "");
+  console.log("[PayFast][Sign] Base string:", base);
   return crypto.createHash("md5").update(base).digest("hex");
 };
 
@@ -107,6 +106,7 @@ app.post("/api/payfast/initiate", async (req, res) => {
     };
 
     const signature = sign(pfParams);
+    console.log("[PayFast][Initiate] Signature:", signature);
     const redirectUrl = `${PF_GATEWAY}?${toSignatureString({ ...pfParams, signature })}`;
     console.log('[PayFast] mode=%s merchant_id=%s gateway=%s amount=%s', PAYFAST_MODE, PF_MERCHANT_ID, PF_GATEWAY, pfParams.amount);
 
@@ -128,6 +128,8 @@ app.post("/api/payfast/ipn", async (req, res) => {
       const receivedSig = req.body.signature;
       const { signature: _drop, ...ipnParams } = req.body;
       const computedSig = sign(ipnParams);
+      console.log("[PayFast][IPN] Params for signature:", ipnParams);
+      console.log("[PayFast][IPN] Computed signature:", computedSig);
       if (receivedSig && computedSig && receivedSig.toLowerCase() !== computedSig.toLowerCase()) {
         console.warn("[PayFast][IPN] Signature mismatch", { receivedSig, computedSig });
       } else {
