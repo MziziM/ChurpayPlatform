@@ -1,10 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
-import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users, churches, projects } from "@shared/schema";
+import { insertChurchSchema, insertProjectSchema, insertTransactionSchema, insertPayoutSchema, users, churches, projects, donations } from "@shared/schema";
 import { protectCoreEndpoints, validateFeeStructure, validateSystemIntegrity, requireAdminAuth, PROTECTED_CONSTANTS } from "./codeProtection";
 import { generateTwoFactorSecret, validateTwoFactorToken, removeUsedBackupCode } from "./googleAuth";
 import { churchApprovalService } from "./churchApprovalService";
+import { validatePayFastSignature, validatePayFastIPN, extractPayFastIPN, sanitizePayFastData } from "./payfast";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -14,6 +16,33 @@ import {
   ObjectNotFoundError,
 } from "./objectStorage";
 import { notificationService } from "./notificationService";
+import crypto from "crypto";
+import pino from "pino";
+
+const logger = pino();
+
+// Zod validation schemas for donation endpoints
+const donationCreateSchema = z.object({
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount format'),
+  totalAmount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid total amount format').optional(),
+  donationType: z.enum(['donation', 'tithe', 'project']),
+  paymentMethod: z.enum(['wallet', 'card', 'payfast']),
+  churchId: z.string().uuid().optional(),
+  projectId: z.string().uuid().optional(),
+  note: z.string().max(500).optional(),
+  idempotencyKey: z.string().min(10).max(255).optional()
+});
+
+const projectDonationSchema = z.object({
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount format'),
+  projectId: z.string().min(1, 'Project ID is required'),
+  donorName: z.string().min(1).max(255),
+  donorEmail: z.string().email(),
+  message: z.string().max(500).optional(),
+  isAnonymous: z.boolean().default(false),
+  donationType: z.enum(['donation', 'project']).default('donation'),
+  idempotencyKey: z.string().min(10).max(255).optional()
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Code protection middleware
@@ -178,14 +207,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create donation with PayFast integration
-  app.post('/api/donations/create', async (req: any, res) => {
+  // Create donation with PayFast integration (with security hardening)
+  app.post('/api/donations/create', donationLimiter, async (req: any, res) => {
     try {
       const userId = req.session?.userId;
       
       if (!userId) {
         return res.status(401).json({ message: 'Authentication required' });
       }
+
+      // Validate input with Zod
+      const validationResult = donationCreateSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        logger.warn('Invalid donation request', {
+          errors: validationResult.error.issues,
+          userId,
+          ip: req.ip
+        });
+        return res.status(400).json({ 
+          message: 'Invalid request data', 
+          errors: validationResult.error.issues 
+        });
+      }
+
+      const validatedData = validationResult.data;
+
+      // Generate idempotency key if not provided
+      const idempotencyKey = validatedData.idempotencyKey || 
+        crypto.createHash('md5').update(
+          `${userId}_${validatedData.amount}_${validatedData.donationType}_${Date.now()}`
+        ).digest('hex');
 
       const { amount, donationType, churchId, projectId, note, paymentMethod } = req.body;
 
@@ -1701,8 +1752,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public project donation endpoint with PayFast integration - no authentication required
-  app.post('/api/projects/:projectId/donate', async (req, res) => {
+  // Public project donation endpoint with PayFast integration - no authentication required (with security hardening)
+  app.post('/api/projects/:projectId/donate', donationLimiter, async (req, res) => {
     try {
       const { projectId } = req.params;
       const { amount, donorName, donorEmail, isAnonymous, message, donationType } = req.body;
@@ -1792,46 +1843,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PayFast webhook handler
-  app.post('/api/payfast/notify', async (req, res) => {
+  // Rate limiting for sensitive endpoints
+  const payfastLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 50, // limit each IP to 50 requests per windowMs  
+    message: { error: 'Too many PayFast notifications, please wait' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const donationLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 donations per windowMs
+    message: { error: 'Too many donation attempts, please wait' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Idempotency tracking for PayFast notifications
+  const processedNotifications = new Set<string>();
+
+  // PayFast webhook handler with signature verification and idempotency
+  app.post('/api/payfast/notify', payfastLimiter, async (req, res) => {
+    const startTime = Date.now();
+    
     try {
+      // Extract and validate PayFast IPN data
+      const ipnData = extractPayFastIPN(req);
+      if (!ipnData) {
+        logger.error('Invalid PayFast IPN data structure');
+        return res.status(400).send('Invalid IPN data');
+      }
+
+      // Idempotency check - prevent duplicate processing
+      const idempotencyKey = `${ipnData.pf_payment_id}_${ipnData.payment_status}`;
+      if (processedNotifications.has(idempotencyKey)) {
+        logger.info(`Duplicate PayFast notification ignored: ${idempotencyKey}`);
+        return res.status(200).send('OK');
+      }
+
+      // Verify PayFast signature
+      const payfastConfig = {
+        merchantId: process.env.PAYFAST_MERCHANT_ID!,
+        merchantKey: process.env.PAYFAST_MERCHANT_KEY!,
+        passphrase: process.env.PAYFAST_PASSPHRASE,
+        testMode: process.env.PAYFAST_TEST_MODE === 'true'
+      };
+
+      if (!validatePayFastSignature(ipnData, payfastConfig)) {
+        logger.error('PayFast signature validation failed', {
+          data: sanitizePayFastData(ipnData)
+        });
+        return res.status(400).send('Invalid signature');
+      }
+
+      // Mark as processed
+      processedNotifications.add(idempotencyKey);
+
+      // Log secure notification received
+      logger.info('PayFast notification received and verified', {
+        paymentId: ipnData.m_payment_id,
+        pfPaymentId: ipnData.pf_payment_id,
+        status: ipnData.payment_status,
+        amount: ipnData.amount_gross
+      });
+
       const {
         m_payment_id,
         pf_payment_id,
         payment_status,
         amount_gross,
-        custom_str1: entityId, // Can be projectId, walletTopupId, etc.
-        custom_str2: entityType, // 'project', 'wallet_topup', 'wallet_send'
-        custom_str3: subType // 'donation', 'topup', 'transfer'
-      } = req.body;
+        amount_fee,
+        amount_net,
+        custom_str1: entityId,
+        custom_str2: entityType,
+        custom_str3: subType
+      } = ipnData;
 
-      console.log('PayFast notification received:', req.body);
-
-      // In production, verify the payment signature here
-      
+      // Process successful payments
       if (payment_status === 'COMPLETE') {
-        // Handle different payment types
-        if (entityType === 'wallet_topup') {
-          // Update wallet balance for successful top-up
-          console.log(`💰 Wallet top-up completed: ${m_payment_id}, amount: R${amount_gross}, user: ${entityId}`);
-          // TODO: Update user wallet balance in database
-          // await storage.updateWalletBalance(entityId, parseFloat(amount_gross));
-        } else if (entityType === 'donation') {
-          // Update donation/tithe status to completed
-          console.log(`🙏 Donation completed: ${m_payment_id}, amount: R${amount_gross}, type: ${subType}`);
-          // TODO: Update transaction status and church balance
-          // await storage.updateTransactionStatus(m_payment_id, 'completed');
-        } else if (entityType === 'project') {
-          // Update project donation status to completed
-          console.log(`🎯 Project donation completed: ${m_payment_id}, amount: R${amount_gross}, project: ${entityId}`);
-          // TODO: Update project current amount and donation status
-          // await storage.updateProjectAmount(entityId, parseFloat(amount_gross));
+        // Update database with audit trail
+        const auditData = {
+          clientIpAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+          sessionId: req.sessionID,
+          requestFingerprint: crypto.createHash('md5').update(
+            `${req.ip}_${req.get('User-Agent')}_${m_payment_id}`
+          ).digest('hex')
+        };
+
+        // Handle different payment types with proper error handling
+        try {
+          if (entityType === 'wallet_topup') {
+            logger.info(`💰 Wallet top-up completed: ${m_payment_id}, amount: R${amount_gross}, user: ${entityId}`);
+            // TODO: Implement secure wallet balance update
+            // await storage.updateWalletBalanceSecure(entityId, parseFloat(amount_net), auditData);
+          } else if (entityType === 'donation') {
+            logger.info(`🙏 Donation completed: ${m_payment_id}, amount: R${amount_gross}, type: ${subType}`);
+            
+            // Update donation status with audit trail
+            await db.update(donations)
+              .set({
+                status: 'completed',
+                payfastPaymentId: pf_payment_id,
+                clientIpAddress: auditData.clientIpAddress,
+                userAgent: auditData.userAgent,
+                sessionId: auditData.sessionId,
+                requestFingerprint: auditData.requestFingerprint,
+                updatedAt: new Date()
+              })
+              .where(eq(donations.id, m_payment_id));
+              
+          } else if (entityType === 'project') {
+            logger.info(`🎯 Project donation completed: ${m_payment_id}, amount: R${amount_gross}, project: ${entityId}`);
+            // TODO: Implement secure project amount update
+            // await storage.updateProjectAmountSecure(entityId, parseFloat(amount_net), auditData);
+          }
+        } catch (updateError) {
+          logger.error('Failed to update payment status', {
+            error: updateError,
+            paymentId: m_payment_id,
+            entityType,
+            entityId
+          });
+          // Don't return error to PayFast to avoid retries for database issues
+        }
+      } else if (payment_status === 'FAILED' || payment_status === 'CANCELLED') {
+        // Handle failed payments
+        logger.warn(`Payment ${payment_status.toLowerCase()}: ${m_payment_id}`);
+        
+        try {
+          await db.update(donations)
+            .set({
+              status: payment_status.toLowerCase(),
+              payfastPaymentId: pf_payment_id,
+              updatedAt: new Date()
+            })
+            .where(eq(donations.id, m_payment_id));
+        } catch (updateError) {
+          logger.error('Failed to update failed payment status', {
+            error: updateError,
+            paymentId: m_payment_id
+          });
         }
       }
 
+      // Clean up old processed notifications (keep last 1000)
+      if (processedNotifications.size > 1000) {
+        const notificationsArray = Array.from(processedNotifications);
+        processedNotifications.clear();
+        // Keep the most recent 500
+        notificationsArray.slice(-500).forEach(key => processedNotifications.add(key));
+      }
+
+      const processingTime = Date.now() - startTime;
+      logger.info(`PayFast notification processed successfully in ${processingTime}ms`);
+      
       res.status(200).send('OK');
     } catch (error) {
-      console.error('Error processing PayFast notification:', error);
+      const processingTime = Date.now() - startTime;
+      logger.error('Error processing PayFast notification', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime,
+        body: req.body
+      });
       res.status(500).send('Error');
     }
   });
