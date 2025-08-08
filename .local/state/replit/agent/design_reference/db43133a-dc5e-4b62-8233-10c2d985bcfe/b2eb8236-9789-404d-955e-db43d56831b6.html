@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChurPay - Secure Payment Platform for Churches</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8B5CF6',
+                        'primary-dark': '#7C3AED',
+                        'secondary': '#A855F7',
+                        'accent': '#FFD700',
+                        'accent-dark': '#F1C40F',
+                        'neutral-50': '#F8FAFC',
+                        'neutral-100': '#F1F5F9',
+                        'neutral-200': '#E2E8F0',
+                        'neutral-300': '#CBD5E1',
+                        'neutral-400': '#94A3B8',
+                        'neutral-500': '#64748B',
+                        'neutral-600': '#475569',
+                        'neutral-700': '#334155',
+                        'neutral-800': '#1E293B',
+                        'neutral-900': '#0F172A'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    backgroundImage: {
+                        'gradient-primary': 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)',
+                        'gradient-dark': 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%)'
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-neutral-50 text-neutral-800">
+    <!-- @COMPONENT: Navigation -->
+    <nav class="bg-white shadow-card sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- @COMPONENT: Logo -->
+                <div class="flex items-center">
+                    <div class="bg-gradient-primary text-white px-4 py-2 rounded-lg font-bold text-xl">
+                        ChurPay
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Logo -->
+
+                <!-- @COMPONENT: Desktop Navigation -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#features" class="text-neutral-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Features</a>
+                        <a href="#how-it-works" class="text-neutral-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">How It Works</a>
+                        <a href="#pricing" class="text-neutral-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Pricing</a>
+                        <a href="#security" class="text-neutral-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Security</a>
+                        <a href="#contact" class="text-neutral-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Desktop Navigation -->
+
+                <!-- @COMPONENT: Auth Buttons -->
+                <div class="hidden md:block">
+                    <div class="ml-4 flex items-center md:ml-6 space-x-3">
+                        <button class="text-neutral-700 hover:text-primary px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Sign In
+                        </button>
+                        <button class="bg-gradient-primary text-white px-6 py-2 rounded-lg text-sm font-semibold hover:shadow-card-hover transition-all duration-200">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Auth Buttons -->
+
+                <!-- @COMPONENT: Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-neutral-700 hover:text-primary p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+                <!-- @END_COMPONENT: Mobile Menu Button -->
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <!-- @COMPONENT: Hero Section -->
+    <section class="bg-gradient-primary text-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    Secure Payment Platform<br>
+                    <span class="text-accent">Built for Churches</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-purple-100 max-w-3xl mx-auto leading-relaxed">
+                    Empower your congregation with a professional, secure payment platform. Accept donations, manage projects, and grow your church community with enterprise-grade financial technology.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-accent hover:bg-accent-dark text-neutral-900 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 shadow-card-hover">
+                        Start Your Free Trial
+                    </button>
+                    <button class="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200">
+                        Watch Demo
+                    </button>
+                </div>
+                
+                <!-- @COMPONENT: Trust Indicators -->
+                <div class="mt-12 flex flex-wrap justify-center items-center gap-8 text-purple-200">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-accent"></i>
+                        <span class="text-sm font-medium">Bank-Level Security</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-accent"></i>
+                        <span class="text-sm font-medium">PCI DSS Compliant</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-users text-accent"></i>
+                        <span class="text-sm font-medium">1000+ Churches Trust Us</span>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Trust Indicators -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero Section -->
+
+    <!-- @COMPONENT: Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    Everything Your Church Needs
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    From secure payment processing to comprehensive project management, ChurPay provides all the tools your church needs to thrive in the digital age.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- @MAP: features.map(feature => ( -->
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-credit-card text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Secure Payment Processing</h3>
+                    <p class="text-neutral-600 leading-relaxed">Accept donations through multiple channels with enterprise-grade security. Support for cards, bank transfers, and mobile payments.</p>
+                </div>
+
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-wallet text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Member Digital Wallets</h3>
+                    <p class="text-neutral-600 leading-relaxed">Empower members with personal wallets for easy giving, fund transfers, and transaction management with real-time balance updates.</p>
+                </div>
+
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-project-diagram text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Project Fundraising</h3>
+                    <p class="text-neutral-600 leading-relaxed">Create and manage fundraising campaigns with progress tracking, public sponsorship access, and comprehensive donor management.</p>
+                </div>
+
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Church Verification</h3>
+                    <p class="text-neutral-600 leading-relaxed">Secure onboarding process with banking details verification, CIPC documentation, and multi-level admin approval workflows.</p>
+                </div>
+
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Financial Analytics</h3>
+                    <p class="text-neutral-600 leading-relaxed">Comprehensive reporting and analytics with real-time transaction tracking, automated invoicing, and professional receipt generation.</p>
+                </div>
+
+                <div class="bg-neutral-50 rounded-xl p-8 hover:shadow-card-hover transition-all duration-200 border border-neutral-200">
+                    <div class="bg-gradient-primary w-16 h-16 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Mobile Experience</h3>
+                    <p class="text-neutral-600 leading-relaxed">Fully responsive design with mobile app functionality matching the web experience for seamless giving and management.</p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Features Section -->
+
+    <!-- @COMPONENT: How It Works Section -->
+    <section id="how-it-works" class="py-20 bg-neutral-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    How ChurPay Works
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    Get your church up and running with our secure, comprehensive payment platform in three simple steps.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- @MAP: steps.map(step => ( -->
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <span class="text-white text-2xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Register & Verify</h3>
+                    <p class="text-neutral-600 leading-relaxed">Submit your church registration with banking details, CIPC documentation, and bank confirmation letter for secure verification.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Set Up Payment Systems</h3>
+                    <p class="text-neutral-600 leading-relaxed">Configure donation categories, create fundraising projects, and set up member wallet systems with our intuitive dashboard.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-neutral-800 mb-4">Start Collecting & Growing</h3>
+                    <p class="text-neutral-600 leading-relaxed">Begin accepting donations, managing projects, and processing payouts while enjoying 10% annual revenue sharing back to your church.</p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <!-- @COMPONENT: Process Flow Visual -->
+            <div class="mt-16 relative">
+                <div class="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-primary transform -translate-y-1/2"></div>
+                <div class="relative flex justify-between items-center">
+                    <div class="bg-white p-4 rounded-lg shadow-card border-2 border-primary">
+                        <i class="fas fa-church text-primary text-2xl"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-card border-2 border-primary">
+                        <i class="fas fa-cogs text-primary text-2xl"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-card border-2 border-primary">
+                        <i class="fas fa-rocket text-primary text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Process Flow Visual -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: How It Works Section -->
+
+    <!-- @COMPONENT: Dashboard Preview -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    Professional Church Management
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    Experience enterprise-grade dashboards designed specifically for church financial management and member engagement.
+                </p>
+            </div>
+
+            <!-- @COMPONENT: Dashboard Mockup -->
+            <div class="bg-neutral-100 rounded-2xl p-8 shadow-card">
+                <div class="bg-white rounded-lg shadow-inner-light">
+                    <!-- Dashboard Header -->
+                    <div class="bg-gradient-primary text-white p-6 rounded-t-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xl font-semibold">First Baptist Church</h3>
+                                <p class="text-purple-200">Dashboard Overview</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold">R 45,230</p>
+                                <p class="text-purple-200 text-sm">Total Balance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Content -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-neutral-600 text-sm">This Month</p>
+                                        <p class="text-2xl font-bold text-neutral-800">R 12,450</p>
+                                    </div>
+                                    <div class="bg-green-100 p-2 rounded-lg">
+                                        <i class="fas fa-arrow-up text-green-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-neutral-600 text-sm">Active Projects</p>
+                                        <p class="text-2xl font-bold text-neutral-800">8</p>
+                                    </div>
+                                    <div class="bg-accent bg-opacity-20 p-2 rounded-lg">
+                                        <i class="fas fa-project-diagram text-accent-dark"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-neutral-600 text-sm">Members</p>
+                                        <p class="text-2xl font-bold text-neutral-800">342</p>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-20 p-2 rounded-lg">
+                                        <i class="fas fa-users text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Transactions -->
+                        <div class="bg-neutral-50 rounded-lg p-4">
+                            <h4 class="font-semibold text-neutral-800 mb-4">Recent Transactions</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between bg-white p-3 rounded border border-neutral-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-primary bg-opacity-20 p-2 rounded-lg">
+                                            <i class="fas fa-heart text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-neutral-800">Tithes & Offerings</p>
+                                            <p class="text-sm text-neutral-600">John Smith</p>
+                                        </div>
+                                    </div>
+                                    <p class="font-semibold text-green-600">+ R 350</p>
+                                </div>
+                                <div class="flex items-center justify-between bg-white p-3 rounded border border-neutral-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-accent bg-opacity-20 p-2 rounded-lg">
+                                            <i class="fas fa-home text-accent-dark"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-neutral-800">Building Fund</p>
+                                            <p class="text-sm text-neutral-600">Sarah Johnson</p>
+                                        </div>
+                                    </div>
+                                    <p class="font-semibold text-green-600">+ R 1,200</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Dashboard Mockup -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Dashboard Preview -->
+
+    <!-- @COMPONENT: Pricing Section -->
+    <section id="pricing" class="py-20 bg-neutral-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    Transparent Pricing
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    Simple, fair pricing with revenue sharing that gives back to your church. No hidden fees, no surprises.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- @COMPONENT: Pricing Card - Transaction Fees -->
+                <div class="bg-white rounded-2xl p-8 shadow-card border border-neutral-200">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-neutral-800 mb-4">Transaction Fees</h3>
+                        <p class="text-neutral-600">Industry-competitive rates for all payment methods</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex justify-between items-center p-4 bg-neutral-50 rounded-lg">
+                            <span class="font-medium text-neutral-800">Credit/Debit Cards</span>
+                            <span class="font-bold text-primary">2.9% + R2</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-neutral-50 rounded-lg">
+                            <span class="font-medium text-neutral-800">Bank Transfers (EFT)</span>
+                            <span class="font-bold text-primary">R5 flat</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-neutral-50 rounded-lg">
+                            <span class="font-medium text-neutral-800">Mobile Wallets</span>
+                            <span class="font-bold text-primary">2.5% + R1</span>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-3 text-neutral-600">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-green-600"></i>
+                            No monthly fees
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-green-600"></i>
+                            No setup costs
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-check text-green-600"></i>
+                            Transparent pricing
+                        </li>
+                    </ul>
+                </div>
+                <!-- @END_COMPONENT: Pricing Card - Transaction Fees -->
+
+                <!-- @COMPONENT: Pricing Card - Revenue Sharing -->
+                <div class="bg-gradient-primary text-white rounded-2xl p-8 shadow-card border-2 border-accent relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-accent text-neutral-900 px-3 py-1 rounded-full text-sm font-semibold">
+                        Best Value
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold mb-4">Revenue Sharing</h3>
+                        <p class="text-purple-200">We give back to your church community</p>
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <div class="bg-white bg-opacity-20 rounded-2xl p-6">
+                            <span class="text-4xl font-bold text-accent">10%</span>
+                            <p class="text-purple-200 mt-2">Annual revenue sharing back to your church</p>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-3 text-purple-100">
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-star text-accent"></i>
+                            Calculated on annual processing volume
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-star text-accent"></i>
+                            Paid directly to church account
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fas fa-star text-accent"></i>
+                            Reinvest in your ministry
+                        </li>
+                    </ul>
+                </div>
+                <!-- @END_COMPONENT: Pricing Card - Revenue Sharing -->
+            </div>
+
+            <div class="text-center mt-12">
+                <p class="text-neutral-600 mb-6">
+                    Ready to start saving and earning with ChurPay?
+                </p>
+                <button class="bg-gradient-primary text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-card-hover transition-all duration-200">
+                    Calculate Your Savings
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Pricing Section -->
+
+    <!-- @COMPONENT: Security Section -->
+    <section id="security" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    Enterprise-Grade Security
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    Your congregation's financial data is protected by the same security standards used by major banks and financial institutions.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- @MAP: securityFeatures.map(feature => ( -->
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-3">PCI DSS Compliant</h3>
+                    <p class="text-neutral-600 text-sm leading-relaxed">Level 1 PCI DSS certification ensures the highest security standards for payment processing.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <i class="fas fa-lock text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-3">End-to-End Encryption</h3>
+                    <p class="text-neutral-600 text-sm leading-relaxed">256-bit SSL encryption protects all data transmission and storage with military-grade security.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <i class="fas fa-user-shield text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-3">Multi-Factor Auth</h3>
+                    <p class="text-neutral-600 text-sm leading-relaxed">Advanced authentication with role-based access controls and audit trails for all actions.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="bg-gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card">
+                        <i class="fas fa-search text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-3">Fraud Detection</h3>
+                    <p class="text-neutral-600 text-sm leading-relaxed">AI-powered fraud detection and prevention systems monitor transactions 24/7 for suspicious activity.</p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <!-- @COMPONENT: Security Certifications -->
+            <div class="mt-16 bg-neutral-50 rounded-2xl p-8">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-semibold text-neutral-800 mb-4">Trusted by Financial Institutions</h3>
+                    <p class="text-neutral-600">ChurPay meets the highest industry security standards and compliance requirements.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+                    <div class="text-center">
+                        <div class="bg-white p-4 rounded-lg shadow-card mb-3">
+                            <i class="fas fa-certificate text-primary text-3xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-neutral-700">ISO 27001</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white p-4 rounded-lg shadow-card mb-3">
+                            <i class="fas fa-shield-alt text-primary text-3xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-neutral-700">SOC 2 Type II</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white p-4 rounded-lg shadow-card mb-3">
+                            <i class="fas fa-lock text-primary text-3xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-neutral-700">GDPR Compliant</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white p-4 rounded-lg shadow-card mb-3">
+                            <i class="fas fa-university text-primary text-3xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-neutral-700">SARB Approved</p>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Security Certifications -->
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Security Section -->
+
+    <!-- @COMPONENT: Testimonials Section -->
+    <section class="py-20 bg-neutral-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
+                    Trusted by Church Leaders
+                </h2>
+                <p class="text-xl text-neutral-600 max-w-3xl mx-auto">
+                    See how churches across South Africa are transforming their giving with ChurPay.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- @MAP: testimonials.map(testimonial => ( -->
+                <div class="bg-white rounded-xl p-8 shadow-card">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-accent">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-700 mb-6 leading-relaxed">
+                        "ChurPay has revolutionized how our congregation gives. The mobile wallet system makes it so easy for members to contribute, and our monthly donations have increased by 45%."
+                    </p>
+                    <div class="flex items-center">
+                        <!-- Pastor headshot showing leadership and trust -->
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Pastor Michael Thompson" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <p class="font-semibold text-neutral-800">Pastor Michael Thompson</p>
+                            <p class="text-sm text-neutral-600">Grace Community Church</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-card">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-accent">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-700 mb-6 leading-relaxed">
+                        "The project fundraising feature helped us raise R 150,000 for our new youth center in just 3 months. The transparency and progress tracking built incredible trust with our sponsors."
+                    </p>
+                    <div class="flex items-center">
+                        <!-- Church administrator showing professional trust -->
+                        <img src="https://pixabay.com/get/gf83e44d80bee844cd83fd27424dd66910fa358aac7d37c795ac4918e58604d402fade7a08e4b4e316ecce0ec25152b745f0b31893f3d7aba68ed7b115052d3e6_1280.jpg" alt="Sarah Mitchell" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <p class="font-semibold text-neutral-800">Sarah Mitchell</p>
+                            <p class="text-sm text-neutral-600">New Life Baptist Church</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-card">
+                    <div class="flex items-center mb-6">
+                        <div class="flex text-accent">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-neutral-700 mb-6 leading-relaxed">
+                        "Security was our biggest concern, but ChurPay's bank-level protection and the revenue sharing program convinced us. It's been a game-changer for our church finances."
+                    </p>
+                    <div class="flex items-center">
+                        <!-- Church treasurer showing financial expertise -->
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="David Kruger" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <p class="font-semibold text-neutral-800">David Kruger</p>
+                            <p class="text-sm text-neutral-600">Hope Fellowship Church</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Testimonials Section -->
+
+    <!-- @COMPONENT: CTA Section -->
+    <section class="py-20 bg-gradient-primary text-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Transform Your Church's Giving?
+            </h2>
+            <p class="text-xl text-purple-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Join over 1,000 churches already using ChurPay to increase donations, engage their congregation, and build stronger communities through secure digital giving.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <button class="bg-accent hover:bg-accent-dark text-neutral-900 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 shadow-card-hover">
+                    Start Free 30-Day Trial
+                </button>
+                <button class="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200">
+                    Schedule Demo
+                </button>
+            </div>
+
+            <div class="flex flex-wrap justify-center items-center gap-8 text-purple-200">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-accent"></i>
+                    <span class="text-sm font-medium">Free Setup</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-accent"></i>
+                    <span class="text-sm font-medium">No Long-term Contracts</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-accent"></i>
+                    <span class="text-sm font-medium">24/7 Support</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-accent"></i>
+                    <span class="text-sm font-medium">Revenue Sharing Included</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: CTA Section -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-neutral-800 text-neutral-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- @COMPONENT: Footer Brand -->
+                <div class="col-span-1">
+                    <div class="bg-gradient-primary text-white px-4 py-2 rounded-lg font-bold text-xl mb-4 inline-block">
+                        ChurPay
+                    </div>
+                    <p class="text-neutral-400 leading-relaxed mb-6">
+                        Secure payment platform built specifically for churches. Empowering congregations across South Africa with enterprise-grade financial technology.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-neutral-400 hover:text-accent transition-colors">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-neutral-400 hover:text-accent transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-neutral-400 hover:text-accent transition-colors">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-neutral-400 hover:text-accent transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Footer Brand -->
+
+                <!-- @COMPONENT: Footer Links -->
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Platform</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Features</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Security</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">API Documentation</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Status Page</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Contact Support</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Training Resources</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Webinars</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Community Forum</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Press Kit</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-accent transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <!-- @END_COMPONENT: Footer Links -->
+            </div>
+
+            <div class="border-t border-neutral-700 mt-12 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-neutral-400 text-sm">
+                        © 2025 ChurPay. All rights reserved. Licensed financial services provider.
+                    </p>
+                    <div class="flex items-center space-x-6 mt-4 md:mt-0">
+                        <div class="flex items-center gap-2 text-neutral-400 text-sm">
+                            <i class="fas fa-shield-alt text-accent"></i>
+                            <span>PCI DSS Compliant</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-neutral-400 text-sm">
+                            <i class="fas fa-certificate text-accent"></i>
+                            <span>ISO 27001 Certified</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        (function() {
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Mobile menu toggle functionality
+            const mobileMenuButton = document.querySelector('.md\\:hidden button');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    // TODO: Implement mobile menu toggle functionality
+                    console.log('Mobile menu toggle clicked');
+                });
+            }
+
+            // CTA button interactions
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement specific CTA functionality based on button text
+                    console.log('CTA button clicked:', this.textContent.trim());
+                });
+            });
+
+            // Card hover effects enhancement
+            document.querySelectorAll('.hover\\:shadow-card-hover').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Form validation and submission handlers
+            // TODO: Implement form validation, API integration, and state management
+
+            // Dashboard data loading simulation
+            // TODO: Implement real-time dashboard data fetching and updates
+
+            // Payment processing integration
+            // TODO: Implement secure payment gateway integration
+
+            // Analytics and tracking
+            // TODO: Implement user analytics and conversion tracking
+        })();
+    </script>
+</body>
+</html>
