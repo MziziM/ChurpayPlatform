@@ -20,8 +20,15 @@ app.use(cors({
   credentials: true
 }));
 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Simple request logger middleware
+app.use((req, _res, next) => {
+  console.log(`[REQ] ${req.method} ${req.path}`);
+  next();
+});
 
 // --- DB ---
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -41,6 +48,10 @@ const ensureTable = async () => {
 ensureTable().catch(console.error);
 
 // --- Health ---
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, service: "backend" });
+});
+
 app.get("/health", async (_req, res) => {
   try {
     const r = await pool.query("SELECT 1 as ok");
