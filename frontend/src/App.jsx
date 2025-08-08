@@ -50,7 +50,28 @@ function App() {
       alert("Error: " + err.message);
     }
   };
+const [payments, setPayments] = useState([]);
+const [loadingPayments, setLoadingPayments] = useState(false);
 
+const loadPayments = async () => {
+  try {
+    setLoadingPayments(true);
+    const r = await fetch(`${apiBase}/api/payments`);
+    const data = await r.json();
+    setPayments(Array.isArray(data) ? data : []);
+  } catch (e) {
+    console.error(e);
+    setPayments([]);
+  } finally {
+    setLoadingPayments(false);
+  }
+};
+
+useEffect(() => {
+  // after health check starts, fetch payments too
+  loadPayments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [apiBase]);
   return (
     <div style={{ padding: 24, fontFamily: "Inter, system-ui, Arial" }}>
       <h1>Churpay</h1>
@@ -84,6 +105,46 @@ function App() {
           {JSON.stringify(health, null, 2)}
         </pre>
       )}
+      <div style={{ marginTop: 32 }}>
+  <h2 style={{ margin: 0, marginBottom: 8 }}>Recent Payments</h2>
+  <button onClick={loadPayments} style={{ padding: "6px 12px", borderRadius: 6 }}>
+    {loadingPayments ? "Refreshing..." : "Refresh"}
+  </button>
+  <div style={{ marginTop: 12, overflowX: "auto" }}>
+    <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
+      <thead>
+        <tr>
+          <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>ID</th>
+          <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>PF Payment ID</th>
+          <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>Amount</th>
+          <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>Status</th>
+          <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {payments.length === 0 ? (
+          <tr>
+            <td colSpan={5} style={{ padding: 12, color: "#6b7280" }}>
+              {loadingPayments ? "Loading..." : "No payments yet"}
+            </td>
+          </tr>
+        ) : (
+          payments.map(p => (
+            <tr key={p.id}>
+              <td style={{ padding: 8, borderBottom: "1px solid #f3f4f6" }}>{p.id}</td>
+              <td style={{ padding: 8, borderBottom: "1px solid #f3f4f6" }}>{p.pf_payment_id || "-"}</td>
+              <td style={{ padding: 8, borderBottom: "1px solid #f3f4f6" }}>{p.amount ?? "-"}</td>
+              <td style={{ padding: 8, borderBottom: "1px solid #f3f4f6" }}>{p.status || "-"}</td>
+              <td style={{ padding: 8, borderBottom: "1px solid #f3f4f6" }}>
+                {new Date(p.created_at).toLocaleString()}
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
 
       {/* Payment form */}
       <div style={{ marginTop: 24 }}>
