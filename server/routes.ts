@@ -145,6 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName: z.string(),
         lastName: z.string(),
         email: z.string().email(),
+        password: z.string().min(8, 'Password must be at least 8 characters'),
         phone: z.string(),
         dateOfBirth: z.string(),
         address: z.string(),
@@ -168,11 +169,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Hash password for security
+      const bcrypt = await import('bcryptjs');
+      const passwordHash = await bcrypt.hash(validatedData.password, 12);
+
+      const { password, ...memberDataWithoutPassword } = validatedData;
       const memberData = {
-        ...validatedData,
+        ...memberDataWithoutPassword,
         id: randomUUID(),
         role: 'member' as const,
         profileImageUrl: null,
+        passwordHash,
       };
 
       const member = await storage.upsertUser(memberData);
@@ -613,8 +620,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'This account is not a member account' });
       }
 
-      // TODO: In production, verify password hash
-      // For now, accept any password for testing
+      // Verify password hash
+      const bcrypt = await import('bcryptjs');
+      if (!user.passwordHash) {
+        return res.status(401).json({ message: 'Account not properly configured. Please contact support.' });
+      }
+      
+      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
       
       // Set session with real user ID
       (req as any).session.userId = user.id;
