@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function App() {
-  // Always use env var if set, otherwise fallback to backend URL
+  // Use env var if present, else hard fallback to your backend service
   const apiBase = (import.meta.env.VITE_API_URL || "https://churpay-backend-wtgy.onrender.com").trim();
 
   const [health, setHealth] = useState(null);
@@ -10,7 +10,9 @@ function App() {
   useEffect(() => {
     const check = async () => {
       try {
-        const r = await fetch(`${apiBase}/api/health`);
+        const url = `${apiBase}/api/health`;
+        console.log("Health check ->", url);
+        const r = await fetch(url);
         const text = await r.text();
         if (!r.ok) {
           setHealth({ ok: false, status: r.status, body: text });
@@ -31,7 +33,9 @@ function App() {
 
   const handlePay = async () => {
     try {
-      const r = await fetch(`${apiBase}/api/payfast/initiate`, {
+      const url = `${apiBase}/api/payfast/initiate`;
+      console.log("Initiate Pay ->", url);
+      const r = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount })
