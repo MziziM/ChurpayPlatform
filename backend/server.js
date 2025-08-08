@@ -59,6 +59,18 @@ app.get("/health", async (_req, res) => {
     res.status(500).json({ ok: false, error: e.message });
   }
 });
+// --- List recent payments (last 20)
+app.get("/api/payments", async (_req, res) => {
+  try {
+    const r = await pool.query(
+      "SELECT id, pf_payment_id, amount, status, created_at FROM payments ORDER BY id DESC LIMIT 20"
+    );
+    res.json(r.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to fetch payments" });
+  }
+});
 
 // --- PayFast helpers ---
 const toSignatureString = (obj) => {
