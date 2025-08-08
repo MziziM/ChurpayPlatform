@@ -73,6 +73,15 @@ const sign = (params) => {
   return crypto.createHash("md5").update(base).digest("hex");
 };
 
+// --- PayFast mode/config ---
+const PAYFAST_MODE = (process.env.PAYFAST_MODE || 'sandbox').toLowerCase();
+const isSandbox = PAYFAST_MODE !== 'live';
+const PF_MERCHANT_ID = process.env.PAYFAST_MERCHANT_ID || (isSandbox ? '10000100' : undefined);
+const PF_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY || (isSandbox ? '46f0cd694581a' : undefined);
+const PF_GATEWAY = isSandbox
+  ? 'https://sandbox.payfast.co.za/eng/process'
+  : 'https://www.payfast.co.za/eng/process';
+
 // --- Initiate payment (client hits this; we return the gateway URL to redirect) ---
 app.post("/api/payfast/initiate", async (req, res) => {
   try {
@@ -81,8 +90,8 @@ app.post("/api/payfast/initiate", async (req, res) => {
     if (!amount) return res.status(400).json({ error: "amount required" });
 
     const pfParams = {
-      merchant_id: process.env.PAYFAST_MERCHANT_ID,
-      merchant_key: "46f0cd694581a", // PayFast sandbox public key; in live use your real public key
+      merchant_id: PF_MERCHANT_ID,
+      merchant_key: PF_MERCHANT_KEY,
       amount: Number(amount).toFixed(2),
       item_name,
       return_url: return_url || `${process.env.FRONTEND_URL}/payfast/return`,
@@ -91,11 +100,8 @@ app.post("/api/payfast/initiate", async (req, res) => {
     };
 
     const signature = sign(pfParams);
-    const gatewayBase = process.env.NODE_ENV === "production"
-      ? "https://www.payfast.co.za/eng/process"
-      : "https://sandbox.payfast.co.za/eng/process";
-
-    const redirectUrl = `${gatewayBase}?${toSignatureString({ ...pfParams, signature })}`;
+    const redirectUrl = `${PF_GATEWAY}?${toSignatureString({ ...pfParams, signature })}`;
+    console.log('[PayFast] mode=%s merchant_id=%s gateway=%s amount=%s', PAYFAST_MODE, PF_MERCHANT_ID, PF_GATEWAY, pfParams.amount);
 
     res.json({ redirectUrl });
   } catch (e) {
