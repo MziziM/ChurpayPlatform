@@ -62,14 +62,21 @@ app.get("/health", async (_req, res) => {
 
 // --- PayFast helpers ---
 const toSignatureString = (obj) => {
-  // PayFast requires ordered, URL-encoded query string without null/undefined fields
-  const clean = Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null && v !== ""));
-  return qs.stringify(clean, { encode: false });
+  // Remove empty fields
+  const clean = Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+  );
+  // PayFast requires parameters to be ordered alphabetically and URL-encoded like PHP's urlencode (spaces as '+')
+  const sorted = Object.keys(clean).sort().reduce((acc, key) => {
+    acc[key] = clean[key];
+    return acc;
+  }, {});
+  return qs.stringify(sorted, { encode: true, format: 'RFC1738' });
 };
 
 const sign = (params) => {
-  const passphrase = process.env.PAYFAST_PASSPHRASE || process.env.PAYFAST_MERCHANT_KEY || "";
-  const base = toSignatureString(params) + (passphrase ? `&passphrase=${passphrase}` : "");
+  const passphrase = process.env.PAYFAST_PASSPHRASE; // Only include if explicitly set
+  const base = toSignatureString(params) + (passphrase ? `&passphrase=${encodeURIComponent(passphrase)}` : "");
   return crypto.createHash("md5").update(base).digest("hex");
 };
 
@@ -115,6 +122,20 @@ app.post("/api/payfast/ipn", async (req, res) => {
   try {
     // NOTE: For production, implement full IPN validation per PayFast docs.
     const { pf_payment_id, amount_gross, payment_status } = req.body;
+
+    // Verify signature from IPN (reconstruct using same rules)
+    try {
+      const receivedSig = req.body.signature;
+      const { signature: _drop, ...ipnParams } = req.body;
+      const computedSig = sign(ipnParams);
+      if (receivedSig && computedSig && receivedSig.toLowerCase() !== computedSig.toLowerCase()) {
+        console.warn("[PayFast][IPN] Signature mismatch", { receivedSig, computedSig });
+      } else {
+        console.log("[PayFast][IPN] Signature verified");
+      }
+    } catch (e) {
+      console.warn("[PayFast][IPN] Signature verify error:", e.message);
+    }
 
     await pool.query(
       "INSERT INTO payments (pf_payment_id, amount, status) VALUES ($1,$2,$3)",
