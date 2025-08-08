@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChurPay - Secure Digital Giving Platform for Churches</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'churpay-purple': '#8B5CF6',
+                        'churpay-purple-dark': '#7C3AED',
+                        'churpay-yellow': '#FFD700',
+                        'churpay-gradient-start': '#8B5CF6',
+                        'churpay-gradient-end': '#A855F7'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-gray-50 text-gray-900">
+    
+    <!-- Navigation Header -->
+    <nav class="bg-white border-b border-gray-200 fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-xl flex items-center justify-center">
+                        <!-- ChurPay logo placeholder -->
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 9.74s9-4.19 9-9.74V7l-10-5z"/>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end bg-clip-text text-transparent">
+                        ChurPay
+                    </span>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-churpay-purple transition-colors">Features</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-churpay-purple transition-colors">Pricing</a>
+                    <a href="#security" class="text-gray-600 hover:text-churpay-purple transition-colors">Security</a>
+                    <a href="#support" class="text-gray-600 hover:text-churpay-purple transition-colors">Support</a>
+                </div>
+
+                <!-- Auth Buttons -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="showSignInModal()" class="text-gray-600 hover:text-churpay-purple font-medium transition-colors">
+                        Sign In
+                    </button>
+                    <button onclick="showGetStartedModal()" class="bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-20 bg-gradient-to-br from-purple-50 to-indigo-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Secure Digital Giving
+                    <span class="block bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end bg-clip-text text-transparent">
+                        for Churches
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    Enterprise-grade fintech platform designed specifically for religious organizations. 
+                    Increase donations by 32% with secure, convenient digital giving solutions.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <button onclick="showChurchSignUpModal()" class="bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all transform hover:scale-105">
+                        Start Accepting Donations
+                    </button>
+                    <button onclick="showMemberSignUpModal()" class="bg-white text-churpay-purple border-2 border-churpay-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-purple-50 transition-all">
+                        Join as Member
+                    </button>
+                </div>
+
+                <!-- Trust Indicators -->
+                <div class="flex items-center justify-center space-x-8 text-sm text-gray-500">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-green-500"></i>
+                        <span>Bank-level Security</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="zap" class="w-5 h-5 text-churpay-yellow"></i>
+                        <span>Instant Processing</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
+                        <span>500+ Churches</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Overview -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">One Platform, Multiple Solutions</h2>
+                <p class="text-xl text-gray-600">Comprehensive fintech infrastructure for every church need</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Church Management -->
+                <div class="text-center p-8 border border-gray-200 rounded-2xl hover:border-churpay-purple transition-colors">
+                    <div class="w-16 h-16 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="building-2" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Church Administration</h3>
+                    <p class="text-gray-600 mb-6">Complete church management suite with member tracking, financial analytics, and automated workflows.</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Member Management</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Financial Reporting</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Event Planning</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Communication Tools</li>
+                    </ul>
+                </div>
+
+                <!-- Digital Giving -->
+                <div class="text-center p-8 border border-gray-200 rounded-2xl hover:border-churpay-purple transition-colors">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="credit-card" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Digital Giving</h3>
+                    <p class="text-gray-600 mb-6">Secure payment processing with multiple giving options and real-time tracking capabilities.</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Multiple Payment Methods</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Recurring Donations</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Mobile Giving</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Tax Receipts</li>
+                    </ul>
+                </div>
+
+                <!-- Member Experience -->
+                <div class="text-center p-8 border border-gray-200 rounded-2xl hover:border-churpay-purple transition-colors">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="smartphone" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Member Dashboard</h3>
+                    <p class="text-gray-600 mb-6">Personalized member experience with digital wallets, giving history, and project access.</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Digital Wallet</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Giving History</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Project Funding</li>
+                        <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-green-500 mr-2"></i>Impact Tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Preview -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Enterprise-Grade Dashboards</h2>
+                <p class="text-xl text-gray-600">Role-based interfaces designed for efficiency and insight</p>
+            </div>
+
+            <!-- Dashboard Tabs -->
+            <div class="mb-8">
+                <div class="flex justify-center">
+                    <div class="bg-white p-1 rounded-xl border border-gray-200">
+                        <button onclick="showDashboard('church')" id="church-tab" class="dashboard-tab px-6 py-3 rounded-lg font-medium transition-all bg-churpay-purple text-white">
+                            Church Admin
+                        </button>
+                        <button onclick="showDashboard('member')" id="member-tab" class="dashboard-tab px-6 py-3 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">
+                            Member Dashboard
+                        </button>
+                        <button onclick="showDashboard('super')" id="super-tab" class="dashboard-tab px-6 py-3 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">
+                            Super Admin
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Church Admin Dashboard -->
+            <div id="church-dashboard" class="dashboard-content">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <!-- Dashboard Header -->
+                    <div class="bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end text-white p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-2xl font-bold">Grace Baptist Church</h3>
+                                <p class="text-purple-100">Admin Dashboard</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-right">
+                                    <p class="text-sm text-purple-100">Monthly Revenue</p>
+                                    <p class="text-2xl font-bold">R125,420</p>
+                                </div>
+                                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="p-6 grid md:grid-cols-4 gap-6">
+                        <div class="text-center p-4 bg-blue-50 rounded-xl">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">450</p>
+                            <p class="text-sm text-gray-600">Total Members</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-xl">
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">R1.2M</p>
+                            <p class="text-sm text-gray-600">Total Raised</p>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-xl">
+                            <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">8</p>
+                            <p class="text-sm text-gray-600">Events</p>
+                        </div>
+                        <div class="text-center p-4 bg-orange-50 rounded-xl">
+                            <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="target" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">67%</p>
+                            <p class="text-sm text-gray-600">Goal Progress</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="p-6 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i data-lucide="plus" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New donation received</p>
+                                    <p class="text-sm text-gray-600">John Smith donated R500 to Building Fund</p>
+                                </div>
+                                <p class="text-sm text-gray-500">2 hours ago</p>
+                            </div>
+                            <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <i data-lucide="user-plus" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New member joined</p>
+                                    <p class="text-sm text-gray-600">Sarah Johnson completed registration</p>
+                                </div>
+                                <p class="text-sm text-gray-500">4 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Member Dashboard -->
+            <div id="member-dashboard" class="dashboard-content hidden">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <!-- Dashboard Header -->
+                    <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <!-- Member profile picture placeholder -->
+                                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i data-lucide="user" class="w-8 h-8"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold">Welcome, John Smith</h3>
+                                    <p class="text-blue-100">Grace Baptist Church Member</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-blue-100">Digital Wallet</p>
+                                <p class="text-2xl font-bold">R2,450</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="p-6 grid md:grid-cols-3 gap-6">
+                        <button class="p-6 border border-gray-200 rounded-xl hover:border-blue-500 transition-colors text-center">
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="font-semibold text-gray-900">Make Donation</p>
+                            <p class="text-sm text-gray-600">Give to church or projects</p>
+                        </button>
+                        <button class="p-6 border border-gray-200 rounded-xl hover:border-blue-500 transition-colors text-center">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="font-semibold text-gray-900">Add Funds</p>
+                            <p class="text-sm text-gray-600">Top up your wallet</p>
+                        </button>
+                        <button class="p-6 border border-gray-200 rounded-xl hover:border-blue-500 transition-colors text-center">
+                            <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="bar-chart-3" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="font-semibold text-gray-900">View History</p>
+                            <p class="text-sm text-gray-600">Track your giving</p>
+                        </button>
+                    </div>
+
+                    <!-- Recent Donations -->
+                    <div class="p-6 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Recent Donations</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i data-lucide="church" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Sunday Offering</p>
+                                        <p class="text-sm text-gray-600">Jan 21, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-semibold text-gray-900">R500</p>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i data-lucide="building" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Building Fund</p>
+                                        <p class="text-sm text-gray-600">Jan 15, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-semibold text-gray-900">R1,000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Super Admin Dashboard -->
+            <div id="super-dashboard" class="dashboard-content hidden">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <!-- Dashboard Header -->
+                    <div class="bg-gradient-to-r from-red-600 to-pink-600 text-white p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-2xl font-bold">ChurPay Platform</h3>
+                                <p class="text-red-100">Super Administrator</p>
+                            </div>
+                            <div class="flex items-center space-x-6">
+                                <div class="text-center">
+                                    <p class="text-sm text-red-100">Total Churches</p>
+                                    <p class="text-2xl font-bold">124</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-red-100">Platform Revenue</p>
+                                    <p class="text-2xl font-bold">R2.4M</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Stats -->
+                    <div class="p-6 grid md:grid-cols-4 gap-6">
+                        <div class="text-center p-4 bg-green-50 rounded-xl">
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">18.5%</p>
+                            <p class="text-sm text-gray-600">Growth Rate</p>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-xl">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">15.4K</p>
+                            <p class="text-sm text-gray-600">Active Users</p>
+                        </div>
+                        <div class="text-center p-4 bg-yellow-50 rounded-xl">
+                            <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">99.8%</p>
+                            <p class="text-sm text-gray-600">Uptime</p>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-xl">
+                            <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">100%</p>
+                            <p class="text-sm text-gray-600">Security Score</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Churches -->
+                    <div class="p-6 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Recent Church Registrations</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i data-lucide="church" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">New Life Methodist</p>
+                                        <p class="text-sm text-gray-600">Johannesburg - 156 members</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full">Pending</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i data-lucide="church" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Faith Community Church</p>
+                                        <p class="text-sm text-gray-600">Durban - 289 members</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Enterprise-Grade Security</h2>
+                <p class="text-xl text-gray-600">Bank-level security and compliance for peace of mind</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">PCI DSS Compliant</h3>
+                    <p class="text-gray-600">Highest level of payment card industry security standards</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="lock" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">256-bit Encryption</h3>
+                    <p class="text-gray-600">Military-grade encryption for all data transmission and storage</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="eye" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Fraud Detection</h3>
+                    <p class="text-gray-600">AI-powered fraud prevention and real-time monitoring</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Audit Trails</h3>
+                    <p class="text-gray-600">Complete transaction history and compliance reporting</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="server" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">99.9% Uptime</h3>
+                    <p class="text-gray-600">Reliable infrastructure with guaranteed availability</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="headphones" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">24/7 Support</h3>
+                    <p class="text-gray-600">Dedicated support team available around the clock</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">Simple, competitive rates with no hidden fees</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Standard Plan -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Standard Processing</h3>
+                        <p class="text-gray-600">For regular church operations</p>
+                        <div class="mt-6">
+                            <span class="text-4xl font-bold text-gray-900">2.9%</span>
+                            <span class="text-gray-600"> + R1.50 per transaction</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3"></i>
+                            <span>Credit & debit card processing</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3"></i>
+                            <span>Mobile giving solutions</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3"></i>
+                            <span>Automated receipts</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3"></i>
+                            <span>Basic reporting</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                        Get Started
+                    </button>
+                </div>
+
+                <!-- Premium Plan -->
+                <div class="bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-2xl shadow-xl p-8 text-white relative">
+                    <div class="absolute top-4 right-4">
+                        <span class="bg-churpay-yellow text-purple-900 px-3 py-1 rounded-full text-sm font-medium">
+                            Recommended
+                        </span>
+                    </div>
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold mb-2">Premium Processing</h3>
+                        <p class="text-purple-100">For growing churches</p>
+                        <div class="mt-6">
+                            <span class="text-4xl font-bold">2.5%</span>
+                            <span class="text-purple-100"> + R1.00 per transaction</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-churpay-yellow mr-3"></i>
+                            <span>Everything in Standard</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-churpay-yellow mr-3"></i>
+                            <span>Advanced analytics</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-churpay-yellow mr-3"></i>
+                            <span>Custom donation forms</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-churpay-yellow mr-3"></i>
+                            <span>Priority support</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-lucide="check" class="w-5 h-5 text-churpay-yellow mr-3"></i>
+                            <span>ACH/bank transfers (0.8%)</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-white text-churpay-purple py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        Start Premium
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-white mb-6">
+                Ready to Transform Your Church's Giving?
+            </h2>
+            <p class="text-xl text-purple-100 mb-8">
+                Join hundreds of churches already using ChurPay to increase donations and streamline operations.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="showChurchSignUpModal()" class="bg-white text-churpay-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all">
+                    Start Free Trial
+                </button>
+                <button class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-churpay-purple transition-all">
+                    Schedule Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 9.74s9-4.19 9-9.74V7l-10-5z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">ChurPay</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">Secure digital giving platform designed specifically for churches and religious organizations.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Product</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Security</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Status Page</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 ChurPay. All rights reserved. Built with security and compliance in mind.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Sign In Modal -->
+    <div id="signin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="log-in" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Sign In to ChurPay</h3>
+                <p class="text-gray-600">Welcome back! Please sign in to your account.</p>
+            </div>
+            
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input type="email" placeholder="you@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300 text-churpay-purple focus:ring-churpay-purple">
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm text-churpay-purple hover:underline">Forgot password?</a>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account? 
+                    <button onclick="closeSignInModal(); showGetStartedModal();" class="text-churpay-purple font-medium hover:underline">Get started</button>
+                </p>
+            </div>
+            
+            <button onclick="closeSignInModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Get Started Modal -->
+    <div id="getstarted-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="rocket" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Choose Your Path</h3>
+                <p class="text-gray-600">How would you like to use ChurPay?</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="showChurchSignUpModal()" class="w-full p-6 border border-gray-200 rounded-xl hover:border-churpay-purple transition-colors text-left">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-xl flex items-center justify-center">
+                            <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900">I represent a church</h4>
+                            <p class="text-sm text-gray-600">Set up digital giving for your congregation</p>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                </button>
+                
+                <button onclick="showMemberSignUpModal()" class="w-full p-6 border border-gray-200 rounded-xl hover:border-churpay-purple transition-colors text-left">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                            <i data-lucide="user" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900">I'm a church member</h4>
+                            <p class="text-sm text-gray-600">Join your church's giving platform</p>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                </button>
+            </div>
+            
+            <button onclick="closeGetStartedModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Church Sign Up Modal -->
+    <div id="church-signup-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="building-2" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Register Your Church</h3>
+                <p class="text-gray-600">Start accepting digital donations in minutes</p>
+            </div>
+            
+            <form class="space-y-6">
+                <!-- Basic Information -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Church Name *</label>
+                        <input type="text" placeholder="Grace Baptist Church" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Denomination</label>
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                            <option>Select Denomination</option>
+                            <option>Baptist</option>
+                            <option>Methodist</option>
+                            <option>Presbyterian</option>
+                            <option>Pentecostal</option>
+                            <option>Anglican</option>
+                            <option>Catholic</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input type="email" placeholder="admin@gracechurch.org" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="tel" placeholder="+27 11 123 4567" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Church Address *</label>
+                    <input type="text" placeholder="123 Main Street, Johannesburg, Gauteng" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                </div>
+
+                <!-- Contact Person -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pastor/Admin Name *</label>
+                        <input type="text" placeholder="John Smith" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                        <input type="text" placeholder="Senior Pastor" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-churpay-purple focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Banking Information -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-600"></i>
+                        <h4 class="font-medium text-yellow-800">Banking Information Required</h4>
+                    </div>
+                    <p class="text-sm text-yellow-700">You'll need to provide banking details and documentation during the approval process.</p>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" class="rounded border-gray-300 text-churpay-purple focus:ring-churpay-purple mt-1">
+                    <div class="text-sm text-gray-600">
+                        <p>I agree to the <a href="#" class="text-churpay-purple hover:underline">Terms of Service</a> and <a href="#" class="text-churpay-purple hover:underline">Privacy Policy</a>. I understand that my application will be reviewed and approved before activation.</p>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-churpay-gradient-start to-churpay-gradient-end text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    Submit Application
+                </button>
+            </form>
+            
+            <button onclick="closeChurchSignUpModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Member Sign Up Modal -->
+    <div id="member-signup-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Join Your Church</h3>
+                <p class="text-gray-600">Create your digital giving account</p>
+            </div>
+            
+            <form class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                        <input type="text" placeholder="John" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                        <input type="text" placeholder="Smith" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                    <input type="email" placeholder="john.smith@email.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" placeholder="+27 82 123 4567" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Church *</label>
+                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>Search for your church...</option>
+                        <option>Grace Baptist Church - Johannesburg</option>
+                        <option>Faith Community Church - Cape Town</option>
+                        <option>New Life Methodist - Durban</option>
+                        <option>Hope Presbyterian - Pretoria</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                    <input type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" class="rounded border-gray-300 text-blue-500 focus:ring-blue-500 mt-1">
+                    <div class="text-sm text-gray-600">
+                        <p>I agree to the <a href="#" class="text-blue-500 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a></p>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account? 
+                    <button onclick="closeMemberSignUpModal(); showSignInModal();" class="text-blue-500 font-medium hover:underline">Sign in</button>
+                </p>
+            </div>
+            
+            <button onclick="closeMemberSignUpModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Dashboard functionality
+        function showDashboard(type) {
+            // Hide all dashboards
+            document.querySelectorAll('.dashboard-content').forEach(el => el.classList.add('hidden'));
+            // Remove active state from all tabs
+            document.querySelectorAll('.dashboard-tab').forEach(el => {
+                el.classList.remove('bg-churpay-purple', 'text-white');
+                el.classList.add('text-gray-600');
+            });
+            
+            // Show selected dashboard
+            document.getElementById(type + '-dashboard').classList.remove('hidden');
+            // Activate selected tab
+            const activeTab = document.getElementById(type + '-tab');
+            activeTab.classList.add('bg-churpay-purple', 'text-white');
+            activeTab.classList.remove('text-gray-600');
+        }
+
+        // Modal functions
+        function showSignInModal() {
+            document.getElementById('signin-modal').classList.remove('hidden');
+            document.getElementById('signin-modal').classList.add('flex');
+        }
+
+        function closeSignInModal() {
+            document.getElementById('signin-modal').classList.add('hidden');
+            document.getElementById('signin-modal').classList.remove('flex');
+        }
+
+        function showGetStartedModal() {
+            document.getElementById('getstarted-modal').classList.remove('hidden');
+            document.getElementById('getstarted-modal').classList.add('flex');
+        }
+
+        function closeGetStartedModal() {
+            document.getElementById('getstarted-modal').classList.add('hidden');
+            document.getElementById('getstarted-modal').classList.remove('flex');
+        }
+
+        function showChurchSignUpModal() {
+            closeGetStartedModal();
+            document.getElementById('church-signup-modal').classList.remove('hidden');
+            document.getElementById('church-signup-modal').classList.add('flex');
+        }
+
+        function closeChurchSignUpModal() {
+            document.getElementById('church-signup-modal').classList.add('hidden');
+            document.getElementById('church-signup-modal').classList.remove('flex');
+        }
+
+        function showMemberSignUpModal() {
+            closeGetStartedModal();
+            document.getElementById('member-signup-modal').classList.remove('hidden');
+            document.getElementById('member-signup-modal').classList.add('flex');
+        }
+
+        function closeMemberSignUpModal() {
+            document.getElementById('member-signup-modal').classList.add('hidden');
+            document.getElementById('member-signup-modal').classList.remove('flex');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fixed')) {
+                const modal = e.target;
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        });
+
+        // TODO: Implement form submission logic
+        // TODO: Add form validation
+        // TODO: Integrate with backend API for registration
+        // TODO: Add loading states for form submissions
+        // TODO: Implement proper error handling and user feedback
+    </script>
+</body>
+</html>
