@@ -99,6 +99,8 @@ export const users = pgTable("users", {
   
   // Local authentication
   passwordHash: varchar("password_hash", { length: 255 }),
+  passwordResetToken: varchar("password_reset_token", { length: 255 }),
+  passwordResetExpiry: timestamp("password_reset_expiry"),
   
   // Member-specific fields
   phone: varchar("phone", { length: 20 }),
