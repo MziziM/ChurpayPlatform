@@ -22,3 +22,8 @@ vite.config.ts.*
 *.zip
 
 *.zip
+
+# ignore local envs
+*.env
+backend/.env
+frontend/.env
