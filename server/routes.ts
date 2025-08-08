@@ -604,6 +604,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password setup for existing members without passwords
+  app.post('/api/auth/member/setup-password', async (req, res) => {
+    try {
+      const { userId, email, password } = req.body;
+      
+      if (!userId || !email || !password) {
+        return res.status(400).json({ message: 'User ID, email, and password are required' });
+      }
+      
+      if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters' });
+      }
+      
+      // Get user to verify they exist and don't have a password yet
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.id !== userId) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      if (user.passwordHash) {
+        return res.status(400).json({ message: 'Password already set for this account' });
+      }
+      
+      // Hash and save the password
+      const bcrypt = await import('bcryptjs');
+      const passwordHash = await bcrypt.hash(password, 12);
+      
+      const updatedUser = await storage.updateUser(user.id, { passwordHash });
+      
+      res.json({ 
+        message: 'Password set successfully. You can now login.',
+        success: true 
+      });
+    } catch (error: any) {
+      console.error('Password setup error:', error);
+      res.status(500).json({ message: 'Failed to set password' });
+    }
+  });
+
   // Member authentication endpoints
   app.post('/api/auth/member/signin', async (req, res) => {
     try {
@@ -623,7 +662,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify password hash
       const bcrypt = await import('bcryptjs');
       if (!user.passwordHash) {
-        return res.status(401).json({ message: 'Account not properly configured. Please contact support.' });
+        return res.status(200).json({ 
+          requiresPasswordSetup: true,
+          message: 'Please set up a password for your account',
+          userId: user.id
+        });
       }
       
       const isValidPassword = await bcrypt.compare(password, user.passwordHash);
