@@ -225,8 +225,6 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export type Project = typeof projects.$inferSelect;
-export type InsertProject = typeof projects.$inferInsert;
 
 // Transactions table
 export const transactions = pgTable("transactions", {
@@ -254,6 +252,13 @@ export const transactions = pgTable("transactions", {
   isAnonymous: boolean("is_anonymous").default(false),
   isRecurring: boolean("is_recurring").default(false),
   recurringFrequency: varchar("recurring_frequency", { length: 20 }), // monthly, weekly, etc.
+  
+  // Idempotency and audit fields
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).unique(),
+  requestFingerprint: varchar("request_fingerprint", { length: 255 }),
+  clientIpAddress: varchar("client_ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  sessionId: varchar("session_id", { length: 255 }),
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -505,6 +510,13 @@ export const donations = pgTable("donations", {
   reference: varchar("reference").notNull(),
   payfastPaymentId: varchar("payfast_payment_id"),
   walletTransactionId: uuid("wallet_transaction_id").references(() => walletTransactions.id),
+  
+  // Idempotency and audit fields
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).unique(),
+  requestFingerprint: varchar("request_fingerprint", { length: 255 }),
+  clientIpAddress: varchar("client_ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  sessionId: varchar("session_id", { length: 255 }),
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
