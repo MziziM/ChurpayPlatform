@@ -9,3 +9,6 @@ vite.config.ts.*
 
 # Ignore local archives
 *.zip
+
+# Ignore local archives
+*.zip
