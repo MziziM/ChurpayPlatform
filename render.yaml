@@ -17,27 +17,29 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://<your-frontend-domain>
+        value: https://churpay-frontend.onrender.com
       - key: CORS_ORIGINS
-        value: https://<your-frontend-domain>,http://localhost:5173
+        value: https://churpay-frontend.onrender.com,http://localhost:5173
       - key: PAYFAST_MERCHANT_ID
         value: 10000100
       - key: PAYFAST_PASSPHRASE
-        value: <your-sandbox-passphrase>
+        value: your-sandbox-passphrase
       - key: BACKEND_URL
-        value: https://<your-backend-domain>
+        value: https://churpay-backend.onrender.com
 
-  - type: static_site
+  - type: web
     name: churpay-frontend
+    env: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    startCommand: npx serve -s dist
+    plan: starter
+    region: oregon
     envVars:
       - key: VITE_API_URL
-        value: https://<your-backend-domain>
+        value: https://churpay-backend.onrender.com
 
 databases:
   - name: churpay-postgres
     plan: basic-256mb
     region: oregon
-  
