@@ -5,11 +5,6 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: "dist",
-    emptyOutDir: true,
-  },
-  server: {
-    fs: {
-      strict: false, // allow serving files from project root
-    },
-  },
+    emptyOutDir: true
+  }
 });

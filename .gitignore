@@ -4,3 +4,21 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+# Ignore local archives
+*.zip
+
+# Ignore local archives
+*.zip
+
+# Ignore local archives
+*.zip
+
+# Ignore local archives
+*.zip
+
+# Ignore local archives
+*.zip
+
+*.zip
+
+*.zip
