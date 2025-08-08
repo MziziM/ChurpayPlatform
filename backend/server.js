@@ -114,6 +114,10 @@ app.post("/api/payfast/ipn", async (req, res) => {
   }
 });
 
+app.get("/", (_req, res) => {
+  res.json({ message: "Churpay Backend is running" });
+});
+
 app.listen(PORT, () => {
   console.log(`Backend listening on ${PORT}`);
 });
