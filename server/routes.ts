@@ -180,6 +180,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: 'member' as const,
         profileImageUrl: null,
         passwordHash,
+        dateOfBirth: new Date(validatedData.dateOfBirth),
+        isActive: true,
       };
 
       const member = await storage.upsertUser(memberData);
